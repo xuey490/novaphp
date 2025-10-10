@@ -1,15 +1,14 @@
 <?php
-
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2023 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
-declare(strict_types=1);
+declare (strict_types = 1);
 
 namespace think\db\concern;
 
@@ -18,17 +17,16 @@ namespace think\db\concern;
  */
 trait Transaction
 {
+
     /**
      * 执行数据库Xa事务
-     *
-     * @param callable $callback 数据操作方法回调
-     * @param array    $dbs      多个查询对象或者连接对象
-     *
-     * @throws \PDOException
+     * @access public
+     * @param  callable $callback 数据操作方法回调
+     * @param  array    $dbs      多个查询对象或者连接对象
+     * @return mixed
+     * @throws PDOException
      * @throws \Exception
      * @throws \Throwable
-     *
-     * @return mixed
      */
     public function transactionXa(callable $callback, array $dbs = [])
     {
@@ -37,9 +35,8 @@ trait Transaction
 
     /**
      * 执行数据库事务
-     *
+     * @access public
      * @param callable $callback 数据操作方法回调
-     *
      * @return mixed
      */
     public function transaction(callable $callback)
@@ -49,7 +46,7 @@ trait Transaction
 
     /**
      * 启动事务
-     *
+     * @access public
      * @return void
      */
     public function startTrans(): void
@@ -58,11 +55,10 @@ trait Transaction
     }
 
     /**
-     * 用于非自动提交状态下面的查询提交.
-     *
-     * @throws \PDOException
-     *
+     * 用于非自动提交状态下面的查询提交
+     * @access public
      * @return void
+     * @throws PDOException
      */
     public function commit(): void
     {
@@ -70,11 +66,10 @@ trait Transaction
     }
 
     /**
-     * 事务回滚.
-     *
-     * @throws \PDOException
-     *
+     * 事务回滚
+     * @access public
      * @return void
+     * @throws PDOException
      */
     public function rollback(): void
     {
@@ -83,9 +78,8 @@ trait Transaction
 
     /**
      * 启动XA事务
-     *
-     * @param string $xid XA事务id
-     *
+     * @access public
+     * @param  string $xid XA事务id
      * @return void
      */
     public function startTransXa(string $xid): void
@@ -95,9 +89,8 @@ trait Transaction
 
     /**
      * 预编译XA事务
-     *
-     * @param string $xid XA事务id
-     *
+     * @access public
+     * @param  string $xid XA事务id
      * @return void
      */
     public function prepareXa(string $xid): void
@@ -107,9 +100,8 @@ trait Transaction
 
     /**
      * 提交XA事务
-     *
-     * @param string $xid XA事务id
-     *
+     * @access public
+     * @param  string $xid XA事务id
      * @return void
      */
     public function commitXa(string $xid): void
@@ -119,9 +111,8 @@ trait Transaction
 
     /**
      * 回滚XA事务
-     *
-     * @param string $xid XA事务id
-     *
+     * @access public
+     * @param  string $xid XA事务id
      * @return void
      */
     public function rollbackXa(string $xid): void
