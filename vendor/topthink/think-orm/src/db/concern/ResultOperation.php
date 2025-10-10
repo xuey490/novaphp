@@ -1,9 +1,8 @@
 <?php
-
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2023 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -23,62 +22,55 @@ use think\helper\Str;
 use think\Model;
 
 /**
- * 查询数据处理.
+ * 查询数据处理
  */
 trait ResultOperation
 {
     /**
-     * 设置数据处理（支持模型）.
-     *
+     * 设置数据处理（支持模型）
+     * @access public
      * @param callable $filter 数据处理Callable
      * @param string   $index  索引（唯一）
-     *
      * @return $this
      */
-    public function filter(callable $filter, ?string $index = null)
+    public function filter(callable $filter, string $index = null)
     {
         if ($index) {
             $this->options['filter'][$index] = $filter;
         } else {
             $this->options['filter'][] = $filter;
         }
-
         return $this;
     }
 
     /**
-     * 是否允许返回空数据（或空模型）.
-     *
+     * 是否允许返回空数据（或空模型）
+     * @access public
      * @param bool $allowEmpty 是否允许为空
-     *
      * @return $this
      */
     public function allowEmpty(bool $allowEmpty = true)
     {
         $this->options['allow_empty'] = $allowEmpty;
-
         return $this;
     }
 
     /**
-     * 设置查询数据不存在是否抛出异常.
-     *
+     * 设置查询数据不存在是否抛出异常
+     * @access public
      * @param bool $fail 数据不存在是否抛出异常
-     *
      * @return $this
      */
     public function failException(bool $fail = true)
     {
         $this->options['fail'] = $fail;
-
         return $this;
     }
 
     /**
-     * 处理数据.
-     *
+     * 处理数据
+     * @access protected
      * @param array $result 查询数据
-     *
      * @return void
      */
     protected function result(array &$result): void
@@ -86,14 +78,6 @@ trait ResultOperation
         // JSON数据处理
         if (!empty($this->options['json'])) {
             $this->jsonResult($result);
-        }
-
-        // 实时读取延迟数据
-        if (!empty($this->options['lazy_fields'])) {
-            $id = $this->getKey($result);
-            foreach ($this->options['lazy_fields'] as $field) {
-                $result[$field] += $this->getLazyFieldValue($field, $id);
-            }
         }
 
         // 查询数据处理
@@ -105,24 +89,13 @@ trait ResultOperation
         if (!empty($this->options['with_attr'])) {
             $this->getResultAttr($result, $this->options['with_attr']);
         }
-
-        // 检查字段映射
-        if (!empty($this->options['mapping'])) {
-            foreach ($this->options['mapping'] as $name => $alias) {
-                if (isset($result[$name])) {
-                    $result[$alias] = $result[$name];
-                    unset($result[$name]);
-                }
-            }
-        }        
     }
 
     /**
-     * 处理数据集.
-     *
-     * @param array $resultSet    数据集
+     * 处理数据集
+     * @access public
+     * @param array $resultSet 数据集
      * @param bool  $toCollection 是否转为对象
-     *
      * @return void
      */
     protected function resultSet(array &$resultSet, bool $toCollection = true): void
@@ -138,11 +111,10 @@ trait ResultOperation
     }
 
     /**
-     * 使用获取器处理数据.
-     *
+     * 使用获取器处理数据
+     * @access protected
      * @param array $result   查询数据
      * @param array $withAttr 字段获取器
-     *
      * @return void
      */
     protected function getResultAttr(array &$result, array $withAttr = []): void
@@ -150,7 +122,7 @@ trait ResultOperation
         foreach ($withAttr as $name => $closure) {
             $name = Str::snake($name);
 
-            if (str_contains($name, '.')) {
+            if (strpos($name, '.')) {
                 // 支持JSON字段 获取器定义
                 [$key, $field] = explode('.', $name);
 
@@ -164,30 +136,26 @@ trait ResultOperation
     }
 
     /**
-     * 处理空数据.
-     * @param Closure $closure 闭包数据
+     * 处理空数据
+     * @access protected
+     * @return array|Model|null|static
      * @throws DbException
      * @throws ModelNotFoundException
      * @throws DataNotFoundException
-     *
-     * @return array|Model|null|static
      */
-    protected function resultToEmpty(?Closure $closure = null)
+    protected function resultToEmpty()
     {
         if (!empty($this->options['fail'])) {
             $this->throwNotFound();
-        } elseif ($closure instanceof Closure) {
-            return $closure($this);
         } elseif (!empty($this->options['allow_empty'])) {
             return !empty($this->model) ? $this->model->newInstance() : [];
         }
     }
 
     /**
-     * 查找单条记录 不存在返回空数据（或者空模型）.
-     *
+     * 查找单条记录 不存在返回空数据（或者空模型）
+     * @access public
      * @param mixed $data 数据
-     *
      * @return array|Model|static|mixed
      */
     public function findOrEmpty($data = null)
@@ -196,10 +164,9 @@ trait ResultOperation
     }
 
     /**
-     * JSON字段数据转换.
-     *
+     * JSON字段数据转换
+     * @access protected
      * @param array $result 查询数据
-     *
      * @return void
      */
     protected function jsonResult(array &$result): void
@@ -214,53 +181,47 @@ trait ResultOperation
     }
 
     /**
-     * 查询失败 抛出异常.
-     *
+     * 查询失败 抛出异常
+     * @access protected
+     * @return void
      * @throws ModelNotFoundException
      * @throws DataNotFoundException
-     *
-     * @return void
      */
     protected function throwNotFound(): void
     {
         if (!empty($this->model)) {
             $class = get_class($this->model);
-
             throw new ModelNotFoundException('model data Not Found:' . $class, $class, $this->options);
         }
 
         $table = $this->getTable();
-
         throw new DataNotFoundException('table data not Found:' . $table, $table, $this->options);
     }
 
     /**
-     * 查找多条记录 如果不存在则抛出异常.
-     *
+     * 查找多条记录 如果不存在则抛出异常
+     * @access public
      * @param array|string|Query|Closure $data 数据
-     *
+     * @return array|Collection|static[]
      * @throws ModelNotFoundException
      * @throws DataNotFoundException
-     *
-     * @return array|Collection|static[]
      */
-    public function selectOrFail($data = [])
+    public function selectOrFail($data = null)
     {
         return $this->failException(true)->select($data);
     }
 
     /**
-     * 查找单条记录 如果不存在则抛出异常.
-     *
+     * 查找单条记录 如果不存在则抛出异常
+     * @access public
      * @param array|string|Query|Closure $data 数据
-     *
+     * @return array|Model|static|mixed
      * @throws ModelNotFoundException
      * @throws DataNotFoundException
-     *
-     * @return array|Model|static|mixed
      */
     public function findOrFail($data = null)
     {
         return $this->failException(true)->find($data);
     }
+
 }

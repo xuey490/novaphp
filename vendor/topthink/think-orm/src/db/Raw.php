@@ -1,39 +1,51 @@
 <?php
-
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2023 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
-declare(strict_types=1);
+declare (strict_types = 1);
 
 namespace think\db;
 
-use Stringable;
-
 /**
- * SQL Raw.
+ * SQL Raw
  */
 class Raw
 {
     /**
-     * 创建一个查询表达式.
+     * 查询表达式
      *
-     * @param string|Stringable $value
-     * @param array  $bind
+     * @var string
+     */
+    protected $value;
+
+    /**
+     * 参数绑定
      *
+     * @var array
+     */
+    protected $bind = [];
+
+    /**
+     * 创建一个查询表达式
+     *
+     * @param  string  $value
+     * @param  array   $bind
      * @return void
      */
-    public function __construct(protected string|Stringable $value, protected array $bind = [])
+    public function __construct(string $value, array $bind = [])
     {
+        $this->value = $value;
+        $this->bind  = $bind;
     }
 
     /**
-     * 获取表达式.
+     * 获取表达式
      *
      * @return string
      */
@@ -43,12 +55,13 @@ class Raw
     }
 
     /**
-     * 获取参数绑定.
+     * 获取参数绑定
      *
-     * @return array
+     * @return string
      */
     public function getBind(): array
     {
         return $this->bind;
     }
+
 }

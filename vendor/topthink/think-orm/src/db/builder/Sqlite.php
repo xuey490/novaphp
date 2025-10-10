@@ -1,33 +1,31 @@
 <?php
-
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2023 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
-declare(strict_types=1);
+declare (strict_types = 1);
 
 namespace think\db\builder;
 
 use think\db\Builder;
-use think\db\BaseQuery as Query;
+use think\db\Query;
 use think\db\Raw;
 
 /**
- * Sqlite数据库驱动.
+ * Sqlite数据库驱动
  */
 class Sqlite extends Builder
 {
     /**
-     * limit.
-     *
+     * limit
+     * @access public
      * @param Query $query 查询对象
      * @param mixed $limit
-     *
      * @return string
      */
     public function parseLimit(Query $query, string $limit): string
@@ -47,10 +45,9 @@ class Sqlite extends Builder
     }
 
     /**
-     * 随机排序.
-     *
+     * 随机排序
+     * @access protected
      * @param Query $query 查询对象
-     *
      * @return string
      */
     protected function parseRand(Query $query): string
@@ -59,15 +56,14 @@ class Sqlite extends Builder
     }
 
     /**
-     * 字段和表名处理.
-     *
+     * 字段和表名处理
+     * @access public
      * @param Query $query  查询对象
-     * @param string|int|Raw $key    字段名
+     * @param mixed $key    字段名
      * @param bool  $strict 严格检测
-     *
      * @return string
      */
-    public function parseKey(Query $query, string|int|Raw $key, bool $strict = false): string
+    public function parseKey(Query $query, $key, bool $strict = false): string
     {
         if (is_int($key)) {
             return (string) $key;
@@ -77,7 +73,7 @@ class Sqlite extends Builder
 
         $key = trim($key);
 
-        if (str_contains($key, '.') && !preg_match('/[,\'\"\(\)`\s]/', $key)) {
+        if (strpos($key, '.') && !preg_match('/[,\'\"\(\)`\s]/', $key)) {
             [$table, $key] = explode('.', $key, 2);
 
             $alias = $query->getOptions('alias');
@@ -104,14 +100,13 @@ class Sqlite extends Builder
     }
 
     /**
-     * 设置锁机制.
-     *
+     * 设置锁机制
+     * @access protected
      * @param Query       $query 查询对象
      * @param bool|string $lock
-     *
      * @return string
      */
-    protected function parseLock(Query $query, bool|string $lock = false): string
+    protected function parseLock(Query $query, $lock = false): string
     {
         return '';
     }
