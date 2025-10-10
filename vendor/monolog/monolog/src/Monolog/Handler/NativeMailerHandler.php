@@ -128,7 +128,7 @@ class NativeMailerHandler extends MailHandler
 
         $parameters = implode(' ', $this->parameters);
         foreach ($this->to as $to) {
-            $this->mail($to, $subject, $content, $headers, $parameters);
+            mail($to, $subject, $content, $headers, $parameters);
         }
     }
 
@@ -169,11 +169,5 @@ class NativeMailerHandler extends MailHandler
         $this->encoding = $encoding;
 
         return $this;
-    }
-
-
-    protected function mail(string $to, string $subject, string $content, string $headers, string $parameters): void
-    {
-        mail($to, $subject, $content, $headers, $parameters);
     }
 }

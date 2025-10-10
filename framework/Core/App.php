@@ -1,4 +1,5 @@
 <?php
+
 // framework/Core/App.php
 
 namespace Framework\Core;

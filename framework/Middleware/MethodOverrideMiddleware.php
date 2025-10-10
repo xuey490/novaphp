@@ -1,5 +1,7 @@
 <?php
+
 // framework/Middleware/MethodOverrideMiddleware.php
+
 namespace Framework\Middleware;
 
 use Symfony\Component\HttpFoundation\Request;
@@ -13,7 +15,7 @@ class MethodOverrideMiddleware
             $method = strtoupper($request->request->get('_method'));
             // 允许的 HTTP 方法
             $allowedMethods = ['PUT', 'DELETE', 'PATCH'];
-            
+
             if (in_array($method, $allowedMethods)) {
                 // 重写请求方法
                 $request->setMethod($method);

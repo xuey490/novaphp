@@ -1,5 +1,7 @@
 <?php
+
 // framework/Core/MiddlewarePipeline.php
+
 namespace Framework\Core;
 
 use Symfony\Component\HttpFoundation\Request;

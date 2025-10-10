@@ -14,11 +14,40 @@ class HomeController
     {
         //getService(\Framework\Log\LoggerService::class)->info('App started');
 
+        #$userService = getService('App\Service\UserService'); // ✅ 只要容器已 set，就可以
+		#print_r( $userService->getUsers(111) );
+        // ✅ 此时 app() 已可用！
+		
+		//dump(app()->getServiceIds()); // 查看所有服务 ID
+        //$logger = app('log.logger');
+        //$logger->info('Homepage visited');
+
+	
+		$cache = App('cache.manager');
+		$cache->set('user_1', ['name' => 'Alice'], 3600);
+		$user = $cache->clear();
+		//print_r($user);
+		
+		
+		//$cache->tag('tag')->set('name1','value1');
+		//$cache->tag('tag')->set('name2','value2');
+		
+
+		//$cache->delete('user_1');
+		//$cache->clear();
+	
+		//$cache->set('key', 'hello world!', 3600);
+		//echo $cache->get('key');
+		//$cache->clear();
+		
+		echo trans('hello');        // 自动输出对应语言
+		
+		echo '<br />当前语言包：'.current_locale();
+		
         return new Response('<h1>Welcome to My Framework!</h1>');
     }
 	
-	
-	
+
 
 	//列举自己需要的参数
     public function show( $id)

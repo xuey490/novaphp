@@ -1,4 +1,5 @@
 <?php
+
 // 文件路径: /Framework/Annotations/Middleware.php
 
 namespace Framework\Annotations;

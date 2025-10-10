@@ -1,4 +1,5 @@
 <?php
+
 // framework/Core/MiddlewareInterface.php
 
 namespace Framework\Core;

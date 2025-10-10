@@ -1,4 +1,5 @@
 <?php
+
 namespace Framework\Middleware;
 
 use Symfony\Component\HttpFoundation\Request;

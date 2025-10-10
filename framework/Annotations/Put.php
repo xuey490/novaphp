@@ -1,4 +1,5 @@
 <?php
+
 namespace Framework\Annotations;
 
 use Doctrine\Common\Annotations\Annotation;
@@ -22,7 +23,7 @@ class Put extends Route
     {
         #parent::__construct();
         $this->methods = ['PUT'];
-        
+
         // 处理注解参数
         foreach ($values as $key => $value) {
             if (property_exists($this, $key)) {

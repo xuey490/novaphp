@@ -1,5 +1,7 @@
 <?php
+
 # framework/Container/Container.php
+
 namespace Framework\Container;
 
 use Symfony\Component\Config\FileLocator;
@@ -7,7 +9,6 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface as SymfonyContainerInterface;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use UnitEnum;
-
 
 class Container implements SymfonyContainerInterface
 {
@@ -48,8 +49,8 @@ class Container implements SymfonyContainerInterface
         // ⚠️ 如果你希望支持运行时 set()，就不要 compile()
         // 或者提供一个“开发模式”开关
         $container->compile(true); // 编译后 set() 将失效！
-		
-			  //var_dump(($container->getServiceIds()));
+
+        //var_dump(($container->getServiceIds()));
 
         self::$container = $container;
     }
@@ -62,10 +63,10 @@ class Container implements SymfonyContainerInterface
 
     // ========== 代理所有 Symfony ContainerInterface 方法 ==========
 
-	public function get(string $id, int $invalidBehavior = self::EXCEPTION_ON_INVALID_REFERENCE): ?object
-	{
-		return self::$container->get($id, $invalidBehavior);
-	}
+    public function get(string $id, int $invalidBehavior = self::EXCEPTION_ON_INVALID_REFERENCE): ?object
+    {
+        return self::$container->get($id, $invalidBehavior);
+    }
 
     public function has(string $id): bool
     {

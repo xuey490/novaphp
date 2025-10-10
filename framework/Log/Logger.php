@@ -1,10 +1,12 @@
 <?php
+
 // framework/Log/Logger.php
 
 namespace Framework\Log;
 
 use Monolog\Logger as MonoLogger;
 use Monolog\Handler\StreamHandler;
+use Psr\Http\Message\ServerRequestInterface;
 
 class Logger
 {
@@ -14,6 +16,7 @@ class Logger
     {
         $this->logger = new MonoLogger($channel);
         $this->logger->pushHandler(new StreamHandler(storage_path('logs/app.log'), MonoLogger::DEBUG));
+        //print_r($this->logger);
     }
 
     public function info($message, array $context = [])
@@ -31,19 +34,19 @@ class Logger
         $this->logger->debug($message, $context);
     }
 
-    public function logRequest($request, $response = null, $duration = 0)
+    public function logRequest(ServerRequestInterface $request, ?object $response = null, float $duration = 0): void
     {
         $this->info('Request', [
             'method' => $request->getMethod(),
-            'uri' => $request->getRequestUri(),
-            'ip' => $request->getClientIp(),
-            'user_agent' => $request->headers->get('User-Agent'),
-            'response_status' => $response?->getStatusCode(),
+            'uri' => (string) $request->getUri(),
+            'ip' => $request->getServerParams()['REMOTE_ADDR'] ?? 'unknown',
+            'user_agent' => $request->getHeaderLine('User-Agent'),
+            'response_status' => $response?->getStatusCode() ?? null,
             'duration_ms' => round($duration * 1000, 2)
         ]);
     }
 
-    public function logException($exception, $request)
+    public function logException(\Throwable $exception, ServerRequestInterface $request): void
     {
         $this->error('Exception', [
             'message' => $exception->getMessage(),
@@ -51,8 +54,8 @@ class Logger
             'line' => $exception->getLine(),
             'trace' => $exception->getTraceAsString(),
             'method' => $request->getMethod(),
-            'uri' => $request->getRequestUri(),
-            'ip' => $request->getClientIp()
+            'uri' => (string) $request->getUri(),
+            'ip' => $request->getServerParams()['REMOTE_ADDR'] ?? 'unknown'
         ]);
     }
 }

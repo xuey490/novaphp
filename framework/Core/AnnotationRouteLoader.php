@@ -1,4 +1,5 @@
 <?php
+
 namespace Framework\Core;
 
 use Doctrine\Common\Annotations\AnnotationReader;
@@ -32,7 +33,7 @@ class AnnotationRouteLoader
     {
         $this->controllerDir = $controllerDir;
         $this->controllerNamespace = $controllerNamespace;
-        
+
         // 初始化注解阅读器
         $this->initAnnotationReader();
     }
@@ -44,11 +45,11 @@ class AnnotationRouteLoader
     {
         // 注册注解自动加载（Doctrine Annotations 2.0+ 需手动注册）
         //AnnotationRegistry::registerLoader('class_exists');
-        
+
         // 创建注解阅读器实例
         $this->annotationReader = new AnnotationReader();
     }
-	
+
     /**
      * 路由加载方法（对外兼容接口，实际调用 loadRoutes()）
      * @return RouteCollection
@@ -66,7 +67,7 @@ class AnnotationRouteLoader
     public function loadRoutes(): RouteCollection
     {
         $routes = new RouteCollection();
-        
+
         // 1. 查找所有控制器文件
         $finder = new Finder();
         $finder->files()
@@ -78,7 +79,7 @@ class AnnotationRouteLoader
         foreach ($finder as $file) {
             // 计算类名（基于文件路径）
             $className = $this->getClassNameFromFile($file);
-            
+
             if (!class_exists($className)) {
                 continue;
             }
@@ -103,7 +104,7 @@ class AnnotationRouteLoader
     {
         // 计算相对路径（相对于控制器根目录）
         $relativePath = $file->getRelativePathname();
-        
+
         // 将路径转换为命名空间格式（例：Admin/UserController.php → Admin\UserController）
         $className = str_replace(
             [DIRECTORY_SEPARATOR, '.php'],
@@ -124,7 +125,7 @@ class AnnotationRouteLoader
         RouteCollection $routes
     ) {
         $reflectionClass = new \ReflectionClass($className);
-        
+
         // 遍历所有公共方法
         foreach ($reflectionClass->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
             // 跳过魔术方法
@@ -134,7 +135,7 @@ class AnnotationRouteLoader
 
             // 获取方法上的所有路由注解（Route/Get/Post/Put/Delete）
             $methodAnnotations = $this->getMethodRouteAnnotations($method);
-            
+
             if (empty($methodAnnotations)) {
                 continue;
             }
@@ -189,20 +190,20 @@ class AnnotationRouteLoader
         // 1. 处理路由路径（拼接控制器前缀）
         //$classPath = $classAnnotation ? trim($classAnnotation->path, '/') : '';
         //$methodPath = trim($methodAnnotation->path, '/');
-		
-		// 使用 ?? '' 确保即使 ->path 是 null，也会被转换为空字符串
-		$classPath = $classAnnotation ? trim($classAnnotation->path ?? '', '/') : '';
-		$methodPath = trim($methodAnnotation->path ?? '', '/');
-        
+
+        // 使用 ?? '' 确保即使 ->path 是 null，也会被转换为空字符串
+        $classPath = $classAnnotation ? trim($classAnnotation->path ?? '', '/') : '';
+        $methodPath = trim($methodAnnotation->path ?? '', '/');
+
         // 拼接完整路径（例：控制器前缀/admin + 方法路径/user → /admin/user）
         $fullPath = '/' . implode('/', array_filter([$classPath, $methodPath]));
 
-		// 关键步骤：为非根路径的路由自动添加.html后缀（可根据需求控制）
-		// 规则：仅前台路由加.html，管理后台路由（/admin/开头）不加
-		if (!empty($fullPath) && !str_starts_with($fullPath, '/admin')) {
-			//$fullPath .= '.html'; // 生成如"/user/show.html"的路径
-		}
-		
+        // 关键步骤：为非根路径的路由自动添加.html后缀（可根据需求控制）
+        // 规则：仅前台路由加.html，管理后台路由（/admin/开头）不加
+        if (!empty($fullPath) && !str_starts_with($fullPath, '/admin')) {
+            //$fullPath .= '.html'; // 生成如"/user/show.html"的路径
+        }
+
         // 2. 处理请求方法
         $methods = (array)$methodAnnotation->methods;
         $methods = array_map('strtoupper', $methods);
@@ -218,21 +219,21 @@ class AnnotationRouteLoader
         $requirements = array_merge($classRequirements, $methodRequirements);
 
         // 5. 生成路由名称（默认格式：控制器名.方法名）
-        $routeName = $methodAnnotation->name ?: 
+        $routeName = $methodAnnotation->name ?:
             strtolower(str_replace('\\', '.', $className) . '.' . $methodName);
-			
-				// 6. 关键：合并控制器和方法的 options（新增这部分）
-				$classOptions = $classAnnotation ? $classAnnotation->options : [];
-				$methodOptions = $methodAnnotation->options;
-				$options = array_merge($classOptions, $methodOptions); // 类级别options会被方法级别覆盖
 
-				// ✅ 正确方式：从 annotations 提取中间件并合并，放入 defaults
-				#$classMiddleware = (array)($classAnnotation->options['_middleware'] ?? []);
-				#$methodMiddleware = (array)($methodAnnotation->options['_middleware'] ?? []);
-				#$finalMiddleware = array_values(array_unique(array_merge($classMiddleware, $methodMiddleware)));
+        // 6. 关键：合并控制器和方法的 options（新增这部分）
+        $classOptions = $classAnnotation ? $classAnnotation->options : [];
+        $methodOptions = $methodAnnotation->options;
+        $options = array_merge($classOptions, $methodOptions); // 类级别options会被方法级别覆盖
 
-				//$defaults['_middleware'] = $finalMiddleware;
-				//print_r($defaults);
+        // ✅ 正确方式：从 annotations 提取中间件并合并，放入 defaults
+        #$classMiddleware = (array)($classAnnotation->options['_middleware'] ?? []);
+        #$methodMiddleware = (array)($methodAnnotation->options['_middleware'] ?? []);
+        #$finalMiddleware = array_values(array_unique(array_merge($classMiddleware, $methodMiddleware)));
+
+        //$defaults['_middleware'] = $finalMiddleware;
+        //print_r($defaults);
 
         // 7. 创建Symfony Route对象（控制器格式：类名::方法名）
         $controller = $className . '::' . $methodName;
@@ -247,43 +248,43 @@ class AnnotationRouteLoader
         );
 
         // 7. 将路由添加到集合（路由名称作为键）
-		//$routes->add($annotation->name ?: $methodName, $symfonyRoute);
+        //$routes->add($annotation->name ?: $methodName, $symfonyRoute);
         $routes->add($routeName, $symfonyRoute);
     }
-	
-	
 
 
-		/**
-		 * 合并多个数组中的 _middleware 值，过滤空数组，去重
-		 *
-		 * @param array $data 多个数组组成的数组
-		 * @return array 合并后的 ['_middleware' => [...]]
-		 */
-		private function mergeMiddleware(array $data): array
-		{
-			$middlewares = [];
 
-			foreach ($data as $item) {
-				// 跳过空数组或非数组元素
-				if (!is_array($item) || empty($item)) {
-					continue;
-				}
 
-				if (isset($item['_middleware'])) {
-					$mw = $item['_middleware'];
-					if (is_array($mw)) {
-						$middlewares = array_merge($middlewares, $mw);
-					} else {
-						$middlewares[] = $mw;
-					}
-				}
-			}
+    /**
+     * 合并多个数组中的 _middleware 值，过滤空数组，去重
+     *
+     * @param array $data 多个数组组成的数组
+     * @return array 合并后的 ['_middleware' => [...]]
+     */
+    private function mergeMiddleware(array $data): array
+    {
+        $middlewares = [];
 
-			// 去重并重置索引
-			$middlewares = array_values(array_unique($middlewares));
+        foreach ($data as $item) {
+            // 跳过空数组或非数组元素
+            if (!is_array($item) || empty($item)) {
+                continue;
+            }
 
-			return ['_middleware' => $middlewares];
-		}
-	
+            if (isset($item['_middleware'])) {
+                $mw = $item['_middleware'];
+                if (is_array($mw)) {
+                    $middlewares = array_merge($middlewares, $mw);
+                } else {
+                    $middlewares[] = $mw;
+                }
+            }
+        }
+
+        // 去重并重置索引
+        $middlewares = array_values(array_unique($middlewares));
+
+        return ['_middleware' => $middlewares];
+    }
+
 }

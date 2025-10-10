@@ -1,5 +1,7 @@
 <?php
+
 // Framework/Config/ConfigLoader.php
+
 namespace Framework\Config;
 
 class ConfigLoader

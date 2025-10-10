@@ -15,7 +15,7 @@ class UserService
 	*/
 
     // 示例方法：通过数据库获取用户
-    public function getUserById(int $id): array
+    public function getUsers(int $id): array
     {
         //$stmt = $this->pdo->prepare('SELECT * FROM users WHERE id = :id');
         //$stmt->execute(['id' => $id]);

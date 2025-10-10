@@ -1,4 +1,5 @@
 <?php
+
 namespace Framework\Annotations;
 
 use Doctrine\Common\Annotations\Annotation;
@@ -38,13 +39,13 @@ class Route
      * @var array
      */
     public $requirements = [];
-	
-	/*
-	* 路由参数默认值（可选）
-	*/
-	public $options = []; // 必须添加这个属性！
-	
-	
+
+    /*
+    * 路由参数默认值（可选）
+    */
+    public $options = []; // 必须添加这个属性！
+
+
     public function __construct(array $values)
     {
         $this->path = $values['path'] ?? '';
@@ -54,5 +55,5 @@ class Route
         $this->requirements = $values['requirements'] ?? [];
         $this->options = $values['options'] ?? []; // 初始化options
     }
-	
+
 }

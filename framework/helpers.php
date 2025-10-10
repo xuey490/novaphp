@@ -1,12 +1,14 @@
 <?php
+
 // framework/helpers.php
 
 use Framework\Core\Framework;
 use Framework\Core\App;
+use Ramsey\Uuid\Uuid;
 
 if (!function_exists('app')) {
     /**
-     * 获取服务容器或解析服务
+     * 获取服务容器或解析服务，类似于下面的getService
      *
      * @param string|null $id 服务 ID
      * @return \Symfony\Component\DependencyInjection\ContainerInterface|object
@@ -117,4 +119,23 @@ if (!function_exists('config')) {
 
         return $value;
     }
+}
+
+function generateRequestId(): string
+{
+    //使用 ramsey/uuid
+    return 'req-' . substr(Uuid::uuid4()->toString(), 0, 8);
+    //return 'req-' . substr(bin2hex(random_bytes(8)), 0, 8);
+}
+
+//翻译服务
+function trans(string $key, array $parameters = []): string
+{
+    return app('translator')->trans($key, $parameters);
+}
+
+// 可选：获取当前语言
+function current_locale(): string
+{
+    return app('translator')->getLocale();
 }

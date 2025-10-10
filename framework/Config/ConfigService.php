@@ -1,14 +1,17 @@
 <?php
-// Framework/Config/ConfigService.php
-namespace Framework\Config;
-use Framework\Config\ConfigLoader;
 
+// Framework/Config/ConfigService.php
+
+namespace Framework\Config;
+
+use Framework\Config\ConfigLoader;
 
 class ConfigService
 {
     public function __construct(
         private ConfigLoader $loader // 依赖 ConfigLoader 服务
-    ) {}
+    ) {
+    }
 
     /**
      * 获取配置项（支持点语法：database.host）
