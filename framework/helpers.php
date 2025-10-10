@@ -51,3 +51,31 @@ function env($key, $default = null)
     return $value;
 }
 
+
+if (!function_exists('config')) {
+    function config(string $key = null, $default = null)
+    {
+        static $config = null;
+        if ($config === null) {
+            // 从容器获取（需确保容器已初始化）
+            $container = \Framework\Container\Container::getInstance();
+            $config = $container->get('config') ?? [];
+        }
+
+        if ($key === null) {
+            return $config;
+        }
+
+        // 支持点语法：database.connections.mysql
+        $keys = explode('.', $key);
+        $value = $config;
+        foreach ($keys as $segment) {
+            if (!is_array($value) || !array_key_exists($segment, $value)) {
+                return $default;
+            }
+            $value = $value[$segment];
+        }
+
+        return $value;
+    }
+}

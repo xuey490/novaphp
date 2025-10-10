@@ -7,9 +7,11 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Controller\ArgumentResolver;
 use Framework\Middleware\MiddlewareDispatcher; // 中间件调度器
-use Framework\Service\Logger;
+use Framework\Log\Logger;
 use Framework\Container\Container;	// 之前实现的Symfony DI容器
 use think\facade\Db;
+use Framework\Config\ConfigLoader;
+
 
 class Framework
 {
@@ -23,7 +25,7 @@ class Framework
     // 添加数据库配置文件常量
     private const DATABASE_CONFIG_FILE = BASE_PATH . '/config/database.php';
 	
-		private Request $request; // ← 新增
+	private Request $request; // ← 新增
 	
     private Container $container;
 	
@@ -35,26 +37,30 @@ class Framework
 
     public function __construct()
     {
+		// 0. 加载配置
+		$configLoader = new ConfigLoader(BASE_PATH . '/config');
+		$globalConfig = $configLoader->loadAll();
+		
         // 1. 初始化DI容器（核心：后续所有依赖从这里获取）
         Container::init(); // 加载服务配置
-				$this->container = Container::getInstance();
+		$this->container = Container::getInstance();
 
         // 2. 初始化数据库ORM
-       $this->initORM();
+        $this->initORM();
 		
-				$this->logger = new Logger();
+		$this->logger = new Logger();
 
-				// 3. 加载所有路由（手动+注解）
-				$allRoutes = $this->loadAllRoutes();
+		// 3. 加载所有路由（手动+注解）
+		$allRoutes = $this->loadAllRoutes();
 
-				// 4. 初始化路由和中间件调度器
-				$this->router = new Router(
-					$allRoutes,
-					$this->container,	//或者new Container()
-					self::CONTROLLER_NAMESPACE
-					
-				);
-				$this->middlewareDispatcher = new MiddlewareDispatcher($this->container);
+		// 4. 初始化路由和中间件调度器
+		$this->router = new Router(
+			$allRoutes,
+			$this->container,	//或者new Container()
+			self::CONTROLLER_NAMESPACE
+			
+		);
+		$this->middlewareDispatcher = new MiddlewareDispatcher($this->container);
     }
 
     /**

@@ -1,5 +1,6 @@
 <?php
 // config/services.php
+// 这个是个核心的配置文件，如果不懂，请参考symfony服务注册器的语法或下面的例子
 
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
@@ -38,7 +39,31 @@ return function (ContainerConfigurator $configurator) {
         }, '__invoke']);
 	*/
     // 示例：注册一个服务 如果你有 test.service 且要手动 get() 必须加public这一行
-    $services->set('test.service', \stdClass::class)->public();
+    $services->set('test', \stdClass::class)->public();
+	
+	// 注册 ConfigLoader 为服务
+	$services->set('config.loader' , Framework\Config\ConfigLoader::class)	//$globalConfig = $this->container->get('config')->loadAll();
+		->args(['%kernel.project_dir%/config'])
+		->public(); // 如果你需要 $container->get(ConfigLoader::class) //print_r($this->container->get(ConfigLoader::class)->loadAll());
+	
+    // 🔹 1. 注册 ConfigLoader（底层加载器）
+    $services->set(\Framework\Config\ConfigLoader::class)
+        ->args(['%kernel.project_dir%/config'])
+        ->public();
+	
+	
+    // 🔹 2. 注册 ConfigService（业务层配置门面）
+    $services->set(\Framework\Config\ConfigService::class)
+        ->public(); // 自动注入 ConfigLoader（autowire 默认开启）
+	/*使用
+			Container::init(); // 加载服务配置
+			$this->container = Container::getInstance();
+			//$config = $this->container->get(\Framework\Config\ConfigService::class);
+			//$dbHost = $config->get('database.host');
+			//print_r($config->all());
+	*/	
+		
+	
 	
 	//手动注册 2. 业务服务（private，默认）
 	$services->set('Framework\Middleware\MethodOverrideMiddleware')
