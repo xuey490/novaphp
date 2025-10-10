@@ -1,5 +1,4 @@
 <?php
-
 namespace Framework\Core;
 
 use Symfony\Component\HttpFoundation\Request;
@@ -7,8 +6,7 @@ use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Routing\RouteCollection;
-use Framework\Middleware\MiddlewareMethodOverride;
-use Framework\Middleware\MiddlewareDispatcher;
+use Framework\Middleware\MethodOverrideMiddleware;
 use Framework\Container\Container; // 引入你的静态容器
 use Psr\Container\ContainerInterface; // 推荐使用 PSR-11 标准接口
 
@@ -28,7 +26,7 @@ class Router
 
     // 新增：用于存储 DI 容器
     private $container;
-
+	
     /**
      * 构造函数：仅接收合并后的路由集合（职责单一化）
      * @param RouteCollection $allRoutes 合并后的所有路由（手动 + 注解）
@@ -36,13 +34,14 @@ class Router
      */
     public function __construct(
         RouteCollection $allRoutes,
-        ContainerInterface $container, // <--- 新增参数 // ← 期望 PSR-11 容器
+		ContainerInterface $container, // <--- 新增参数 // ← 期望 PSR-11 容器
         string $controllerNamespace = 'App\\Controllers'
+		
     ) {
         $this->allRoutes = $allRoutes;
-        $this->container = $container; // <--- 存储容器
+		$this->container = $container; // <--- 存储容器
         $this->controllerNamespace = $controllerNamespace;
-
+		
     }
 
     /**
@@ -58,17 +57,6 @@ class Router
         $path = $request->getPathInfo();
         $context = new RequestContext();
         $context->fromRequest($request);
-		
-
-		// 🔥 检查 版本彩蛋
-		if (\Framework\Core\EasterEgg::isTriggeredVersion($request)) {
-			return \Framework\Core\EasterEgg::getRouteMarker();
-		}
-
-		// 🔥 检查 团队彩蛋（团队名单）
-		if (\Framework\Core\EasterEgg::isTriggeredTeam($request)) {
-			return \Framework\Core\EasterEgg::getTeamRouteMarker();
-		}
 
         // 2. 策略1：匹配手动路由 + 注解路由（共用Symfony UrlMatcher）
         $manualOrAnnotationRoute = $this->matchManualAndAnnotationRoutes($path, $context);
@@ -94,10 +82,10 @@ class Router
         try {
             $matcher = new UrlMatcher($this->allRoutes, $context);
             $parameters = $matcher->match($path);
-
-            // 4. 提取并执行中间件（核心新增逻辑）
-            //$middlewareList = $parameters['_route_object']->getOptions()['_middleware'] ?? [];
-
+			
+    // 4. 提取并执行中间件（核心新增逻辑）
+    //$middlewareList = $parameters['_route_object']->getOptions()['_middleware'] ?? [];
+	
 
             // 提取控制器和方法（支持 "Class::method" 格式）
             if (!isset($parameters['_controller'])) {
@@ -123,47 +111,47 @@ class Router
         }
     }
 
-    /**
-     * 匹配手动路由和注解路由（两者已合并到 $allRoutes）
-     */
-    private function matchManualAndAnnotationRoutes(string $path, RequestContext $context): ?array
-    {
-        try {
-            $matcher = new UrlMatcher($this->allRoutes, $context);
-            $parameters = $matcher->match($path);
+	/**
+	 * 匹配手动路由和注解路由（两者已合并到 $allRoutes）
+	 */
+	private function matchManualAndAnnotationRoutes(string $path, RequestContext $context): ?array
+	{
+		try {
+			$matcher = new UrlMatcher($this->allRoutes, $context);
+			$parameters = $matcher->match($path);
 
-            // 1. 从匹配结果中获取路由名称
-            $routeName = $parameters['_route'];
+			// 1. 从匹配结果中获取路由名称
+			$routeName = $parameters['_route'];
 
-            // 2. 使用路由名称从原始路由集合中找到对应的路由对象
-            $routeObject = $this->allRoutes->get($routeName);
+			// 2. 使用路由名称从原始路由集合中找到对应的路由对象
+			$routeObject = $this->allRoutes->get($routeName);
+//print_r($routeObject);
+			// 3. 从路由对象中提取中间件
+			$middlewareList = $routeObject ? $routeObject->getOptions()['_middleware'] ?? [] : [];
 
-            // 3. 从路由对象中提取中间件
-            $middlewareList = $routeObject ? $routeObject->getOptions()['_middleware'] ?? [] : [];
+			// 提取控制器和方法（支持 "Class::method" 格式）
+			if (!isset($parameters['_controller'])) {
+				return null;
+			}
+			list($controllerClass, $actionMethod) = explode('::', $parameters['_controller'], 2);
 
-            // 提取控制器和方法（支持 "Class::method" 格式）
-            if (!isset($parameters['_controller'])) {
-                return null;
-            }
-            list($controllerClass, $actionMethod) = explode('::', $parameters['_controller'], 2);
+			// 移除框架保留参数（不传递给控制器方法）
+			unset($parameters['_controller'], $parameters['_route']);
 
-            // 移除框架保留参数（不传递给控制器方法）
-            unset($parameters['_controller'], $parameters['_route']);
+			// 打印中间件列表进行验证
+			//print_r($middlewareList);
 
-            // 打印中间件列表进行验证
-            //print_r($middlewareList);
-
-            return [
-                'controller' => $controllerClass,
-                'method' => $actionMethod,
-                'params' => $parameters,
-                'middleware' => $middlewareList // 返回正确提取的中间件列表
-            ];
-        } catch (ResourceNotFoundException $e) {
-            // 手动/注解路由未匹配，返回null进入自动路由逻辑
-            return null;
-        }
-    }
+			return [
+				'controller' => $controllerClass,
+				'method' => $actionMethod,
+				'params' => $parameters,
+				'middleware' => $middlewareList // 返回正确提取的中间件列表
+			];
+		} catch (ResourceNotFoundException $e) {
+			// 手动/注解路由未匹配，返回null进入自动路由逻辑
+			return null;
+		}
+	}
 
 
 
@@ -207,7 +195,7 @@ class Router
             // 2. 提取动作+参数段，尝试匹配控制器方法
             $actionAndParamSegments = array_slice($pathSegments, $controllerSegmentLength);
             $routeInfo = $this->matchActionAndParams($controllerClass, $actionAndParamSegments, $requestMethod);
-
+            
             if ($routeInfo) {
                 return array_merge([
                     'controller' => $controllerClass,
@@ -268,7 +256,7 @@ class Router
 
             // 构建动作名（多段转为驼峰式，如 [show, profile] → showProfile）
             $actionMethod = $this->buildActionName($actionSegments);
-
+            
             // 动作不存在，跳过当前长度
             if (!in_array($actionMethod, $availableMethods)) {
                 continue;
@@ -350,7 +338,7 @@ class Router
     private function preprocessRequest(Request $request): void
     {
         // 处理PUT/DELETE请求（通过表单隐藏字段_method）
-        //$this->applyMethodOverrideMiddleware($request);
+        $this->applyMethodOverrideMiddleware($request);
         // 去除URL的.html后缀（如 /user/1.html → /user/1）
         $this->removeHtmlSuffix($request);
     }
@@ -360,9 +348,8 @@ class Router
      */
     private function applyMethodOverrideMiddleware(Request $request): void
     {
-        //$methodOverride = new MiddlewareMethodOverride();
-        $methodOverride = new MiddlewareDispatcher($this->container);
-        $methodOverride->dispatch($request, function ($req) {
+        $methodOverride = new MethodOverrideMiddleware();
+        $methodOverride->handle($request, function ($req) {
             return new \Symfony\Component\HttpFoundation\Response();
         });
     }

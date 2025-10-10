@@ -138,9 +138,9 @@ abstract readonly class Metadata
      * @param class-string     $className
      * @param non-empty-string $methodName
      */
-    public static function dataProvider(string $className, string $methodName, bool $validateArgumentCount): DataProvider
+    public static function dataProvider(string $className, string $methodName): DataProvider
     {
-        return new DataProvider(self::METHOD_LEVEL, $className, $methodName, $validateArgumentCount);
+        return new DataProvider(self::METHOD_LEVEL, $className, $methodName);
     }
 
     /**
@@ -225,20 +225,14 @@ abstract readonly class Metadata
         return new Group(self::METHOD_LEVEL, $groupName);
     }
 
-    /**
-     * @param null|non-empty-string $messagePattern
-     */
-    public static function ignoreDeprecationsOnClass(?string $messagePattern = null): IgnoreDeprecations
+    public static function ignoreDeprecationsOnClass(): IgnoreDeprecations
     {
-        return new IgnoreDeprecations(self::CLASS_LEVEL, $messagePattern);
+        return new IgnoreDeprecations(self::CLASS_LEVEL);
     }
 
-    /**
-     * @param null|non-empty-string $messagePattern
-     */
-    public static function ignoreDeprecationsOnMethod(?string $messagePattern = null): IgnoreDeprecations
+    public static function ignoreDeprecationsOnMethod(): IgnoreDeprecations
     {
-        return new IgnoreDeprecations(self::METHOD_LEVEL, $messagePattern);
+        return new IgnoreDeprecations(self::METHOD_LEVEL);
     }
 
     /**

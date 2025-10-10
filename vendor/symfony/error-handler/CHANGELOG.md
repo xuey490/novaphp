@@ -1,11 +1,6 @@
 CHANGELOG
 =========
 
-7.3
----
-
- * Add `error:dump` command
-
 7.1
 ---
 

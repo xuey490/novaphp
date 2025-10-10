@@ -59,19 +59,17 @@ class ReflectionClassResource implements SelfCheckingResourceInterface
         return 'reflection.'.$this->className;
     }
 
-    public function __serialize(): array
+    /**
+     * @internal
+     */
+    public function __sleep(): array
     {
         if (!isset($this->hash)) {
             $this->hash = $this->computeHash();
             $this->loadFiles($this->classReflector);
         }
 
-        return [
-            'files' => $this->files,
-            'className' => $this->className,
-            'excludedVendors' => $this->excludedVendors,
-            'hash' => $this->hash,
-        ];
+        return ['files', 'className', 'hash'];
     }
 
     private function loadFiles(\ReflectionClass $class): void

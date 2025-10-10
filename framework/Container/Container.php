@@ -1,14 +1,13 @@
 <?php
 
-# framework/Container/Container.php
-
 namespace Framework\Container;
 
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface as SymfonyContainerInterface;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
-use UnitEnum;
+use UnitEnum; // 👈 必须引入
+
 
 class Container implements SymfonyContainerInterface
 {
@@ -22,10 +21,6 @@ class Container implements SymfonyContainerInterface
         if (self::$container !== null) {
             return;
         }
-
-        // 👇 在这里加载 .env 文件
-        $dotenv = new \Symfony\Component\Dotenv\Dotenv();
-        $dotenv->load(__DIR__.'/../../.env'); // 路径根据你的项目结构调整
 
         $projectRoot = dirname(__DIR__, 2);
         $configDir   = $projectRoot . '/config';
@@ -41,7 +36,6 @@ class Container implements SymfonyContainerInterface
 
         $container = new ContainerBuilder();
         $container->setParameter('kernel.project_dir', $projectRoot);
-        $container->setParameter('kernel.debug', APP_DEBUG);
 
         // 注入全局配置作为参数
         if (!empty($parameters)) {
@@ -54,8 +48,8 @@ class Container implements SymfonyContainerInterface
         // ⚠️ 如果你希望支持运行时 set()，就不要 compile()
         // 或者提供一个“开发模式”开关
         $container->compile(true); // 编译后 set() 将失效！
-
-        //var_dump(($container->getServiceIds()));
+		
+		//var_dump(($container->getServiceIds()));
 
         self::$container = $container;
     }
@@ -68,10 +62,10 @@ class Container implements SymfonyContainerInterface
 
     // ========== 代理所有 Symfony ContainerInterface 方法 ==========
 
-    public function get(string $id, int $invalidBehavior = self::EXCEPTION_ON_INVALID_REFERENCE): ?object
-    {
-        return self::$container->get($id, $invalidBehavior);
-    }
+	public function get(string $id, int $invalidBehavior = self::EXCEPTION_ON_INVALID_REFERENCE): ?object
+	{
+		return self::$container->get($id, $invalidBehavior);
+	}
 
     public function has(string $id): bool
     {

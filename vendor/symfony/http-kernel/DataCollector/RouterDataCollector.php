@@ -40,7 +40,7 @@ class RouterDataCollector extends DataCollector
             $this->data['redirect'] = true;
             $this->data['url'] = $response->getTargetUrl();
 
-            if ($this->controllers->offsetExists($request)) {
+            if ($this->controllers->contains($request)) {
                 $this->data['route'] = $this->guessRoute($request, $this->controllers[$request]);
             }
         }

@@ -1,5 +1,4 @@
 <?php
-
 namespace Framework\Annotations;
 
 use Doctrine\Common\Annotations\Annotation;
@@ -14,7 +13,7 @@ use Attribute; // 引入 Attribute
  *     @Attribute("defaults", type = "array"),
  *     @Attribute("requirements", type = "array"),
  *     @Attribute("options", type = "array")
- *
+ *     
  * })
  */
 class Get extends Route
@@ -26,7 +25,7 @@ class Get extends Route
     {
         #parent::__construct();
         $this->methods = ['GET'];
-
+        
         // 处理注解参数
         foreach ($values as $key => $value) {
             if (property_exists($this, $key)) {
