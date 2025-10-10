@@ -12,12 +12,20 @@ class Response
     {
         $this->content = $content;
         $this->status = $status;
-        $this->headers = $headers;
+        $this->headers = array_merge(['Content-Type' => 'text/html; charset=utf-8'], $headers);
     }
 
     public function withHeader($name, $value)
     {
         $this->headers[$name] = $value;
+        return $this;
+    }
+
+    public function json($data, $status = 200)
+    {
+        $this->content = json_encode($data, JSON_UNESCAPED_UNICODE);
+        $this->status = $status;
+        $this->headers['Content-Type'] = 'application/json';
         return $this;
     }
 
