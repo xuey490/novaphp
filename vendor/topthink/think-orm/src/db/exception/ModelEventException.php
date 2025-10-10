@@ -1,5 +1,4 @@
 <?php
-
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK IT ]
 // +----------------------------------------------------------------------
@@ -13,7 +12,7 @@
 namespace think\db\exception;
 
 /**
- * 模型事件异常.
+ * 模型事件异常
  */
 class ModelEventException extends DbException
 {
