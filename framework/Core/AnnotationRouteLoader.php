@@ -232,6 +232,8 @@ class AnnotationRouteLoader
         #$methodMiddleware = (array)($methodAnnotation->options['_middleware'] ?? []);
         #$finalMiddleware = array_values(array_unique(array_merge($classMiddleware, $methodMiddleware)));
 
+        //$defaults['_middleware'] = $finalMiddleware;
+        //print_r($defaults);
 
         // 7. 创建Symfony Route对象（控制器格式：类名::方法名）
         $controller = $className . '::' . $methodName;

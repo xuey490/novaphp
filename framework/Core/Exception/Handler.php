@@ -21,7 +21,7 @@ class Handler
         // 如果是 Web 请求，尝试从 $_SERVER 获取
         $incoming = $_SERVER['HTTP_X_REQUEST_ID'] ?? null;
         $this->requestId = $incoming ?: generateRequestId();
-
+        //$this->requestId = generateRequestId(); // 如：req-5f3a9b2c
     }
 
     /**
@@ -30,7 +30,7 @@ class Handler
     public function report(Throwable $e): void
     {
         /** @var \Psr\Log\LoggerInterface $logger */
-        $logger = app('log');
+        $logger = app('log.logger'); // 或直接 app('log.logger')
         // 你可以根据异常类型选择 error、critical 等级别
         $logger->error('Uncaught Exception', [
             'class'   => get_class($e),
@@ -89,7 +89,7 @@ class Handler
             $file = $e->getFile();
             $originalFile = $file;
             if (defined('BASE_PATH') && str_starts_with($file, BASE_PATH)) {
-                //$file = substr($file, strlen(BASE_PATH));
+                $file = substr($file, strlen(BASE_PATH));
                 $file = ltrim($file, '/\\');
             }
 
@@ -102,7 +102,7 @@ class Handler
             $displayFile = htmlspecialchars($file);
             $reqId   = htmlspecialchars($this->requestId);
 
-            $message = htmlspecialchars(str_replace(BASE_PATH, '/\\', $e->getMessage()));
+            $message = htmlspecialchars(str_replace(BASE_PATH, '', $e->getMessage()));
             //$fullTrace   = htmlspecialchars(str_replace(BASE_PATH , '' ,$e->getTraceAsString()) );
 
             $fullTrace = htmlspecialchars($e->getTraceAsString());

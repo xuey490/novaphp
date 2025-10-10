@@ -11,8 +11,6 @@ namespace PHPUnit\Framework;
 
 use function array_merge;
 use function assert;
-use function sprintf;
-use PHPUnit\Event\Facade as EventFacade;
 use PHPUnit\Metadata\Api\DataProvider;
 use PHPUnit\Metadata\Api\Groups;
 use PHPUnit\Metadata\Api\ProvidedData;
@@ -283,18 +281,7 @@ final readonly class TestBuilder
      */
     private function shouldAllTestMethodsOfTestClassBeRunInSingleSeparateProcess(string $className): bool
     {
-        $result = MetadataRegistry::parser()->forClass($className)->isRunClassInSeparateProcess()->isNotEmpty();
-
-        if ($result) {
-            EventFacade::emitter()->testRunnerTriggeredPhpunitDeprecation(
-                sprintf(
-                    'Class %s uses the #[RunClassInSeparateProcess]. This attribute is deprecated and will be removed in PHPUnit 13',
-                    $className,
-                ),
-            );
-        }
-
-        return $result;
+        return MetadataRegistry::parser()->forClass($className)->isRunClassInSeparateProcess()->isNotEmpty();
     }
 
     /**

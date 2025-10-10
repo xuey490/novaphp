@@ -9,7 +9,7 @@ use think\cache\Driver;
 use Framework\Cache\CacheInterface; // 注意命名空间
 
 /*
-$cache = getService('cache');
+$cache = getService('cache.manager');
 $cache->set('key', 'hello world!', 3600);
 echo $cache->get('key');
 

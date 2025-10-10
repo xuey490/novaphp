@@ -7,8 +7,7 @@ use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Routing\RouteCollection;
-use Framework\Middleware\MiddlewareMethodOverride;
-use Framework\Middleware\MiddlewareDispatcher;
+use Framework\Middleware\MethodOverrideMiddleware;
 use Framework\Container\Container; // 引入你的静态容器
 use Psr\Container\ContainerInterface; // 推荐使用 PSR-11 标准接口
 
@@ -137,7 +136,7 @@ class Router
 
             // 2. 使用路由名称从原始路由集合中找到对应的路由对象
             $routeObject = $this->allRoutes->get($routeName);
-
+            //print_r($routeObject);
             // 3. 从路由对象中提取中间件
             $middlewareList = $routeObject ? $routeObject->getOptions()['_middleware'] ?? [] : [];
 
@@ -350,7 +349,7 @@ class Router
     private function preprocessRequest(Request $request): void
     {
         // 处理PUT/DELETE请求（通过表单隐藏字段_method）
-        //$this->applyMethodOverrideMiddleware($request);
+        $this->applyMethodOverrideMiddleware($request);
         // 去除URL的.html后缀（如 /user/1.html → /user/1）
         $this->removeHtmlSuffix($request);
     }
@@ -360,9 +359,8 @@ class Router
      */
     private function applyMethodOverrideMiddleware(Request $request): void
     {
-        //$methodOverride = new MiddlewareMethodOverride();
-        $methodOverride = new MiddlewareDispatcher($this->container);
-        $methodOverride->dispatch($request, function ($req) {
+        $methodOverride = new MethodOverrideMiddleware();
+        $methodOverride->handle($request, function ($req) {
             return new \Symfony\Component\HttpFoundation\Response();
         });
     }

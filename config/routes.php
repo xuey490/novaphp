@@ -3,8 +3,6 @@
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 
-
-
 $routes = new RouteCollection();
 
 // 手动路由（优先级高）- 修正后
@@ -44,19 +42,6 @@ $routes->add('admin.dashboard', new Route(
     [],
     ['_middleware' => ['App\Middleware\AdminAuthMiddleware']]
 ));
-
-
-
-//测试熔断器
-$routes->add('test_circuit', new Route('/test/circuit', [
-    '_controller' => 'App\Controllers\TestController::circuitAction'
-]));
-
-$routes->add('test_healthy', new Route('/test/healthy', [
-    '_controller' => 'App\Controllers\TestController::healthyAction'
-]));
-
-
 
 
 return $routes;

@@ -1,5 +1,2 @@
 /storage/cache/
-/storage/logs/
-/storage/view/
-/storage/tests/
 /.env
