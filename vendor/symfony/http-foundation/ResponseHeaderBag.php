@@ -24,9 +24,9 @@ class ResponseHeaderBag extends HeaderBag
     public const DISPOSITION_ATTACHMENT = 'attachment';
     public const DISPOSITION_INLINE = 'inline';
 
-    protected array $computedCacheControl = [];
-    protected array $cookies = [];
-    protected array $headerNames = [];
+    protected $computedCacheControl = [];
+    protected $cookies = [];
+    protected $headerNames = [];
 
     public function __construct(array $headers = [])
     {
@@ -55,7 +55,10 @@ class ResponseHeaderBag extends HeaderBag
         return $headers;
     }
 
-    public function allPreserveCaseWithoutCookies(): array
+    /**
+     * @return array
+     */
+    public function allPreserveCaseWithoutCookies()
     {
         $headers = $this->allPreserveCase();
         if (isset($this->headerNames['set-cookie'])) {
@@ -65,7 +68,10 @@ class ResponseHeaderBag extends HeaderBag
         return $headers;
     }
 
-    public function replace(array $headers = []): void
+    /**
+     * @return void
+     */
+    public function replace(array $headers = [])
     {
         $this->headerNames = [];
 
@@ -97,7 +103,10 @@ class ResponseHeaderBag extends HeaderBag
         return $headers;
     }
 
-    public function set(string $key, string|array|null $values, bool $replace = true): void
+    /**
+     * @return void
+     */
+    public function set(string $key, string|array|null $values, bool $replace = true)
     {
         $uniqueKey = strtr($key, self::UPPER, self::LOWER);
 
@@ -125,7 +134,10 @@ class ResponseHeaderBag extends HeaderBag
         }
     }
 
-    public function remove(string $key): void
+    /**
+     * @return void
+     */
+    public function remove(string $key)
     {
         $uniqueKey = strtr($key, self::UPPER, self::LOWER);
         unset($this->headerNames[$uniqueKey]);
@@ -157,30 +169,35 @@ class ResponseHeaderBag extends HeaderBag
         return $this->computedCacheControl[$key] ?? null;
     }
 
-    public function setCookie(Cookie $cookie): void
+    /**
+     * @return void
+     */
+    public function setCookie(Cookie $cookie)
     {
-        $this->cookies[$cookie->getDomain() ?? ''][$cookie->getPath()][$cookie->getName()] = $cookie;
+        $this->cookies[$cookie->getDomain()][$cookie->getPath()][$cookie->getName()] = $cookie;
         $this->headerNames['set-cookie'] = 'Set-Cookie';
     }
 
     /**
      * Removes a cookie from the array, but does not unset it in the browser.
+     *
+     * @return void
      */
-    public function removeCookie(string $name, ?string $path = '/', ?string $domain = null): void
+    public function removeCookie(string $name, ?string $path = '/', ?string $domain = null)
     {
         $path ??= '/';
 
-        unset($this->cookies[$domain ?? ''][$path][$name]);
+        unset($this->cookies[$domain][$path][$name]);
 
-        if (empty($this->cookies[$domain ?? ''][$path])) {
-            unset($this->cookies[$domain ?? ''][$path]);
+        if (empty($this->cookies[$domain][$path])) {
+            unset($this->cookies[$domain][$path]);
 
-            if (empty($this->cookies[$domain ?? ''])) {
-                unset($this->cookies[$domain ?? '']);
+            if (empty($this->cookies[$domain])) {
+                unset($this->cookies[$domain]);
             }
         }
 
-        if (!$this->cookies) {
+        if (empty($this->cookies)) {
             unset($this->headerNames['set-cookie']);
         }
     }
@@ -195,7 +212,7 @@ class ResponseHeaderBag extends HeaderBag
     public function getCookies(string $format = self::COOKIES_FLAT): array
     {
         if (!\in_array($format, [self::COOKIES_FLAT, self::COOKIES_ARRAY])) {
-            throw new \InvalidArgumentException(\sprintf('Format "%s" invalid (%s).', $format, implode(', ', [self::COOKIES_FLAT, self::COOKIES_ARRAY])));
+            throw new \InvalidArgumentException(sprintf('Format "%s" invalid (%s).', $format, implode(', ', [self::COOKIES_FLAT, self::COOKIES_ARRAY])));
         }
 
         if (self::COOKIES_ARRAY === $format) {
@@ -218,18 +235,22 @@ class ResponseHeaderBag extends HeaderBag
      * Clears a cookie in the browser.
      *
      * @param bool $partitioned
+     *
+     * @return void
      */
-    public function clearCookie(string $name, ?string $path = '/', ?string $domain = null, bool $secure = false, bool $httpOnly = true, ?string $sameSite = null /* , bool $partitioned = false */): void
+    public function clearCookie(string $name, ?string $path = '/', ?string $domain = null, bool $secure = false, bool $httpOnly = true, ?string $sameSite = null /* , bool $partitioned = false */)
     {
-        $partitioned = 6 < \func_num_args() ? func_get_arg(6) : false;
+        $partitioned = 6 < \func_num_args() ? \func_get_arg(6) : false;
 
         $this->setCookie(new Cookie($name, null, 1, $path, $domain, $secure, $httpOnly, false, $sameSite, $partitioned));
     }
 
     /**
      * @see HeaderUtils::makeDisposition()
+     *
+     * @return string
      */
-    public function makeDisposition(string $disposition, string $filename, string $filenameFallback = ''): string
+    public function makeDisposition(string $disposition, string $filename, string $filenameFallback = '')
     {
         return HeaderUtils::makeDisposition($disposition, $filename, $filenameFallback);
     }

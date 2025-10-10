@@ -202,7 +202,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
         $this->extensions[$extension->getAlias()] = $extension;
 
         if (false !== $extension->getNamespace()) {
-            $this->extensionsByNs[$extension->getNamespace() ?? ''] = $extension;
+            $this->extensionsByNs[$extension->getNamespace()] = $extension;
         }
     }
 
@@ -273,58 +273,46 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
         if ($resource instanceof DirectoryResource && $this->inVendors($resource->getResource())) {
             return $this;
         }
-        if (!$resource instanceof ClassExistenceResource) {
-            $this->resources[(string) $resource] = $resource;
+        if ($resource instanceof ClassExistenceResource) {
+            $class = $resource->getResource();
 
-            return $this;
-        }
-
-        $class = $resource->getResource();
-
-        if (!(new ClassExistenceResource($class, false))->isFresh(1)) {
-            if (!$this->inVendors((new \ReflectionClass($class))->getFileName())) {
-                $this->resources[$class] = $resource;
-            }
-
-            return $this;
-        }
-
-        $inVendor = true;
-        foreach (spl_autoload_functions() as $autoloader) {
-            if (!\is_array($autoloader)) {
-                $inVendor = false;
-                break;
-            }
-
-            if ($autoloader[0] instanceof DebugClassLoader) {
-                $autoloader = $autoloader[0]->getClassLoader();
-            }
-
-            if (!\is_array($autoloader) || !$autoloader[0] instanceof ClassLoader) {
-                $inVendor = false;
-                break;
-            }
-
-            foreach ($autoloader[0]->getPrefixesPsr4() as $prefix => $dirs) {
-                if (!str_starts_with($class, $prefix)) {
+            $inVendor = false;
+            foreach (spl_autoload_functions() as $autoloader) {
+                if (!\is_array($autoloader)) {
                     continue;
                 }
 
-                foreach ($dirs as $dir) {
-                    if (!$dir = realpath($dir)) {
+                if ($autoloader[0] instanceof DebugClassLoader) {
+                    $autoloader = $autoloader[0]->getClassLoader();
+                }
+
+                if (!\is_array($autoloader) || !$autoloader[0] instanceof ClassLoader || !$autoloader[0]->findFile(__CLASS__)) {
+                    continue;
+                }
+
+                foreach ($autoloader[0]->getPrefixesPsr4() as $prefix => $dirs) {
+                    if ('' === $prefix || !str_starts_with($class, $prefix)) {
                         continue;
                     }
 
-                    if (!$inVendor = $this->inVendors($dir)) {
-                        break 3;
+                    foreach ($dirs as $dir) {
+                        if (!$dir = realpath($dir)) {
+                            continue;
+                        }
+
+                        if (!$inVendor = $this->inVendors($dir)) {
+                            break 3;
+                        }
                     }
                 }
             }
+
+            if ($inVendor) {
+                return $this;
+            }
         }
 
-        if (!$inVendor) {
-            $this->resources[$class] = $resource;
-        }
+        $this->resources[(string) $resource] = $resource;
 
         return $this;
     }

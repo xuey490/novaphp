@@ -1,33 +1,36 @@
 <?php
 
-# framework/Container/Container.php
-
 namespace Framework\Container;
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\ContainerInterface as SymfonyContainerInterface;
+use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
-use UnitEnum;
 
-class Container implements SymfonyContainerInterface
+
+
+
+class Container implements ContainerInterface
 {
+    /**
+     * @var ContainerBuilder|null
+     * 
+     * 我们现在可以确定，这里始终是一个 ContainerBuilder 实例。
+     */
     private static ?ContainerBuilder $container = null;
 
     /**
-     * 初始化容器，可选传入配置参数
+     * 初始化容器。
+     * 每次调用都会重新加载配置并编译容器。
      */
-    public static function init(array $parameters = []): void
+    public static function init(): void
     {
         if (self::$container !== null) {
             return;
         }
 
-        // 👇 在这里加载 .env 文件
-        $dotenv = new \Symfony\Component\Dotenv\Dotenv();
-        $dotenv->load(__DIR__.'/../../.env'); // 路径根据你的项目结构调整
-
-        $projectRoot = dirname(__DIR__, 2);
+        $projectRoot = dirname(__DIR__, 2); // NovaPHP/
         $configDir   = $projectRoot . '/config';
 
         if (!is_dir($configDir)) {
@@ -39,99 +42,75 @@ class Container implements SymfonyContainerInterface
             throw new \RuntimeException("服务配置文件不存在: {$servicesFile}");
         }
 
+        // 1. 创建一个全新的 ContainerBuilder
         $container = new ContainerBuilder();
         $container->setParameter('kernel.project_dir', $projectRoot);
-        $container->setParameter('kernel.debug', APP_DEBUG);
 
-        // 注入全局配置作为参数
-        if (!empty($parameters)) {
-            $container->setParameter('config', $parameters);
-        }
-
+        // 2. 创建加载器并加载 services.php 文件
+        // 这是加载 Symfony 风格 PHP 配置文件的标准方式
         $loader = new PhpFileLoader($container, new FileLocator($configDir));
-        $loader->load('services.php');
+        $loader->load('services.php');	
+		
+		//var_dump(($container->getServiceIds()));
+        // 3. 编译容器
+        // 这一步会解析所有依赖关系并准备好服务
+        $container->compile(true);
 
-        // ⚠️ 如果你希望支持运行时 set()，就不要 compile()
-        // 或者提供一个“开发模式”开关
-        $container->compile(true); // 编译后 set() 将失效！
-
-        //var_dump(($container->getServiceIds()));
-
+        // 4. 将完全构建好的容器保存到静态属性中
         self::$container = $container;
     }
 
+
+
+    /**
+     * 获取容器实例 (PSR-11 兼容)。
+     *
+     * @return self
+     */
     public static function getInstance(): self
     {
         self::init();
         return new self();
     }
 
-    // ========== 代理所有 Symfony ContainerInterface 方法 ==========
-
-    public function get(string $id, int $invalidBehavior = self::EXCEPTION_ON_INVALID_REFERENCE): ?object
+    /**
+     * 获取底层的 Symfony ContainerBuilder 实例。
+     * 在无缓存模式下，这个方法总是有效的。
+     *
+     * @return ContainerBuilder
+     */
+    public static function getSymfonyContainer(): ContainerBuilder
     {
-        return self::$container->get($id, $invalidBehavior);
+        self::init();
+        return self::$container;
     }
 
-    public function has(string $id): bool
+    // --- PSR-11 接口实现 ---
+
+    /**
+     * {@inheritdoc}
+     */
+    public function has1(string $id): bool
     {
         return self::$container->has($id);
     }
 
-    public function set(string $id, mixed $service): void
-    {
-        // ⚠️ 注意：编译后的容器会抛出异常！
-        self::$container->set($id, $service);
-    }
+	public function has(string $id): bool
+	{
+		self::init();
+		$result = self::$container->has($id);
+		//var_dump("Container::has('$id') = ", $result);
+		return $result;
+	}
 
-    public function initialized(string $id): bool
-    {
-        return self::$container->initialized($id);
-    }
 
-    public function getServiceIds(): array
-    {
-        return self::$container->getServiceIds();
-    }
 
-    public function setParameter(string $name, UnitEnum|array|string|int|float|bool|null $value): void
+    /**
+     * {@inheritdoc}
+     */
+    public function get(string $id): mixed
     {
-        self::$container->setParameter($name, $value);
-    }
-
-    public function hasParameter(string $name): bool
-    {
-        return self::$container->hasParameter($name);
-    }
-
-    public function getParameter(string $name): UnitEnum|array|string|int|float|bool|null
-    {
-        return self::$container->getParameter($name);
-    }
-
-    public function getParameterBag()
-    {
-        return self::$container->getParameterBag();
-    }
-
-    public function compile(bool $resolveEnvPlaceholders = false): void
-    {
-        self::$container->compile($resolveEnvPlaceholders);
-    }
-
-    public function isCompiled(): bool
-    {
-        return self::$container->isCompiled();
-    }
-
-    public function getCompilerPassConfig()
-    {
-        return self::$container->getCompilerPassConfig();
-    }
-
-    public function addCompilerPass($pass, string $type = 'beforeOptimization', int $priority = 0): static
-    {
-        self::$container->addCompilerPass($pass, $type, $priority);
-        return $this;
+        // 直接调用底层容器的 get() 方法，它会自行处理 ServiceNotFoundException
+        return self::$container->get($id);
     }
 }

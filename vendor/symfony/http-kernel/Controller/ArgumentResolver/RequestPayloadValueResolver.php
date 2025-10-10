@@ -184,7 +184,7 @@ class RequestPayloadValueResolver implements ValueResolverInterface, EventSubscr
 
     private function mapQueryString(Request $request, ArgumentMetadata $argument, MapQueryString $attribute): ?object
     {
-        if (!($data = $request->query->all($attribute->key)) && ($argument->isNullable() || $argument->hasDefaultValue())) {
+        if (!($data = $request->query->all()) && ($argument->isNullable() || $argument->hasDefaultValue())) {
             return null;
         }
 
@@ -232,10 +232,10 @@ class RequestPayloadValueResolver implements ValueResolverInterface, EventSubscr
 
     private function mapUploadedFile(Request $request, ArgumentMetadata $argument, MapUploadedFile $attribute): UploadedFile|array|null
     {
-        if (!($files = $request->files->get($attribute->name ?? $argument->getName())) && ($argument->isNullable() || $argument->hasDefaultValue())) {
+        if (!($files = $request->files->get($attribute->name ?? $argument->getName(), [])) && ($argument->isNullable() || $argument->hasDefaultValue())) {
             return null;
         }
 
-        return $files ?? ('array' === $argument->getType() ? [] : null);
+        return $files;
     }
 }

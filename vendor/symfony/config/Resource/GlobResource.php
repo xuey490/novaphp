@@ -76,28 +76,21 @@ class GlobResource implements \IteratorAggregate, SelfCheckingResourceInterface
         return $this->hash === $hash;
     }
 
-    public function __serialize(): array
+    /**
+     * @internal
+     */
+    public function __sleep(): array
     {
         $this->hash ??= $this->computeHash();
 
-        return [
-            'prefix' => $this->prefix,
-            'pattern' => $this->pattern,
-            'recursive' => $this->recursive,
-            'hash' => $this->hash,
-            'forExclusion' => $this->forExclusion,
-            'excludedPrefixes' => $this->excludedPrefixes,
-        ];
+        return ['prefix', 'pattern', 'recursive', 'hash', 'forExclusion', 'excludedPrefixes'];
     }
 
-    public function __unserialize(array $data): void
+    /**
+     * @internal
+     */
+    public function __wakeup(): void
     {
-        $this->prefix = array_shift($data);
-        $this->pattern = array_shift($data);
-        $this->recursive = array_shift($data);
-        $this->hash = array_shift($data);
-        $this->forExclusion = array_shift($data);
-        $this->excludedPrefixes = array_shift($data);
         $this->globBrace = \defined('GLOB_BRACE') ? \GLOB_BRACE : 0;
     }
 
@@ -117,7 +110,7 @@ class GlobResource implements \IteratorAggregate, SelfCheckingResourceInterface
         if (class_exists(Finder::class)) {
             $regex = Glob::toRegex($pattern);
             if ($this->recursive) {
-                $regex = substr_replace($regex, str_ends_with($pattern, '/') ? '' : '(/|$)', -2, 1);
+                $regex = substr_replace($regex, '(/|$)', -2, 1);
             }
         } else {
             $regex = null;

@@ -206,9 +206,13 @@ class Store implements StoreInterface
 
         // read existing cache entries, remove non-varying, and add this one to the list
         $entries = [];
-        $vary = implode(', ', $response->headers->all('vary'));
+        $vary = $response->headers->get('vary');
         foreach ($this->getMetadata($key) as $entry) {
-            if (!$this->requestsMatch($vary ?? '', $entry[0], $storedEnv)) {
+            if (!isset($entry[1]['vary'][0])) {
+                $entry[1]['vary'] = [''];
+            }
+
+            if ($entry[1]['vary'][0] != $vary || !$this->requestsMatch($vary ?? '', $entry[0], $storedEnv)) {
                 $entries[] = $entry;
             }
         }
@@ -274,7 +278,7 @@ class Store implements StoreInterface
      */
     private function requestsMatch(?string $vary, array $env1, array $env2): bool
     {
-        if ('' === ($vary ?? '')) {
+        if (!$vary) {
             return true;
         }
 

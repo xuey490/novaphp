@@ -119,9 +119,7 @@ class CacheAttributeListener implements EventSubscriberInterface
 
         unset($this->lastModified[$request]);
         unset($this->etags[$request]);
-        // Check if the response has a Vary header that should be considered, ignoring cases where
-        // it's only 'Accept-Language' and the request has the '_vary_by_language' attribute
-        $hasVary = ['Accept-Language'] === $response->getVary() ? !$request->attributes->get('_vary_by_language') : $response->hasVary();
+        $hasVary = $response->headers->has('Vary');
 
         foreach (array_reverse($attributes) as $cache) {
             if (null !== $cache->smaxage && !$response->headers->hasCacheControlDirective('s-maxage')) {
@@ -164,14 +162,6 @@ class CacheAttributeListener implements EventSubscriberInterface
 
             if (false === $cache->public) {
                 $response->setPrivate();
-            }
-
-            if (true === $cache->noStore) {
-                $response->headers->addCacheControlDirective('no-store');
-            }
-
-            if (false === $cache->noStore) {
-                $response->headers->removeCacheControlDirective('no-store');
             }
         }
     }

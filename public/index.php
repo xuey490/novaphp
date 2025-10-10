@@ -4,8 +4,6 @@
 define('BASE_PATH', dirname(__DIR__));
 define('APP_DEBUG', true);
 
-define('FRAMEWORK_VERSION', '0.0.10-Bate (Powered by Blue2004)');
-
 // 引入 Composer 自动加载
 require_once BASE_PATH . '/vendor/autoload.php';
 

@@ -1,4 +1,5 @@
 <?php
+// app/Middleware/LogMiddleware.php
 namespace App\Middleware;
 
 use Symfony\Component\HttpFoundation\Request;
@@ -8,7 +9,7 @@ class LogMiddleware
 {
     public function handle(Request $request, callable $next): Response
     {
-		dump('--- 进入 LogMiddleware (中间件) ---'); 
+			echo "LogMiddleware<br />";
 			//$id = $request->getSession();
         // 模拟鉴权：如果没有登录，返回401
        // if (!$id->get('user_id')) {
@@ -16,10 +17,6 @@ class LogMiddleware
         //}
 
         // 鉴权通过，执行下一个中间件/控制器
-		$response =$next($request);
-		
-		
-		dump('--- 退出 LogMiddleware (中间件) ---'); 
-        return $response;
+        return $next($request);
     }
 }
