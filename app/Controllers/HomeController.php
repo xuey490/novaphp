@@ -7,12 +7,18 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use App\Models\Admin;
 
+
 class HomeController
 {
     public function index(): Response
     {
+        //getService(\Framework\Log\LoggerService::class)->info('App started');
+
         return new Response('<h1>Welcome to My Framework!</h1>');
     }
+	
+	
+	
 
 	//列举自己需要的参数
     public function show( $id)

@@ -1,6 +1,45 @@
 <?php
 // framework/helpers.php
 
+use Framework\Core\Framework;
+use Framework\Core\App;
+
+if (!function_exists('app')) {
+    /**
+     * 获取服务容器或解析服务
+     *
+     * @param string|null $id 服务 ID
+     * @return \Symfony\Component\DependencyInjection\ContainerInterface|object
+     */
+    function app(?string $id = null): mixed
+    {
+        if ($id === null) {
+            return App::getContainer();
+        }
+
+        return App::make($id);
+    }
+}
+
+/*
+use Framework\Core\Framework;
+$container = Framework::getInstance()->getContainer();
+$logger = $container->get(\Framework\Log\LoggerService::class);
+$logger->info('Using container directly');
+*/
+if (!function_exists('getService')) {
+    /**
+     * 从容器中获取服务实例
+     * @param string $id 服务ID（类名或别名）
+     * @return object
+     */
+    function getService(string $id): object
+    {
+        $framework = Framework::getInstance(); // 假设你有单例
+        return $framework->getContainer()->get($id);
+    }
+}
+
 function base_path($path = '')
 {
     return dirname(__DIR__) . ($path ? '/' . $path : '');

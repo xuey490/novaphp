@@ -1,12 +1,12 @@
 <?php
-
+# framework/Container/Container.php
 namespace Framework\Container;
 
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface as SymfonyContainerInterface;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
-use UnitEnum; // 👈 必须引入
+use UnitEnum;
 
 
 class Container implements SymfonyContainerInterface
@@ -49,7 +49,7 @@ class Container implements SymfonyContainerInterface
         // 或者提供一个“开发模式”开关
         $container->compile(true); // 编译后 set() 将失效！
 		
-		//var_dump(($container->getServiceIds()));
+			  //var_dump(($container->getServiceIds()));
 
         self::$container = $container;
     }

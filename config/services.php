@@ -41,20 +41,45 @@ return function (ContainerConfigurator $configurator) {
     // 示例：注册一个服务 如果你有 test.service 且要手动 get() 必须加public这一行
     $services->set('test', \stdClass::class)->public();
 	
-	// 注册 ConfigLoader 为服务
-	$services->set('config.loader' , Framework\Config\ConfigLoader::class)	//$globalConfig = $this->container->get('config')->loadAll();
-		->args(['%kernel.project_dir%/config'])
-		->public(); // 如果你需要 $container->get(ConfigLoader::class) //print_r($this->container->get(ConfigLoader::class)->loadAll());
-	
-    // 🔹 1. 注册 ConfigLoader（底层加载器）
+		// 注册 ConfigLoader 为服务
+		$services->set('config.loader' , \Framework\Config\ConfigLoader::class)	//$globalConfig = $this->container->get('config')->loadAll();
+			->args(['%kernel.project_dir%/config'])
+			->public(); // 如果你需要 $container->get(ConfigLoader::class) //print_r($this->container->get(ConfigLoader::class)->loadAll());
+		
+    // 🔹 1. 注册 ConfigLoader 业务类
     $services->set(\Framework\Config\ConfigLoader::class)
         ->args(['%kernel.project_dir%/config'])
         ->public();
 	
 	
-    // 🔹 2. 注册 ConfigService（业务层配置门面）
+    // 🔹 2. 注册 ConfigService 服务类
     $services->set(\Framework\Config\ConfigService::class)
         ->public(); // 自动注入 ConfigLoader（autowire 默认开启）
+		
+    // 🔹 3. 注册 LoggerService 服务类
+    $services->set(\Framework\Log\LoggerService::class)
+				 ->autowire() // 自动注入 ConfigService
+        ->public(); // 允许直接 $container->get()
+
+	
+    // 🔹 4. 注册 Logger 业务类
+    $services->set(\Framework\Log\Logger::class)
+				->args([
+					'app', // channel 名称
+					'%kernel.project_dir%/var/log/app.log' // 日志文件路径（可被 ConfigService 替代）
+				])
+        ->public(); // 允许直接 $container->get()
+		
+		/* 别名注册
+		$services->set('logger', \Framework\Log\LoggerService::class)
+			->autowire()
+			->public();
+
+		$services->set('config', \Framework\Config\ConfigService::class)
+			->autowire()
+			->public();
+		*/
+		
 	/*使用
 			Container::init(); // 加载服务配置
 			$this->container = Container::getInstance();

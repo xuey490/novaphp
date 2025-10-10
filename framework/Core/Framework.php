@@ -1,4 +1,6 @@
 <?php
+
+//核心入口文件
 namespace Framework\Core;
 
 
@@ -12,9 +14,13 @@ use Framework\Container\Container;	// 之前实现的Symfony DI容器
 use think\facade\Db;
 use Framework\Config\ConfigLoader;
 
+use Symfony\Component\DependencyInjection\ContainerInterface;
+
 
 class Framework
-{
+{	
+    private static ?Framework $instance = null;
+	
     // 控制器基础配置（可从配置文件读取，此处简化为常量）
     private const CONTROLLER_DIR = __DIR__ . '/../../app/Controllers';
 	
@@ -25,7 +31,7 @@ class Framework
     // 添加数据库配置文件常量
     private const DATABASE_CONFIG_FILE = BASE_PATH . '/config/database.php';
 	
-	private Request $request; // ← 新增
+		private Request $request; // ← 新增
 	
     private Container $container;
 	
@@ -33,35 +39,37 @@ class Framework
 	
     private $logger;
 
-	private MiddlewareDispatcher $middlewareDispatcher;
+		private MiddlewareDispatcher $middlewareDispatcher;
 
-    public function __construct()
-    {
-		// 0. 加载配置
-		$configLoader = new ConfigLoader(BASE_PATH . '/config');
-		$globalConfig = $configLoader->loadAll();
-		
-        // 1. 初始化DI容器（核心：后续所有依赖从这里获取）
-        Container::init(); // 加载服务配置
-		$this->container = Container::getInstance();
+		public function __construct()
+		{
+					// 0. 加载配置
+					$configLoader = new ConfigLoader(BASE_PATH . '/config');
+					$globalConfig = $configLoader->loadAll();
+					
+					// 1. 初始化DI容器（核心：后续所有依赖从这里获取）
+					Container::init(); // 加载服务配置
+					$this->container = Container::getInstance();
 
-        // 2. 初始化数据库ORM
-        $this->initORM();
-		
-		$this->logger = new Logger();
+//$loggers = $this->container->get(\Framework\Log\LoggerService::class);
+//$loggers->info('Container loaded successfully!');
 
-		// 3. 加载所有路由（手动+注解）
-		$allRoutes = $this->loadAllRoutes();
+					// 2. 初始化数据库ORM
+					$this->initORM();
+					
+					$this->logger = new Logger();
 
-		// 4. 初始化路由和中间件调度器
-		$this->router = new Router(
-			$allRoutes,
-			$this->container,	//或者new Container()
-			self::CONTROLLER_NAMESPACE
-			
-		);
-		$this->middlewareDispatcher = new MiddlewareDispatcher($this->container);
-    }
+					// 3. 加载所有路由（手动+注解）
+					$allRoutes = $this->loadAllRoutes();
+
+					// 4. 初始化路由和中间件调度器
+					$this->router = new Router(
+							$allRoutes,
+							$this->container,	//或者new Container()
+							self::CONTROLLER_NAMESPACE
+					);
+					$this->middlewareDispatcher = new MiddlewareDispatcher($this->container);
+		}
 
     /**
      * 初始化 ThinkORM 数据库配置
@@ -242,9 +250,21 @@ class Framework
     {
         return new Response('500 Server Error', 500);
     }
+		
+		/*
+		单例模式，实例化
+		*/
+    public static function getInstance(): Framework
+    {
+        if (self::$instance === null) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
 
-    // 对外提供唯一的容器实例
-    public function getContainer(): ContainerInterface {
+    // ✅ 对外提供容器
+    public function getContainer(): ContainerInterface
+    {
         return $this->container;
     }
 
