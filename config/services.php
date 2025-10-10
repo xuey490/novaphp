@@ -13,9 +13,6 @@ use Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorage;
 use Symfony\Component\HttpFoundation\Session\Storage\Handler\StrictSessionHandler;
 use Symfony\Component\HttpFoundation\Session\Storage\Handler\RedisSessionHandler;
 
-
-
-
 //i18n 多国语言翻译
 use Framework\Translation\TransHelper;
 
@@ -68,7 +65,7 @@ return function (ContainerConfigurator $configurator) {
 		->args([new Reference('session.storage')])
 		->public();		
 	*/
-    // 加载session redis配置
+    // 加载配置
     $redisConfig = require __DIR__ . '/redis.php';
     $sessionConfig = require __DIR__ . '/session.php';
 
@@ -106,7 +103,7 @@ return function (ContainerConfigurator $configurator) {
 	
 	
 	// 注册 ConfigLoader 为服务
-	$services->set('config' , \Framework\Config\ConfigLoader::class)	//$globalConfig = $this->container->get('config')->loadAll();
+	$services->set('config.loader' , \Framework\Config\ConfigLoader::class)	//$globalConfig = $this->container->get('config')->loadAll();
 		->args(['%kernel.project_dir%/config'])
 		->public(); // 如果你需要 $container->get(ConfigLoader::class) //print_r($this->container->get(ConfigLoader::class)->loadAll());
 		
@@ -135,40 +132,29 @@ return function (ContainerConfigurator $configurator) {
         ->public(); // 允许直接 $container->get()
 		
 	// 🔹 5. 别名注册
-	$services->set('log', \Framework\Log\LoggerService::class)
+	$services->set('log.logger', \Framework\Log\LoggerService::class)
 		->autowire()	//不带args参数
 		->public();
 	
 	// 注册异常处理类
-	$services->set('exception', \Framework\Core\Exception\Handler::class)
+	$services->set('exception.handler', \Framework\Core\Exception\Handler::class)
 		->autowire()
 		->public();	
-			
+		
 		
 	// 定义缓存管理器服务（单例）
 	$cacheConfig = require __DIR__ . '/cache.php';
-	
-	//thinkCache 注册服务
-	$services->set('cache', \Framework\Cache\CacheService::class)
+
+	$services->set('cache.manager', \Framework\Cache\CacheService::class)
 		->args([$cacheConfig])
 		->public();
-	
-	// symfony/cache 注册服务		
-    $services->set(\Framework\Cache\CacheFactory::class)
-        ->args([$cacheConfig])->public();
 
-    // 只注册 TagAwareAdapter
-    $services->set(\Symfony\Component\Cache\Adapter\TagAwareAdapter::class)
-        ->factory([service(\Framework\Cache\CacheFactory::class), 'create'])->public();
-
-
-
-	// 注册 RequestStack（用于在工厂中获取当前请求）
-	$services->set(RequestStack::class);
+    // 注册 RequestStack（用于在工厂中获取当前请求）
+    $services->set(RequestStack::class);
 
 
 	// i18n 多国语言翻译
-	// 注册 Translator 服务（不设 locale，延迟设置）
+    // 注册 Translator 服务（不设 locale，延迟设置）
 	$services->set('translator1', \Framework\Translation\TranslationService::class)
 		->args([
 			service(RequestStack::class), // 或 RequestStack::class
@@ -183,47 +169,45 @@ return function (ContainerConfigurator $configurator) {
             '%kernel.project_dir%/resource/translations',
         ])->public();
 
-
-	/*
-	$services->set('config', \Framework\Config\ConfigService::class)
-		->autowire()
-		->public();
-	*/
-	
+		/*
+		$services->set('config', \Framework\Config\ConfigService::class)
+			->autowire()
+			->public();
+		*/
+		
 	/*使用
-		Container::init(); // 加载服务配置
-		$this->container = Container::getInstance();
-		//$config = $this->container->get(\Framework\Config\ConfigService::class);
-		//$dbHost = $config->get('database.host');
-		//print_r($config->all());
+			Container::init(); // 加载服务配置
+			$this->container = Container::getInstance();
+			//$config = $this->container->get(\Framework\Config\ConfigService::class);
+			//$dbHost = $config->get('database.host');
+			//print_r($config->all());
 	*/	
+		
 	
-
-
-
+	
 	//Override
 	$services->set(\Framework\Middleware\MiddlewareMethodOverride::class)
 		->autowire()
 		->autoconfigure()
 		->public();
-
+	
 	//Cors
 	$services->set(\Framework\Middleware\MiddlewareCors::class)
 		->autowire()
 		->autoconfigure()->public();
 		
 	//限流器
-	$services->set(\Framework\Middleware\MiddlewareRateLimit::class)
-		->args(['%kernel.project_dir%/storage/cache/'])
-		->autoconfigure()
-		->public(); 
-		
-	//熔断器
-	$services->set(\Framework\Middleware\MiddlewareCircuitBreaker::class)
-		->args(['%kernel.project_dir%/storage/cache/'])
+    $services->set(\Framework\Middleware\MiddlewareRateLimit::class)
+        ->args(['%kernel.project_dir%/storage/cache/'])
 		->autoconfigure()
 		->public(); 
 	
+	//熔断器
+    $services->set(\Framework\Middleware\MiddlewareCircuitBreaker::class)
+        ->args(['%kernel.project_dir%/storage/cache/'])
+		->autoconfigure()
+		->public(); 
+		
 
 	//IP Block
 	$services->set(\Framework\Middleware\MiddlewareIpBlock::class)
@@ -238,93 +222,33 @@ return function (ContainerConfigurator $configurator) {
 		])
 		->autowire()
 		->public();
-
-
-
-    // 👇 加载中间件配置
-    $middlewareConfig = require __DIR__ . '/../config/middleware.php';
-
-    // -----------------------------
-    // 动态注册：CSRF 保护中间件 use Framework\Security\CsrfTokenManager;
-    // -----------------------------
-    if ($middlewareConfig['csrf_protection']['enabled']) {
-        // Session 必须已注册（确保你的框架已启动 session）
-        $services->set(\Framework\Security\CsrfTokenManager::class)
-            ->args([
-                new Reference('session'), // 假设你已注册 'session' 服务
-                'csrf_token'
-            ])->public();
-        $services->set(\Framework\Middleware\MiddlewareCsrfProtection::class)
-            ->args([
-                new Reference(\Framework\Security\CsrfTokenManager::class),
-                $middlewareConfig['csrf_protection']['token_name'],
-                $middlewareConfig['csrf_protection']['except'],
-                $middlewareConfig['csrf_protection']['error_message'],
-                $middlewareConfig['csrf_protection']['remove_after_validation'],
-            ])
-            ->public(); // 如果要在 Kernel 中使用，需 public
-    }
-
-    // -----------------------------
-    // 动态注册：Referer 检查中间件
-    // -----------------------------
-    if ($middlewareConfig['referer_check']['enabled']) {
-        $services->set(\Framework\Middleware\MiddlewareRefererCheck::class)
-            ->args([
-                $middlewareConfig['referer_check']['allowed_hosts'],
-                $middlewareConfig['referer_check']['allowed_schemes'],
-                $middlewareConfig['referer_check']['except'],
-                $middlewareConfig['referer_check']['strict'],
-                $middlewareConfig['referer_check']['error_message'],
-            ])
-            ->public();
-    }
-	
-
-    // ------------------------------
-    // 配置加载A
-    // ------------------------------
-	$viewConfig = require dirname(__DIR__) . '/config/view.php';
-	$services->set(\App\Twig\AppTwigExtension::class)
-        ->args([
-            service(\Framework\Security\CsrfTokenManager::class),
-            '_token' // 👈 显式传入字段名
-        ])
-        ->public();
-
-	$services->set(\Twig\Loader\FilesystemLoader::class)->args([$viewConfig['paths']])->public();
-
-	$services->set(\Twig\Environment::class)
-		->args([
-			service(\Twig\Loader\FilesystemLoader::class),
-			[
-				'cache' => $viewConfig['cache_path'], // ✅ 字符串 或 false
-				'debug' => $viewConfig['debug'],
-				'auto_reload' => $viewConfig['debug'],
-				'strict_variables' => $viewConfig['strict_variables'],
-			],
-		])
-		->call('addExtension', [service(\App\Twig\AppTwigExtension::class) ])
-		->public();
-
-    // 别名
-    $services->alias('view', \Twig\Environment::class)->public();
 		
 
-	//视图错误类服务
-	/*
-	$services->set(\Framework\Core\Exception\ErrorHandler::class)
+		
+	// Session 必须已注册（确保你的框架已启动 session）
+	$services->set(\Framework\Security\CsrfTokenManager::class)
 		->args([
-			service(\Twig\Environment::class),
-			'%kernel.debug%'
-		])->public();
-	*/
+			new Reference('session'), // 假设你已注册 'session' 服务
+			'csrf_token'
+		])
+		->autowire()       // ← 允许自动注入;
+		->public();
 
+	$services->set(Framework\Middleware\MiddlewareCsrfProtection::class)
+		->args([
+			new Reference(\Framework\Security\CsrfTokenManager::class),
+			'_token', // 表单字段名
+			['/api/*', '/webhook/*'], // 跳过的路径
+		])
+		->autowire()
+		->public();	
+		
 	
-	$services->load('App\\Middleware\\', '../app/Middleware/**/*Middleware.php')
-		->autowire()      // 支持中间件的依赖自动注入（如注入UserService）
-		->autoconfigure() // 支持中间件添加标签（如后续需要事件监听）
-		->public(); // 关键：标记为公开，因为中间件需要通过容器动态获取（如从注解解析后）
+	
+    $services->load('App\\Middleware\\', '../app/Middleware/**/*Middleware.php')
+        ->autowire()      // 支持中间件的依赖自动注入（如注入UserService）
+        ->autoconfigure() // 支持中间件添加标签（如后续需要事件监听）
+        ->public(); // 关键：标记为公开，因为中间件需要通过容器动态获取（如从注解解析后）
 
 
 	#$services->load('App\\', '../app/*/*')->exclude('../app/{Entity,Tests}/*') ->autowire()->autoconfigure();

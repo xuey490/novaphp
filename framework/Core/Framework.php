@@ -9,8 +9,11 @@ use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Controller\ArgumentResolver;
+//psr-7 跟symfony request/response兼容
+use Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory;
+use Nyholm\Psr7\Factory\Psr17Factory;
 use Framework\Middleware\MiddlewareDispatcher; // 中间件调度器
-use Framework\Container\Container;
+use Framework\Container\Container;	// 之前实现的Symfony DI容器
 use Framework\Config\ConfigLoader;
 use think\facade\Db;
 use Framework\Log\Logger;
@@ -67,7 +70,7 @@ class Framework
         $this->initORM();
 
         // 3. 初始化日志服务
-        $this->logger = app('log');
+        $this->logger = app('log.logger');
 
         // 4. 加载所有路由（手动+注解）
         $allRoutes = $this->loadAllRoutes();
@@ -115,56 +118,73 @@ class Framework
     /**
      * 框架入口：完整调度流程
      */
-	public function run()
-	{
-		$start = microtime(true);
-		$this->request = Request::createFromGlobals();
-		$request = $this->request;
+    public function run()
+    {
+        $start = microtime(true);
+        $this->request = Request::createFromGlobals(); // ← 保存为属性
+        $request = $this->request; // 保持后续代码不变（或直接用 $this->request）
 
-		try {
-			// 1. 路由匹配
-			$route = $this->router->match($request);
-			if (!$route) {
-				$response = $this->handleNotFound();
-				$this->logger->logRequest($request, $response, microtime(true) - $start);
-				$response->send();
-				return;
-			}
+        //PSR7兼容转换
+        $psr17Factory = new Psr17Factory();
+        $psrHttpFactory = new PsrHttpFactory($psr17Factory, $psr17Factory, $psr17Factory, $psr17Factory);
 
-			// 彩蛋处理
-			if ($route['controller'] === '__FrameworkVersionController__' && $route['method'] === '__showVersion__') {
-				$response = \Framework\Core\EasterEgg::getResponse();
-				$response->send();
-				exit;
-			}
-			if ($route['controller'] === '__FrameworkTeamController__' && $route['method'] === '__showTeam__') {
-				$response = \Framework\Core\EasterEgg::getTeamResponse();
-				$response->send();
-				exit;
-			}
 
-			// 绑定路由
-			$request->attributes->set('_route', $route);
-
-			// 执行中间件 + 控制器
-			$response = $this->middlewareDispatcher->dispatch($request, function ($req) use ($route) {
-				return $this->callController($route);
-			});
-
-		} catch (\Throwable $e) {
-			// 🔥 记录异常（使用 Symfony Request）
-			$this->logger->logException($e, $request);
-
-			// 返回友好错误响应
-			//$response = $this->handleException($e);
+        //try {
+        // 1. 路由匹配：获取路由元数据
+        $route = $this->router->match($request);
+		
+		$controller = $route['controller'];
+		$method     = $route['method'];
+		// 🔥 处理 Version 彩蛋
+		if ($controller === '__FrameworkVersionController__' && $method === '__showVersion__') {
+			$response = \Framework\Core\EasterEgg::getResponse();
+			$response->send();
+			exit;
 		}
 
-		// 统一日志记录（包括异常情况）
-		$this->logger->logRequest($request, $response, microtime(true) - $start);
+		// 🔥 处理 Team 彩蛋
+		if ($controller === '__FrameworkTeamController__' && $method === '__showTeam__') {
+			$response = \Framework\Core\EasterEgg::getTeamResponse();
+			$response->send();
+			exit;
+		}
 
-		$response->send();
-	}
-	
+		
+        if (!$route) {
+            $response = $this->handleNotFound();
+            //转换PSR-7
+            $psrRequest = $psrHttpFactory->createRequest($request);
+            $psrResponse = $psrHttpFactory->createResponse($response);
+            $this->logger->logRequest($psrRequest, $psrResponse, microtime(true) - $start);
+            $response->send();
+            return;
+        }
+
+        // 2. 绑定路由信息到请求（供中间件/控制器使用）
+        $request->attributes->set('_route', $route);
+
+        // 3. 执行中间件（先全局中间件，再路由中间件）
+        $response = $this->middlewareDispatcher->dispatch($request, function ($req) use ($route) {
+            // 中间件执行完成后，调用控制器
+            return $this->callController($route);
+        });
+		
+		
+
+        //} catch (\Exception $e) {
+            //$response = $this->handleException($e);
+            //$this->logger->logException($e, $request);
+        //}
+
+        $psrRequest = $psrHttpFactory->createRequest($request);
+        $psrResponse = $psrHttpFactory->createResponse($response);
+
+        // 记录日志
+        $this->logger->logRequest($psrRequest, $psrResponse, microtime(true) - $start);
+
+        // 4. 发送响应
+        $response->send();
+    }
 
 
     private function callController(array $route): Response
@@ -268,37 +288,15 @@ class Framework
         return $allRoutes;
     }
 
-	/*
-	404 not found 
-	*/
+
     private function handleNotFound()
     {
-		$responseContent = view('errors/404.html.twig', [
-			'status_code' => Response::HTTP_NOT_FOUND	, // 404
-			'status_text' => 'Not Found',
-			'message' => '404 Page Not Found. Please refresh the page and try again.',
-		]);
-
-		$response = new Response($responseContent, Response::HTTP_NOT_FOUND);
-		return $response;
+        return new Response('404 Not Found', 404);
     }
-	
-	/*
-	500 错误的友好页面
-	*/
+
     private function handleException(\Exception $e)
     {
-		// 设置HTTP响应头为500
-		http_response_code(500);
-
-		// 渲染Twig模板，并将异常对象传递过去
-		// 注意：我们传递的是整个$e对象，而不是print_r的结果
-		$html = view('errors/500.html.twig', [
-			'exception' => $e,
-		]);
-		// 返回一个包含渲染后HTML的Response对象
-		return new Response($html, 500);
-        //return new Response('500 Server Error', 500);
+        return new Response('500 Server Error', 500);
     }
 
     /*

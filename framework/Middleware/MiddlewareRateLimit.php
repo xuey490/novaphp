@@ -7,7 +7,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class MiddlewareRateLimit
 {
-    private int $maxRequests = 1000;
+    private int $maxRequests = 10;
     private int $period = 60; // seconds
     private string $cacheDir;
 

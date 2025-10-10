@@ -8,8 +8,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 class MiddlewareCircuitBreaker
 {
-    private int $failureThreshold = 3; //重试次数，如果超过次数，直接调整到 return new Response('服务熔断，暂不可用！', 503); 这行
-    private int $timeout = 10; // 秒
+    private int $failureThreshold = 3;
+    private int $timeout = 30; // 秒
     private string $cacheDir;
 
     public function __construct(string $cacheDir )
@@ -47,8 +47,8 @@ class MiddlewareCircuitBreaker
         if ($state['status'] === 'open') {
             if (isset($state['opened_at']) && $state['opened_at'] + $this->timeout > $now) {
                 // 熔断中，直接返回 503，超过次数，直接不可用
-									return new Response('服务熔断，暂不可用！', 503);
-                //return $this->buildServiceUnavailableResponse($request);
+				return new Response('服务熔断，暂不可用！', 503);
+                return $this->buildServiceUnavailableResponse($request);
             } else {
                 // 超时，进入 half-open 状态，允许一次试探
                 $state = ['status' => 'half-open', 'attempts' => 1];
@@ -58,7 +58,7 @@ class MiddlewareCircuitBreaker
 
         try {
             $response = $next($request);
-						 //echo $response->getStatusCode();
+			//echo $response->getStatusCode();
 
             // 判断是否为服务端错误（可自定义）
             if (in_array($response->getStatusCode(), [500, 502, 503, 504], true)) {
@@ -90,7 +90,7 @@ class MiddlewareCircuitBreaker
                     'failures' => $failures
                 ]));
             }
-						  //echo 'MiddlewareCircuitBreaker==>out';
+			//echo 'MiddlewareCircuitBreaker==>out';
             // 返回 503 响应（不抛出异常，避免中断中间件链）
             return $this->buildServiceUnavailableResponse($request);
         }
@@ -132,7 +132,7 @@ class MiddlewareCircuitBreaker
     <div class="box">
         <h1>🔧 服务暂时不可用</h1>
         <p>{$message}</p>
-        <p>系统已自动启用熔断机制，预计几秒后恢复。</p>
+        <p>系统已自动启用保护机制，预计几秒后恢复。</p>
     </div>
 </body>
 </html>

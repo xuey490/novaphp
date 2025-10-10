@@ -1,76 +1,68 @@
 <?php
-// framework/Middleware/MiddlewareCsrfProtection.php
 
 namespace Framework\Middleware;
 
 use Framework\Security\CsrfTokenManager;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-//use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 class MiddlewareCsrfProtection
 {
+    private CsrfTokenManager $tokenManager;
+    private string $tokenName;
+    private array $except;
+
+    /**
+     * @param CsrfTokenManager $tokenManager
+     * @param string $tokenName 表单中的 token 字段名（如 _token）
+     * @param array $except 跳过的路径（支持通配符，如 '/api/*'）
+     */
     public function __construct(
-        private CsrfTokenManager $tokenManager,
-        private string $tokenName = '_token',
-        private array $except = [],
-        private string $errorMessage = 'Invalid CSRF token.',
-        private bool $removeAfterValidation = true
-    ) {}
-
-    public function handle(Request $request, callable $next): Response
-    {
-        if (in_array($request->getMethod(), ['HEAD', 'OPTIONS', 'TRACE'])) {
-            return $next($request);
-        }
-
-        if ($request->getMethod() === 'GET') {
-            $request->attributes->set('csrf_token', $this->tokenManager->getToken('default'));
-            return $next($request);
-        }
-
-        foreach ($this->except as $pattern) {
-            if ($this->matchPath($request->getPathInfo(), $pattern)) {
-                return $next($request);
-            }
-        }
-
-        $token = $request->request->get($this->tokenName)
-            ?? $request->headers->get('X-CSRF-TOKEN')
-            ?? '';
-
-        if (!is_string($token) || !$this->tokenManager->isTokenValid('default', $token)) {
-            if ($this->removeAfterValidation) {
-                $this->tokenManager->removeToken('default');
-            }
-            //throw new AccessDeniedHttpException($this->errorMessage);
-			
-            $responseContent = view('errors/csrf_error.html.twig', [
-                'status_code' => Response::HTTP_FORBIDDEN, // 403
-                'status_text' => 'Forbidden',
-                'message' => $this->errorMessage ?: 'CSRF token validation failed. Please refresh the page and try again.',
-            ]);
-
-            // 5. 创建一个新的Response对象
-            $response = new Response($responseContent, Response::HTTP_FORBIDDEN);
-
-            // 6. 将这个新的Response对象设置为事件的响应
-            // 这会阻止Symfony显示默认的错误页面
-           // $event->setResponse($response);
-
-			return $response;			
-        }
-
-        if ($this->removeAfterValidation) {
-            $this->tokenManager->removeToken('default'); // 用完即焚
-        }
-
-        return $next($request);
+        CsrfTokenManager $tokenManager,
+        string $tokenName = '_token',
+        array $except = []
+    ) {
+        $this->tokenManager = $tokenManager;
+        $this->tokenName = $tokenName;
+        $this->except = $except;
     }
 
-    private function matchPath(string $path, string $pattern): bool
-    {
-        $regex = str_replace('\*', '.*', preg_quote($pattern, '#'));
-        return (bool) preg_match('#^' . $regex . '$#', $path);
-    }
+	public function handle(Request $request, callable $next): Response
+	{
+		// 跳过 HEAD, OPTIONS, TRACE
+		if (in_array($request->getMethod(), ['HEAD', 'OPTIONS', 'TRACE'])) {
+			return $next($request);
+		}
+
+		// GET 请求：注入 token 到 attributes（供模板使用）
+		if ($request->getMethod() === 'GET') {
+			$request->attributes->set('csrf_token', $this->tokenManager->getToken('default'));
+			return $next($request);
+		}
+
+		// 跳过例外路径
+		foreach ($this->except as $pattern) {
+			$regex = preg_quote($pattern, '#');
+			$regex = str_replace('\*', '.*', $regex);
+			if (preg_match('#^' . $regex . '$#', $request->getPathInfo())) {
+				return $next($request);
+			}
+		}
+
+		// 验证 CSRF token
+		$token = $request->request->get($this->tokenName)
+				?? $request->headers->get('X-CSRF-TOKEN')
+				?? '';
+
+		if (!is_string($token) || !$this->tokenManager->isTokenValid('default', $token)) {
+			throw new AccessDeniedHttpException('Invalid CSRF token.');
+		}
+		
+		//$this->tokenManager->removeToken('default');
+
+		return $next($request);
+	}
+	
+
 }

@@ -9,6 +9,8 @@
  */
 namespace PHPUnit\Metadata;
 
+use function preg_match;
+
 /**
  * @immutable
  *
@@ -35,11 +37,9 @@ final readonly class IgnorePhpunitWarnings extends Metadata
         return true;
     }
 
-    /**
-     * @return null|non-empty-string
-     */
-    public function messagePattern(): ?string
+    public function shouldIgnore(string $message): bool
     {
-        return $this->messagePattern;
+        return $this->messagePattern === null ||
+            (bool) preg_match('{' . $this->messagePattern . '}', $message);
     }
 }

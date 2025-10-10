@@ -25,9 +25,6 @@ class TraceableEventDispatcher extends BaseTraceableEventDispatcher
 {
     protected function beforeDispatch(string $eventName, object $event): void
     {
-        if ($this->disabled?->__invoke()) {
-            return;
-        }
         switch ($eventName) {
             case KernelEvents::REQUEST:
                 $event->getRequest()->attributes->set('_stopwatch_token', bin2hex(random_bytes(3)));
@@ -60,9 +57,6 @@ class TraceableEventDispatcher extends BaseTraceableEventDispatcher
 
     protected function afterDispatch(string $eventName, object $event): void
     {
-        if ($this->disabled?->__invoke()) {
-            return;
-        }
         switch ($eventName) {
             case KernelEvents::CONTROLLER_ARGUMENTS:
                 $this->stopwatch->start('controller', 'section');

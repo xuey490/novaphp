@@ -2,56 +2,43 @@
 
 // config/cache.php
 return [
+    // 默认使用的缓存连接
     'default' => env('CACHE_DRIVER', 'file'),
 
+    // 缓存驱动配置
     'stores' => [
         'file' => [
-            'driver' => 'file',
-			'type' => 'File',  //兼容thinkcache
-            'path' => dirname(__DIR__) . '/storage/cache',
-            'prefix' => 'cache_',           // ← 新增：key 前缀
-            'enable_tags' => true,          // ← 新增：是否启用标签
+            'type' => 'File',
+            'path' => __DIR__ . '/../storage/cache/',
+            'expire' => 3600,
+            'prefix' => 'cache_',
         ],
-
         'redis' => [
-            'driver' => 'redis',
-			'type'   => 'Redis',
-            'connection' => [
-                'scheme' => 'tcp',
-                'host' => env('REDIS_HOST', '127.0.0.1'),
-                'port' => env('REDIS_PORT', 6379),
-                'password' => env('REDIS_PASSWORD', null),
-            ],
-            'database' => 0,
-            'prefix' => 'redis_',           // Redis 缓存前缀
-            'enable_tags' => true,
+            'type' => 'Redis',
+            'host' => env('REDIS_HOST', '127.0.0.1'),
+            'port' => env('REDIS_PORT', 6379),
+            'password' => env('REDIS_PASSWORD', ''),
+            'select' => 0,
+            'expire' => 3600,
+            'prefix' => 'cache_',
         ],
-
-
-
-        'memcached' => [
-            'driver' => 'memcached',
-			'type'   => 'memcached',
-            'servers' => [
-                ['host' => env('MEMCACHED_HOST', '127.0.0.1'), 'port' => env('MEMCACHED_PORT', 11211)],
-            ],
-            'prefix' => 'mem_',
-            'enable_tags' => true,
+        'memcache' => [
+            'type' => 'Memcache',
+            'host' => '127.0.0.1',
+            'port' => 11211,
+            'expire' => 3600,
+            'prefix' => 'cache_',
         ],
-		
-		
-        'apcu' => [
-            'driver' => 'apcu',
-            'prefix' => 'apcu_',
-            'enable_tags' => false,         // APCu 不适合大量标签（可选）
+        'wincache' => [
+            'type' => 'WinCache',
+            'prefix' => 'cache_',
+            'expire' => 3600,
         ],
-
-        'array' => [
-            'driver' => 'array',
-            'prefix' => 'array_',
-            'enable_tags' => true,
+        'sqlite' => [
+            'type' => 'Sqlite',
+            'database' => __DIR__ . '/../storage/cache/cache.db',
+            'expire' => 3600,
+            'prefix' => 'cache_',
         ],
     ],
 ];
-
-
