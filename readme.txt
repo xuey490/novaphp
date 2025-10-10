@@ -1,12 +1,3 @@
-简介:
-这是一款基于symfony的底层代码开发的轻量级，强大，快速，简单，安全的php框架。
-
-下载安装:
-本地环境:php8.1及以上，Redis，MySQL5.7及以上
-从GitHub下载main版本，解压到本地目录，在根目录下运行php -S localhost:8000 -t public
-,打开浏览器，输入地址http://localhost:8000
-
-测试路由:
 http://localhost:8000/admin/user/edit?id=111	无法访问 404 not found
 
 http://localhost:8000/user/add		正常访问，映射UserController@show(5)
@@ -23,7 +14,6 @@ http://localhost:8000/home/show/5		正常访问，映射HomeController@show(5)
 http://localhost:8000/user/show/1 提示错误
 
 
-版本里程:
 0.0.1 基础框架搭建，完成核心路由转发
 
 0.0.2 实现日志，DI注册依赖注入，完善路由
@@ -60,4 +50,3 @@ http://localhost:8000/user/show/1 提示错误
     优化错误显示的页面
     修改核心文件Framework.php 去除PSR-7的兼容
     修改日志类，去除PSR-7的兼容
-0.0.10是一个里程碑的版本，已经基本具备所有现代php框架的特性。
