@@ -1,5 +1,4 @@
 <?php
-
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
@@ -16,8 +15,7 @@ namespace think;
 class Facade
 {
     /**
-     * 始终创建新的对象实例.
-     *
+     * 始终创建新的对象实例
      * @var bool
      */
     protected static $alwaysNewInstance;
@@ -25,21 +23,18 @@ class Facade
     protected static $instance;
 
     /**
-     * 获取当前Facade对应类名.
-     *
+     * 获取当前Facade对应类名
+     * @access protected
      * @return string
      */
     protected static function getFacadeClass()
-    {
-    }
+    {}
 
     /**
-     * 创建Facade实例.
-     *
+     * 创建Facade实例
      * @static
-     *
-     * @param bool $newInstance 是否每次创建新的实例
-     *
+     * @access protected
+     * @param  bool $newInstance 是否每次创建新的实例
      * @return object
      */
     protected static function createFacade(bool $newInstance = false)
@@ -59,6 +54,7 @@ class Facade
         }
 
         return self::$instance;
+
     }
 
     // 调用实际类的方法
