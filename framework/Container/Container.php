@@ -23,10 +23,6 @@ class Container implements SymfonyContainerInterface
             return;
         }
 
-        // 👇 在这里加载 .env 文件
-        $dotenv = new \Symfony\Component\Dotenv\Dotenv();
-        $dotenv->load(__DIR__.'/../../.env'); // 路径根据你的项目结构调整
-
         $projectRoot = dirname(__DIR__, 2);
         $configDir   = $projectRoot . '/config';
 
@@ -41,7 +37,6 @@ class Container implements SymfonyContainerInterface
 
         $container = new ContainerBuilder();
         $container->setParameter('kernel.project_dir', $projectRoot);
-        $container->setParameter('kernel.debug', APP_DEBUG);
 
         // 注入全局配置作为参数
         if (!empty($parameters)) {

@@ -12,7 +12,6 @@ namespace PHPUnit\Metadata\Parser;
 use const JSON_THROW_ON_ERROR;
 use function assert;
 use function class_exists;
-use function is_numeric;
 use function json_decode;
 use function method_exists;
 use function sprintf;
@@ -297,7 +296,7 @@ final readonly class AttributeParser implements Parser
                 case IgnoreDeprecations::class:
                     assert($attributeInstance instanceof IgnoreDeprecations);
 
-                    $result[] = Metadata::ignoreDeprecationsOnClass($attributeInstance->messagePattern());
+                    $result[] = Metadata::ignoreDeprecationsOnClass();
 
                     break;
 
@@ -350,9 +349,8 @@ final readonly class AttributeParser implements Parser
                     assert($attributeInstance instanceof RequiresPhp);
 
                     $result[] = Metadata::requiresPhpOnClass(
-                        $this->requirement(
+                        Requirement::from(
                             $attributeInstance->versionRequirement(),
-                            $className,
                         ),
                     );
 
@@ -365,10 +363,7 @@ final readonly class AttributeParser implements Parser
                     $versionRequirement = $attributeInstance->versionRequirement();
 
                     if ($versionRequirement !== null) {
-                        $versionConstraint = $this->requirement(
-                            $versionRequirement,
-                            $className,
-                        );
+                        $versionConstraint = Requirement::from($versionRequirement);
                     }
 
                     $result[] = Metadata::requiresPhpExtensionOnClass(
@@ -382,9 +377,8 @@ final readonly class AttributeParser implements Parser
                     assert($attributeInstance instanceof RequiresPhpunit);
 
                     $result[] = Metadata::requiresPhpunitOnClass(
-                        $this->requirement(
+                        Requirement::from(
                             $attributeInstance->versionRequirement(),
-                            $className,
                         ),
                     );
 
@@ -594,14 +588,14 @@ final readonly class AttributeParser implements Parser
                 case DataProvider::class:
                     assert($attributeInstance instanceof DataProvider);
 
-                    $result[] = Metadata::dataProvider($className, $attributeInstance->methodName(), $attributeInstance->validateArgumentCount());
+                    $result[] = Metadata::dataProvider($className, $attributeInstance->methodName());
 
                     break;
 
                 case DataProviderExternal::class:
                     assert($attributeInstance instanceof DataProviderExternal);
 
-                    $result[] = Metadata::dataProvider($attributeInstance->className(), $attributeInstance->methodName(), $attributeInstance->validateArgumentCount());
+                    $result[] = Metadata::dataProvider($attributeInstance->className(), $attributeInstance->methodName());
 
                     break;
 
@@ -704,7 +698,7 @@ final readonly class AttributeParser implements Parser
                 case IgnoreDeprecations::class:
                     assert($attributeInstance instanceof IgnoreDeprecations);
 
-                    $result[] = Metadata::ignoreDeprecationsOnMethod($attributeInstance->messagePattern());
+                    $result[] = Metadata::ignoreDeprecationsOnMethod();
 
                     break;
 
@@ -771,10 +765,8 @@ final readonly class AttributeParser implements Parser
                     assert($attributeInstance instanceof RequiresPhp);
 
                     $result[] = Metadata::requiresPhpOnMethod(
-                        $this->requirement(
+                        Requirement::from(
                             $attributeInstance->versionRequirement(),
-                            $className,
-                            $methodName,
                         ),
                     );
 
@@ -787,11 +779,7 @@ final readonly class AttributeParser implements Parser
                     $versionRequirement = $attributeInstance->versionRequirement();
 
                     if ($versionRequirement !== null) {
-                        $versionConstraint = $this->requirement(
-                            $versionRequirement,
-                            $className,
-                            $methodName,
-                        );
+                        $versionConstraint = Requirement::from($versionRequirement);
                     }
 
                     $result[] = Metadata::requiresPhpExtensionOnMethod(
@@ -805,10 +793,8 @@ final readonly class AttributeParser implements Parser
                     assert($attributeInstance instanceof RequiresPhpunit);
 
                     $result[] = Metadata::requiresPhpunitOnMethod(
-                        $this->requirement(
+                        Requirement::from(
                             $attributeInstance->versionRequirement(),
-                            $className,
-                            $methodName,
                         ),
                     );
 
@@ -960,26 +946,6 @@ final readonly class AttributeParser implements Parser
         );
 
         return true;
-    }
-
-    /**
-     * @param non-empty-string  $versionRequirement
-     * @param class-string      $testClassName
-     * @param ?non-empty-string $testMethodName
-     */
-    private function requirement(string $versionRequirement, string $testClassName, ?string $testMethodName = null): Requirement
-    {
-        if (is_numeric(trim($versionRequirement))) {
-            EventFacade::emitter()->testRunnerTriggeredPhpunitDeprecation(
-                sprintf(
-                    'Test %s has attribute with version constraint string argument without explicit version comparison operator ("%s")',
-                    $this->testAsString($testClassName, $testMethodName),
-                    $versionRequirement,
-                ),
-            );
-        }
-
-        return Requirement::from($versionRequirement);
     }
 
     /**

@@ -40,9 +40,9 @@ class EasterEgg
      */
     private static $team = [
         [
-            'name' => 'Blue2004 (CYL)',
+            'name' => '张小哲 (ZxZ)',
             'email' => 'zhe@framework.dev',
-            'github' => 'https://github.com/xxx-xxx'
+            'github' => 'https://github.com/zxz-framework'
         ],
     ];
 

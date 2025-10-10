@@ -49,11 +49,11 @@ $routes->add('admin.dashboard', new Route(
 
 //测试熔断器
 $routes->add('test_circuit', new Route('/test/circuit', [
-    '_controller' => 'App\Controllers\TestController::circuitAction'
+    '_controller' => 'App\Controller\TestController::circuitAction'
 ]));
 
 $routes->add('test_healthy', new Route('/test/healthy', [
-    '_controller' => 'App\Controllers\TestController::healthyAction'
+    '_controller' => 'App\Controller\TestController::healthyAction'
 ]));
 
 

@@ -19,10 +19,10 @@ class TestController
     public function circuitAction(): Response
     {
         // 方式1：抛出异常（会被中间件捕获）
-        //throw new \RuntimeException('模拟后端服务崩溃');
+        throw new \RuntimeException('模拟后端服务崩溃');
 
         // 方式2：返回 500（也会被熔断器识别为失败）
-        return new Response('Service error', 500);
+        // return new Response('Service error', 500);
     }
 	
     /**

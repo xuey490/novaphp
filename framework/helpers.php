@@ -5,34 +5,6 @@
 use Framework\Core\Framework;
 use Framework\Core\App;
 use Ramsey\Uuid\Uuid;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\Cache\Adapter\TagAwareAdapter;
-use Symfony\Component\Cache\CacheItem;
-
-
-if (!function_exists('redirectToRoute')) {
-    /**
-     * 根据路由名称生成 URL 并返回重定向响应
-     *
-     * @param string $routeName 路由名称（如 'home', 'post_show'）
-     * @param array $parameters 路由参数（如 ['id' => 123]）
-     * @param int $status HTTP 状态码（默认 302）
-     * @return RedirectResponse
-     */
-    function redirectToRoute(string $routeName, array $parameters = [], int $status = 302): RedirectResponse
-    {
-        $router = app('router'); // 路由服务名为 'router'
-
-        // 生成路由 URL
-        try {
-            $url = $router->generate($routeName, $parameters);
-        } catch (\Exception $e) {
-            throw new \InvalidArgumentException("Route '$routeName' not found or parameters invalid.");
-        }
-
-        return new RedirectResponse($url, $status);
-    }
-}
 
 if (!function_exists('app')) {
     /**
@@ -128,9 +100,8 @@ if (!function_exists('config')) {
         if ($config === null) {
             // 从容器获取（需确保容器已初始化）
             $container = \Framework\Container\Container::getInstance();
-            $config = $container->get('config')->loadAll() ?? [];
+            $config = $container->get('config') ?? [];
         }
-
 
         if ($key === null) {
             return $config;
@@ -138,7 +109,6 @@ if (!function_exists('config')) {
 
         // 支持点语法：database.connections.mysql
         $keys = explode('.', $key);
-
         $value = $config;
         foreach ($keys as $segment) {
             if (!is_array($value) || !array_key_exists($segment, $value)) {
@@ -168,82 +138,4 @@ function trans(string $key, array $parameters = []): string
 function current_locale(): string
 {
     return app('translator')->getLocale();
-}
-
-
-if (!function_exists('view')) {
-	function view(string $template, array $data = []): string
-	{
-		$twig = app('view');
-		$template = str_ends_with($template, '.html.twig') ? $template : $template . '.html.twig';
-		return $twig->render($template, $data);
-	}
-}
-
-function truncate(string $id): string
-{
-		return false;
-}
-
-
-// 缓存助手函数
-if (!function_exists('cache_get')) {
-    function cache_get(string $key, $default = null)
-    {
-        $cache = get_cache_instance();
-        $item = $cache->getItem($key);
-        return $item->isHit() ? $item->get() : $default;
-    }
-}
-
-if (!function_exists('cache_set')) {
-    function cache_set(string $key, $value, ?int $ttl = null, array $tags = []): bool
-    {
-        $cache = get_cache_instance();
-        $item = $cache->getItem($key);
-
-        $item->set($value);
-
-        if ($ttl) {
-            $item->expiresAfter($ttl);
-        }
-
-        if (!empty($tags)) {
-            $item->tag($tags);
-        }
-
-        return $cache->save($item);
-    }
-}
-
-if (!function_exists('cache_invalidate_tags')) {
-    function cache_invalidate_tags(array $tags): bool
-    {
-        $cache = get_cache_instance();
-        try {
-            $cache->invalidateTags($tags);
-            return true;
-        } catch (\Exception $e) {
-            error_log('Cache tag invalidation failed: ' . $e->getMessage());
-            return false;
-        }
-    }
-}
-
-if (!function_exists('cache_clear')) {
-    function cache_clear(): bool
-    {
-        $cache = get_cache_instance();
-        return $cache->clear();
-    }
-}
-
-function get_cache_instance(): TagAwareAdapter
-{
-    static $cache = null;
-    if ($cache === null) {
-        $container = \Framework\Container\Container::getInstance();
-        $cache = $container->get(\Symfony\Component\Cache\Adapter\TagAwareAdapter::class);
-    }
-    return $cache;
 }
