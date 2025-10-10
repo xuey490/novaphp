@@ -43,12 +43,12 @@ abstract class AbstractConfigurator
         throw new \BadMethodCallException(\sprintf('Call to undefined method "%s::%s()".', static::class, $method));
     }
 
-    public function __serialize(): array
+    public function __sleep(): array
     {
         throw new \BadMethodCallException('Cannot serialize '.__CLASS__);
     }
 
-    public function __unserialize(array $data): void
+    public function __wakeup(): void
     {
         throw new \BadMethodCallException('Cannot unserialize '.__CLASS__);
     }

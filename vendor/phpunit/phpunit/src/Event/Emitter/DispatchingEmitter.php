@@ -11,7 +11,6 @@ namespace PHPUnit\Event;
 
 use function assert;
 use function memory_reset_peak_usage;
-use function preg_match;
 use PHPUnit\Event\Code\ClassMethod;
 use PHPUnit\Event\Code\ComparisonFailure;
 use PHPUnit\Event\Code\IssueTrigger\IssueTrigger;
@@ -1021,9 +1020,7 @@ final class DispatchingEmitter implements Emitter
             if (isset($metadata[0])) {
                 assert($metadata[0] instanceof IgnorePhpunitWarnings);
 
-                $messagePattern = $metadata[0]->messagePattern();
-
-                if ($messagePattern === null || (bool) preg_match('{' . $messagePattern . '}', $message)) {
+                if ($metadata[0]->shouldIgnore($message)) {
                     $ignoredByTest = true;
                 }
             }

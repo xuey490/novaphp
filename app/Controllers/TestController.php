@@ -6,7 +6,8 @@ use Framework\Annotations\Post;
 use Framework\Annotations\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-
+use App\Middleware\AuthMiddleware; // 引入你的中间件
+use App\Middleware\LogMiddleware;
 
 /**
  * 控制器级别的路由注解（可选，用于添加路径前缀）
@@ -15,24 +16,6 @@ use Symfony\Component\HttpFoundation\Response;
 class TestController
 {
 	
-	//测试熔断器
-    public function circuitAction(): Response
-    {
-        // 方式1：抛出异常（会被中间件捕获）
-        //throw new \RuntimeException('模拟后端服务崩溃');
-
-        // 方式2：返回 500（也会被熔断器识别为失败）
-        return new Response('Service error', 500);
-    }
-	
-    /**
-     * 首页路由（匹配 GET /test）
-     * @Get(path="/healthy", name="test.index")
-     */
-    public function healthyAction(): Response
-    {
-        return new Response('All good!');
-    }
 
     /**
      * 首页路由（匹配 GET /test）
@@ -49,7 +32,7 @@ class TestController
 		 *   path="/test8/edits/{id}",
 		 *   name="test.edit",
 		 *   requirements={"id": "\d+"},
-		 *   options={"_middleware": {"App\Middleware\LogMiddleware",   "App\Middleware\AuthMiddleware"} }
+		 *   options={"_middleware": {"App\Middleware\AuthMiddleware",   "App\Middleware\LogMiddleware"} }
 		 * )
 		 */
     public function edit(int $id)
