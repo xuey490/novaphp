@@ -4,11 +4,15 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit9b08b741b9b29d9b8d308493e978457f
+class ComposerStaticInitf9b63e556bbd2e3575f0fc465dbba2b4
 {
     public static $files = array (
+        '6e3fae29631ef280660b3cdad06f25a8' => __DIR__ . '/..' . '/symfony/deprecation-contracts/function.php',
+        '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
+        '320cde22f66dd4f5d3fd621d3e88b98f' => __DIR__ . '/..' . '/symfony/polyfill-ctype/bootstrap.php',
+        '662a729f963d39afe703c9d9b7ab4a8c' => __DIR__ . '/..' . '/symfony/polyfill-php83/bootstrap.php',
+        '667aeda72477189d0494fecd327c3641' => __DIR__ . '/..' . '/symfony/var-dumper/Resources/functions/dump.php',
         '9b552a3cc426e3287cc811caefa3cf53' => __DIR__ . '/..' . '/topthink/think-helper/src/helper.php',
-        '253c157292f75eb38082b5acb06f3f01' => __DIR__ . '/..' . '/nikic/fast-route/src/functions.php',
         '35fab96057f1bf5e7aba31a8a6d5fdde' => __DIR__ . '/..' . '/topthink/think-orm/stubs/load_stubs.php',
     );
 
@@ -17,15 +21,45 @@ class ComposerStaticInit9b08b741b9b29d9b8d308493e978457f
         array (
             'think\\' => 6,
         ),
+        'S' => 
+        array (
+            'Symfony\\Polyfill\\Php83\\' => 23,
+            'Symfony\\Polyfill\\Mbstring\\' => 26,
+            'Symfony\\Polyfill\\Ctype\\' => 23,
+            'Symfony\\Contracts\\Service\\' => 26,
+            'Symfony\\Contracts\\EventDispatcher\\' => 34,
+            'Symfony\\Component\\VarExporter\\' => 30,
+            'Symfony\\Component\\VarDumper\\' => 28,
+            'Symfony\\Component\\Routing\\' => 26,
+            'Symfony\\Component\\HttpKernel\\' => 29,
+            'Symfony\\Component\\HttpFoundation\\' => 33,
+            'Symfony\\Component\\Finder\\' => 25,
+            'Symfony\\Component\\Filesystem\\' => 29,
+            'Symfony\\Component\\EventDispatcher\\' => 34,
+            'Symfony\\Component\\ErrorHandler\\' => 31,
+            'Symfony\\Component\\DependencyInjection\\' => 38,
+            'Symfony\\Component\\Config\\' => 25,
+        ),
         'P' => 
         array (
             'Psr\\SimpleCache\\' => 16,
             'Psr\\Log\\' => 8,
+            'Psr\\EventDispatcher\\' => 20,
+            'Psr\\Container\\' => 14,
+            'Psr\\Cache\\' => 10,
+        ),
+        'M' => 
+        array (
+            'Monolog\\' => 8,
         ),
         'F' => 
         array (
             'Framework\\' => 10,
-            'FastRoute\\' => 10,
+        ),
+        'D' => 
+        array (
+            'Doctrine\\Common\\Lexer\\' => 22,
+            'Doctrine\\Common\\Annotations\\' => 28,
         ),
         'A' => 
         array (
@@ -39,6 +73,70 @@ class ComposerStaticInit9b08b741b9b29d9b8d308493e978457f
             0 => __DIR__ . '/..' . '/topthink/think-orm/src',
             1 => __DIR__ . '/..' . '/topthink/think-helper/src',
         ),
+        'Symfony\\Polyfill\\Php83\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-php83',
+        ),
+        'Symfony\\Polyfill\\Mbstring\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-mbstring',
+        ),
+        'Symfony\\Polyfill\\Ctype\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-ctype',
+        ),
+        'Symfony\\Contracts\\Service\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/service-contracts',
+        ),
+        'Symfony\\Contracts\\EventDispatcher\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/event-dispatcher-contracts',
+        ),
+        'Symfony\\Component\\VarExporter\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/var-exporter',
+        ),
+        'Symfony\\Component\\VarDumper\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/var-dumper',
+        ),
+        'Symfony\\Component\\Routing\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/routing',
+        ),
+        'Symfony\\Component\\HttpKernel\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/http-kernel',
+        ),
+        'Symfony\\Component\\HttpFoundation\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/http-foundation',
+        ),
+        'Symfony\\Component\\Finder\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/finder',
+        ),
+        'Symfony\\Component\\Filesystem\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/filesystem',
+        ),
+        'Symfony\\Component\\EventDispatcher\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/event-dispatcher',
+        ),
+        'Symfony\\Component\\ErrorHandler\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/error-handler',
+        ),
+        'Symfony\\Component\\DependencyInjection\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/dependency-injection',
+        ),
+        'Symfony\\Component\\Config\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/config',
+        ),
         'Psr\\SimpleCache\\' => 
         array (
             0 => __DIR__ . '/..' . '/psr/simple-cache/src',
@@ -47,139 +145,61 @@ class ComposerStaticInit9b08b741b9b29d9b8d308493e978457f
         array (
             0 => __DIR__ . '/..' . '/psr/log/src',
         ),
+        'Psr\\EventDispatcher\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/psr/event-dispatcher/src',
+        ),
+        'Psr\\Container\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/psr/container/src',
+        ),
+        'Psr\\Cache\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/psr/cache/src',
+        ),
+        'Monolog\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/monolog/monolog/src/Monolog',
+        ),
         'Framework\\' => 
         array (
             0 => __DIR__ . '/../..' . '/framework',
         ),
-        'FastRoute\\' => 
+        'Doctrine\\Common\\Lexer\\' => 
         array (
-            0 => __DIR__ . '/..' . '/nikic/fast-route/src',
+            0 => __DIR__ . '/..' . '/doctrine/lexer/src',
+        ),
+        'Doctrine\\Common\\Annotations\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/doctrine/annotations/lib/Doctrine/Common/Annotations',
         ),
         'App\\' => 
         array (
-            0 => __DIR__ . '/../..' . '/App',
+            0 => __DIR__ . '/../..' . '/app',
         ),
     );
 
     public static $classMap = array (
-        'App\\Controller\\HomeController' => __DIR__ . '/../..' . '/App/Controller/HomeController.php',
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
-        'FastRoute\\BadRouteException' => __DIR__ . '/..' . '/nikic/fast-route/src/BadRouteException.php',
-        'FastRoute\\DataGenerator' => __DIR__ . '/..' . '/nikic/fast-route/src/DataGenerator.php',
-        'FastRoute\\DataGenerator\\CharCountBased' => __DIR__ . '/..' . '/nikic/fast-route/src/DataGenerator/CharCountBased.php',
-        'FastRoute\\DataGenerator\\GroupCountBased' => __DIR__ . '/..' . '/nikic/fast-route/src/DataGenerator/GroupCountBased.php',
-        'FastRoute\\DataGenerator\\GroupPosBased' => __DIR__ . '/..' . '/nikic/fast-route/src/DataGenerator/GroupPosBased.php',
-        'FastRoute\\DataGenerator\\MarkBased' => __DIR__ . '/..' . '/nikic/fast-route/src/DataGenerator/MarkBased.php',
-        'FastRoute\\DataGenerator\\RegexBasedAbstract' => __DIR__ . '/..' . '/nikic/fast-route/src/DataGenerator/RegexBasedAbstract.php',
-        'FastRoute\\Dispatcher' => __DIR__ . '/..' . '/nikic/fast-route/src/Dispatcher.php',
-        'FastRoute\\Dispatcher\\CharCountBased' => __DIR__ . '/..' . '/nikic/fast-route/src/Dispatcher/CharCountBased.php',
-        'FastRoute\\Dispatcher\\GroupCountBased' => __DIR__ . '/..' . '/nikic/fast-route/src/Dispatcher/GroupCountBased.php',
-        'FastRoute\\Dispatcher\\GroupPosBased' => __DIR__ . '/..' . '/nikic/fast-route/src/Dispatcher/GroupPosBased.php',
-        'FastRoute\\Dispatcher\\MarkBased' => __DIR__ . '/..' . '/nikic/fast-route/src/Dispatcher/MarkBased.php',
-        'FastRoute\\Dispatcher\\RegexBasedAbstract' => __DIR__ . '/..' . '/nikic/fast-route/src/Dispatcher/RegexBasedAbstract.php',
-        'FastRoute\\Route' => __DIR__ . '/..' . '/nikic/fast-route/src/Route.php',
-        'FastRoute\\RouteCollector' => __DIR__ . '/..' . '/nikic/fast-route/src/RouteCollector.php',
-        'FastRoute\\RouteParser' => __DIR__ . '/..' . '/nikic/fast-route/src/RouteParser.php',
-        'FastRoute\\RouteParser\\Std' => __DIR__ . '/..' . '/nikic/fast-route/src/RouteParser/Std.php',
-        'Framework\\Core\\Application' => __DIR__ . '/../..' . '/framework/Core/Application.php',
-        'Framework\\Core\\Container' => __DIR__ . '/../..' . '/framework/Core/Container.php',
-        'Framework\\Exception\\Handler' => __DIR__ . '/../..' . '/framework/Exception/Handler.php',
-        'Framework\\Http\\Request' => __DIR__ . '/../..' . '/framework/Http/Request.php',
-        'Framework\\Http\\Response' => __DIR__ . '/../..' . '/framework/Http/Response.php',
-        'Framework\\Log\\Logger' => __DIR__ . '/../..' . '/framework/Log/Logger.php',
-        'Framework\\Routing\\Router' => __DIR__ . '/../..' . '/framework/Routing/Router.php',
-        'Psr\\Log\\AbstractLogger' => __DIR__ . '/..' . '/psr/log/src/AbstractLogger.php',
-        'Psr\\Log\\InvalidArgumentException' => __DIR__ . '/..' . '/psr/log/src/InvalidArgumentException.php',
-        'Psr\\Log\\LogLevel' => __DIR__ . '/..' . '/psr/log/src/LogLevel.php',
-        'Psr\\Log\\LoggerAwareInterface' => __DIR__ . '/..' . '/psr/log/src/LoggerAwareInterface.php',
-        'Psr\\Log\\LoggerAwareTrait' => __DIR__ . '/..' . '/psr/log/src/LoggerAwareTrait.php',
-        'Psr\\Log\\LoggerInterface' => __DIR__ . '/..' . '/psr/log/src/LoggerInterface.php',
-        'Psr\\Log\\LoggerTrait' => __DIR__ . '/..' . '/psr/log/src/LoggerTrait.php',
-        'Psr\\Log\\NullLogger' => __DIR__ . '/..' . '/psr/log/src/NullLogger.php',
-        'Psr\\SimpleCache\\CacheException' => __DIR__ . '/..' . '/psr/simple-cache/src/CacheException.php',
-        'Psr\\SimpleCache\\CacheInterface' => __DIR__ . '/..' . '/psr/simple-cache/src/CacheInterface.php',
-        'Psr\\SimpleCache\\InvalidArgumentException' => __DIR__ . '/..' . '/psr/simple-cache/src/InvalidArgumentException.php',
-        'think\\Collection' => __DIR__ . '/..' . '/topthink/think-helper/src/Collection.php',
-        'think\\DbManager' => __DIR__ . '/..' . '/topthink/think-orm/src/DbManager.php',
-        'think\\Model' => __DIR__ . '/..' . '/topthink/think-orm/src/Model.php',
-        'think\\Paginator' => __DIR__ . '/..' . '/topthink/think-orm/src/Paginator.php',
-        'think\\contract\\Arrayable' => __DIR__ . '/..' . '/topthink/think-helper/src/contract/Arrayable.php',
-        'think\\contract\\Jsonable' => __DIR__ . '/..' . '/topthink/think-helper/src/contract/Jsonable.php',
-        'think\\db\\BaseQuery' => __DIR__ . '/..' . '/topthink/think-orm/src/db/BaseQuery.php',
-        'think\\db\\Builder' => __DIR__ . '/..' . '/topthink/think-orm/src/db/Builder.php',
-        'think\\db\\CacheItem' => __DIR__ . '/..' . '/topthink/think-orm/src/db/CacheItem.php',
-        'think\\db\\Connection' => __DIR__ . '/..' . '/topthink/think-orm/src/db/Connection.php',
-        'think\\db\\ConnectionInterface' => __DIR__ . '/..' . '/topthink/think-orm/src/db/ConnectionInterface.php',
-        'think\\db\\Fetch' => __DIR__ . '/..' . '/topthink/think-orm/src/db/Fetch.php',
-        'think\\db\\Mongo' => __DIR__ . '/..' . '/topthink/think-orm/src/db/Mongo.php',
-        'think\\db\\PDOConnection' => __DIR__ . '/..' . '/topthink/think-orm/src/db/PDOConnection.php',
-        'think\\db\\Query' => __DIR__ . '/..' . '/topthink/think-orm/src/db/Query.php',
-        'think\\db\\Raw' => __DIR__ . '/..' . '/topthink/think-orm/src/db/Raw.php',
-        'think\\db\\Where' => __DIR__ . '/..' . '/topthink/think-orm/src/db/Where.php',
-        'think\\db\\builder\\Mongo' => __DIR__ . '/..' . '/topthink/think-orm/src/db/builder/Mongo.php',
-        'think\\db\\builder\\Mysql' => __DIR__ . '/..' . '/topthink/think-orm/src/db/builder/Mysql.php',
-        'think\\db\\builder\\Oracle' => __DIR__ . '/..' . '/topthink/think-orm/src/db/builder/Oracle.php',
-        'think\\db\\builder\\Pgsql' => __DIR__ . '/..' . '/topthink/think-orm/src/db/builder/Pgsql.php',
-        'think\\db\\builder\\Sqlite' => __DIR__ . '/..' . '/topthink/think-orm/src/db/builder/Sqlite.php',
-        'think\\db\\builder\\Sqlsrv' => __DIR__ . '/..' . '/topthink/think-orm/src/db/builder/Sqlsrv.php',
-        'think\\db\\concern\\AggregateQuery' => __DIR__ . '/..' . '/topthink/think-orm/src/db/concern/AggregateQuery.php',
-        'think\\db\\concern\\JoinAndViewQuery' => __DIR__ . '/..' . '/topthink/think-orm/src/db/concern/JoinAndViewQuery.php',
-        'think\\db\\concern\\ModelRelationQuery' => __DIR__ . '/..' . '/topthink/think-orm/src/db/concern/ModelRelationQuery.php',
-        'think\\db\\concern\\ParamsBind' => __DIR__ . '/..' . '/topthink/think-orm/src/db/concern/ParamsBind.php',
-        'think\\db\\concern\\ResultOperation' => __DIR__ . '/..' . '/topthink/think-orm/src/db/concern/ResultOperation.php',
-        'think\\db\\concern\\TableFieldInfo' => __DIR__ . '/..' . '/topthink/think-orm/src/db/concern/TableFieldInfo.php',
-        'think\\db\\concern\\TimeFieldQuery' => __DIR__ . '/..' . '/topthink/think-orm/src/db/concern/TimeFieldQuery.php',
-        'think\\db\\concern\\Transaction' => __DIR__ . '/..' . '/topthink/think-orm/src/db/concern/Transaction.php',
-        'think\\db\\concern\\WhereQuery' => __DIR__ . '/..' . '/topthink/think-orm/src/db/concern/WhereQuery.php',
-        'think\\db\\connector\\Mongo' => __DIR__ . '/..' . '/topthink/think-orm/src/db/connector/Mongo.php',
-        'think\\db\\connector\\Mysql' => __DIR__ . '/..' . '/topthink/think-orm/src/db/connector/Mysql.php',
-        'think\\db\\connector\\Oracle' => __DIR__ . '/..' . '/topthink/think-orm/src/db/connector/Oracle.php',
-        'think\\db\\connector\\Pgsql' => __DIR__ . '/..' . '/topthink/think-orm/src/db/connector/Pgsql.php',
-        'think\\db\\connector\\Sqlite' => __DIR__ . '/..' . '/topthink/think-orm/src/db/connector/Sqlite.php',
-        'think\\db\\connector\\Sqlsrv' => __DIR__ . '/..' . '/topthink/think-orm/src/db/connector/Sqlsrv.php',
-        'think\\db\\exception\\BindParamException' => __DIR__ . '/..' . '/topthink/think-orm/src/db/exception/BindParamException.php',
-        'think\\db\\exception\\DataNotFoundException' => __DIR__ . '/..' . '/topthink/think-orm/src/db/exception/DataNotFoundException.php',
-        'think\\db\\exception\\DbEventException' => __DIR__ . '/..' . '/topthink/think-orm/src/db/exception/DbEventException.php',
-        'think\\db\\exception\\DbException' => __DIR__ . '/..' . '/topthink/think-orm/src/db/exception/DbException.php',
-        'think\\db\\exception\\InvalidArgumentException' => __DIR__ . '/..' . '/topthink/think-orm/src/db/exception/InvalidArgumentException.php',
-        'think\\db\\exception\\ModelEventException' => __DIR__ . '/..' . '/topthink/think-orm/src/db/exception/ModelEventException.php',
-        'think\\db\\exception\\ModelNotFoundException' => __DIR__ . '/..' . '/topthink/think-orm/src/db/exception/ModelNotFoundException.php',
-        'think\\db\\exception\\PDOException' => __DIR__ . '/..' . '/topthink/think-orm/src/db/exception/PDOException.php',
-        'think\\facade\\Db' => __DIR__ . '/..' . '/topthink/think-orm/src/facade/Db.php',
-        'think\\helper\\Arr' => __DIR__ . '/..' . '/topthink/think-helper/src/helper/Arr.php',
-        'think\\helper\\Macroable' => __DIR__ . '/..' . '/topthink/think-helper/src/helper/Macroable.php',
-        'think\\helper\\Str' => __DIR__ . '/..' . '/topthink/think-helper/src/helper/Str.php',
-        'think\\model\\Collection' => __DIR__ . '/..' . '/topthink/think-orm/src/model/Collection.php',
-        'think\\model\\Pivot' => __DIR__ . '/..' . '/topthink/think-orm/src/model/Pivot.php',
-        'think\\model\\Relation' => __DIR__ . '/..' . '/topthink/think-orm/src/model/Relation.php',
-        'think\\model\\concern\\Attribute' => __DIR__ . '/..' . '/topthink/think-orm/src/model/concern/Attribute.php',
-        'think\\model\\concern\\Conversion' => __DIR__ . '/..' . '/topthink/think-orm/src/model/concern/Conversion.php',
-        'think\\model\\concern\\ModelEvent' => __DIR__ . '/..' . '/topthink/think-orm/src/model/concern/ModelEvent.php',
-        'think\\model\\concern\\OptimLock' => __DIR__ . '/..' . '/topthink/think-orm/src/model/concern/OptimLock.php',
-        'think\\model\\concern\\RelationShip' => __DIR__ . '/..' . '/topthink/think-orm/src/model/concern/RelationShip.php',
-        'think\\model\\concern\\SoftDelete' => __DIR__ . '/..' . '/topthink/think-orm/src/model/concern/SoftDelete.php',
-        'think\\model\\concern\\TimeStamp' => __DIR__ . '/..' . '/topthink/think-orm/src/model/concern/TimeStamp.php',
-        'think\\model\\concern\\Virtual' => __DIR__ . '/..' . '/topthink/think-orm/src/model/concern/Virtual.php',
-        'think\\model\\relation\\BelongsTo' => __DIR__ . '/..' . '/topthink/think-orm/src/model/relation/BelongsTo.php',
-        'think\\model\\relation\\BelongsToMany' => __DIR__ . '/..' . '/topthink/think-orm/src/model/relation/BelongsToMany.php',
-        'think\\model\\relation\\HasMany' => __DIR__ . '/..' . '/topthink/think-orm/src/model/relation/HasMany.php',
-        'think\\model\\relation\\HasManyThrough' => __DIR__ . '/..' . '/topthink/think-orm/src/model/relation/HasManyThrough.php',
-        'think\\model\\relation\\HasOne' => __DIR__ . '/..' . '/topthink/think-orm/src/model/relation/HasOne.php',
-        'think\\model\\relation\\HasOneThrough' => __DIR__ . '/..' . '/topthink/think-orm/src/model/relation/HasOneThrough.php',
-        'think\\model\\relation\\MorphMany' => __DIR__ . '/..' . '/topthink/think-orm/src/model/relation/MorphMany.php',
-        'think\\model\\relation\\MorphOne' => __DIR__ . '/..' . '/topthink/think-orm/src/model/relation/MorphOne.php',
-        'think\\model\\relation\\MorphTo' => __DIR__ . '/..' . '/topthink/think-orm/src/model/relation/MorphTo.php',
-        'think\\model\\relation\\MorphToMany' => __DIR__ . '/..' . '/topthink/think-orm/src/model/relation/MorphToMany.php',
-        'think\\model\\relation\\OneToOne' => __DIR__ . '/..' . '/topthink/think-orm/src/model/relation/OneToOne.php',
-        'think\\paginator\\driver\\Bootstrap' => __DIR__ . '/..' . '/topthink/think-orm/src/paginator/driver/Bootstrap.php',
+        'DateError' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/DateError.php',
+        'DateException' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/DateException.php',
+        'DateInvalidOperationException' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/DateInvalidOperationException.php',
+        'DateInvalidTimeZoneException' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/DateInvalidTimeZoneException.php',
+        'DateMalformedIntervalStringException' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/DateMalformedIntervalStringException.php',
+        'DateMalformedPeriodStringException' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/DateMalformedPeriodStringException.php',
+        'DateMalformedStringException' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/DateMalformedStringException.php',
+        'DateObjectError' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/DateObjectError.php',
+        'DateRangeError' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/DateRangeError.php',
+        'Override' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/Override.php',
+        'SQLite3Exception' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/SQLite3Exception.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit9b08b741b9b29d9b8d308493e978457f::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit9b08b741b9b29d9b8d308493e978457f::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInit9b08b741b9b29d9b8d308493e978457f::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitf9b63e556bbd2e3575f0fc465dbba2b4::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitf9b63e556bbd2e3575f0fc465dbba2b4::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInitf9b63e556bbd2e3575f0fc465dbba2b4::$classMap;
 
         }, null, ClassLoader::class);
     }
