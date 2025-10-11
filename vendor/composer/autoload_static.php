@@ -123,10 +123,11 @@ class ComposerStaticInitab0f065e34a4b36481d66daec2e48422
     public static $prefixDirsPsr4 = array (
         'think\\' => 
         array (
-            0 => __DIR__ . '/..' . '/topthink/think-orm/src',
-            1 => __DIR__ . '/..' . '/topthink/think-cache/src',
-            2 => __DIR__ . '/..' . '/topthink/think-container/src',
-            3 => __DIR__ . '/..' . '/topthink/think-helper/src',
+            0 => __DIR__ . '/..' . '/topthink/think-template/src',
+            1 => __DIR__ . '/..' . '/topthink/think-orm/src',
+            2 => __DIR__ . '/..' . '/topthink/think-cache/src',
+            3 => __DIR__ . '/..' . '/topthink/think-container/src',
+            4 => __DIR__ . '/..' . '/topthink/think-helper/src',
         ),
         'Twig\\Extra\\Markdown\\' => 
         array (

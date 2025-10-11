@@ -12,11 +12,13 @@ class BlogController
     private Environment $twig;
     private BlogService $blogService;
 
+
     public function __construct(Environment $twig, BlogService $blogService)
     {
         $this->twig = $twig;
         $this->blogService = $blogService;
     }
+
 
     public function index(): Response
     {

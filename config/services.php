@@ -4,6 +4,7 @@
 
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
+use function Symfony\Component\DependencyInjection\Loader\Configurator\param;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpFoundation\Request;
@@ -250,16 +251,19 @@ return function (ContainerConfigurator $configurator) {
     // ------------------------------
     // TWIG配置加载
     // ------------------------------
-	$viewConfig = require dirname(__DIR__) . '/config/view.php';
+	$TempConfig = require dirname(__DIR__) . '/config/view.php';
+	
+
+	$viewConfig = $TempConfig['Twig'];
 	$services->set(\Twig\Loader\FilesystemLoader::class)->args([$viewConfig['paths']])->public();
 	
 	//注册 AppTwigExtension 扩展
 	$services->set(\App\Twig\AppTwigExtension::class)
-        ->args([
-            service(\Framework\Security\CsrfTokenManager::class),
-            '_token' // 👈 显式传入字段名
-        ])
-        ->public();
+		->args([
+			service(\Framework\Security\CsrfTokenManager::class),
+			'_token' // 👈 显式传入字段名
+		])
+		->public();
 	
 	//注册 markdown 服务开始
 	$services->set(\League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension::class)
@@ -267,14 +271,14 @@ return function (ContainerConfigurator $configurator) {
 	
 	// 注册 markdown Environment 
 	$services->set(\League\CommonMark\Environment\Environment::class)
-    ->args([
-        [
-            // 这是传递给 Environment 构造函数的配置数组
-            'html_input' => 'strip',
-            'allow_unsafe_links' => false,
-        ]
-    ])->call('addExtension', [service(\League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension::class)])
-    ->public();    // Environment 对象需要加载核心扩展才能工作
+	->args([
+		[
+			// 这是传递给 Environment 构造函数的配置数组
+			'html_input' => 'strip',
+			'allow_unsafe_links' => false,
+		]
+	])->call('addExtension', [service(\League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension::class)])
+	->public();    // Environment 对象需要加载核心扩展才能工作
 
 	// 注册 MarkdownConverter 服务
 	//    它依赖于 上面 Environment 服务。
@@ -307,8 +311,44 @@ return function (ContainerConfigurator $configurator) {
 		->call('addExtension', [service(\App\Twig\MarkdownExtension::class)]) // ✅ 添加新的 Markdown 扩展
 		->public();
 
-    // 别名
-    $services->alias('view', \Twig\Environment::class)->public();
+	// 别名
+	$services->alias('view', \Twig\Environment::class)->public();
+
+
+	$tpTemplateConfig = $TempConfig['Think'];
+
+	// 注册 'thinkTemp' 服务，用下面的方法，更简单
+	/*
+	$services->set('thinkTemp', \think\Template::class)
+		->args([$tpTemplateConfig])
+		->public();	
+	*/
+	
+	// 第二种方法
+
+    $parameters = $configurator->parameters();
+	
+	// 0.注册模板工厂类
+	$services->set(\App\twig\ThinkTemplateFactory::class);
+
+    // 1. 将 ThinkPHP 模板配置定义为一个容器参数
+    // 这是一种更 Symfony 的做法，便于管理
+    $parameters->set('think_template.config', $tpTemplateConfig);
+
+    // 2. 注册 'thinkTemp' 服务
+    $services->set('thinkTemp', \think\Template::class)
+        // 使用 factory() 方法，并指向我们的工厂类
+		->factory(service(\App\twig\ThinkTemplateFactory::class))
+        // 为工厂方法注入配置参数
+        ->args([
+            // 使用 param() 来引用上面定义的参数
+            param('think_template.config'),
+        ])
+        ->public(); // 允许从容器外部获取
+
+
+	
+	
 	
 	$services->load('App\\Middleware\\', '../app/Middleware/**/*Middleware.php')
 		->autowire()      // 支持中间件的依赖自动注入（如注入UserService）

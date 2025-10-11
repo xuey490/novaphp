@@ -10,6 +10,7 @@ define('FRAMEWORK_VERSION', '0.0.10-Bate (Powered by Blue2004)');
 require_once BASE_PATH . '/vendor/autoload.php';
 
 require_once __DIR__ . '/../framework/helpers.php';
+require_once __DIR__ . '/../App/function.php';
 
 
 // 假设这是您加载路由的代码

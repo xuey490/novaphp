@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'blue2004/novaphp',
-        'pretty_version' => '1.0.0+no-version-set',
-        'version' => '1.0.0.0',
-        'reference' => null,
+        'pretty_version' => 'dev-main',
+        'version' => 'dev-main',
+        'reference' => '22c6094f3d24a2ecada8ae749421f3dc3fd31774',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,9 +11,9 @@
     ),
     'versions' => array(
         'blue2004/novaphp' => array(
-            'pretty_version' => '1.0.0+no-version-set',
-            'version' => '1.0.0.0',
-            'reference' => null,
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'reference' => '22c6094f3d24a2ecada8ae749421f3dc3fd31774',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -788,6 +788,15 @@
             'reference' => '715e55da149fe32a12d68ef10e5b00e70bd3dbec',
             'type' => 'library',
             'install_path' => __DIR__ . '/../topthink/think-orm',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'topthink/think-template' => array(
+            'pretty_version' => 'v3.0.2',
+            'version' => '3.0.2.0',
+            'reference' => '0b88bd449f0f7626dd75b05f557c8bc208c08b0c',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../topthink/think-template',
             'aliases' => array(),
             'dev_requirement' => false,
         ),
