@@ -41,8 +41,8 @@ class EasterEgg
     private static $team = [
         [
             'name' => 'Blue2004 (CYL)',
-            'email' => 'zhe@framework.dev',
-            'github' => 'https://github.com/xxx-xxx'
+            'email' => 'xuey863toy@gmail.com',
+            'github' => 'https://github.com/xuey490/novaphp'
         ],
     ];
 
