@@ -1,8 +1,8 @@
 
-##简介:
+## 简介:
 这是一款基于symfony的底层代码开发的轻量级，强大，快速，简单，安全的php框架。
 
-##下载安装:
+## 下载安装:
 - 本地环境:php8.1及以上，Redis，MySQL5.7及以上
 -  从GitHub下载main版本，解压到本地目录，在根目录下运行php -S localhost:8000 -t public
 - 打开浏览器，输入地址http://localhost:8000
