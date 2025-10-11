@@ -12,12 +12,7 @@ use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorage;
 use Symfony\Component\HttpFoundation\Session\Storage\Handler\StrictSessionHandler;
 use Symfony\Component\HttpFoundation\Session\Storage\Handler\RedisSessionHandler;
-use Twig\Extra\Markdown\MarkdownExtension;
-use Twig\Extra\Markdown\DefaultMarkdown;
-use Twig\Extra\Markdown\MarkdownRuntime;
 
-//i18n 多国语言翻译
-use Framework\Translation\TransHelper;
 
 return function (ContainerConfigurator $configurator) {
     $services = $configurator->services();
@@ -56,18 +51,6 @@ return function (ContainerConfigurator $configurator) {
     // 示例：注册一个服务 如果你有 test.service 且要手动 get() 必须加public这一行
     $services->set('test', \stdClass::class)->public();
 	
-
-	//注册session
-	/*
-	$sessionOptions = require __DIR__ . '/session.php';
-	$services->set('session.storage', NativeSessionStorage::class)
-		->args([$sessionOptions])
-		->public();
-
-	$services->set('session', Session::class)
-		->args([new Reference('session.storage')])
-		->public();		
-	*/
     // 加载session redis配置
     $redisConfig = require __DIR__ . '/redis.php';
     $sessionConfig = require __DIR__ . '/session.php';
@@ -102,9 +85,6 @@ return function (ContainerConfigurator $configurator) {
         ->args([new Reference('session.storage')])
         ->public();
 
-	
-	
-	
 	// 注册 ConfigLoader 为服务
 	$services->set('config' , \Framework\Config\ConfigLoader::class)	//$globalConfig = $this->container->get('config')->loadAll();
 		->args(['%kernel.project_dir%/config'])
@@ -139,7 +119,7 @@ return function (ContainerConfigurator $configurator) {
 		->autowire()	//不带args参数
 		->public();
 	
-	// 注册异常处理类
+	// 🔹 6. 注册异常处理类
 	$services->set('exception', \Framework\Core\Exception\Handler::class)
 		->autowire()
 		->public();	
@@ -161,11 +141,8 @@ return function (ContainerConfigurator $configurator) {
     $services->set(\Symfony\Component\Cache\Adapter\TagAwareAdapter::class)
         ->factory([service(\Framework\Cache\CacheFactory::class), 'create'])->public();
 
-
-
 	// 注册 RequestStack（用于在工厂中获取当前请求）
 	$services->set(RequestStack::class);
-
 
 	// i18n 多国语言翻译
 	// 注册 Translator 服务（不设 locale，延迟设置）
@@ -183,13 +160,6 @@ return function (ContainerConfigurator $configurator) {
             '%kernel.project_dir%/resource/translations',
         ])->public();
 
-
-	/*
-	$services->set('config', \Framework\Config\ConfigService::class)
-		->autowire()
-		->public();
-	*/
-	
 	/*使用
 		Container::init(); // 加载服务配置
 		$this->container = Container::getInstance();
@@ -197,9 +167,6 @@ return function (ContainerConfigurator $configurator) {
 		//$dbHost = $config->get('database.host');
 		//print_r($config->all());
 	*/	
-	
-
-
 
 	//Override
 	$services->set(\Framework\Middleware\MiddlewareMethodOverride::class)
@@ -224,7 +191,6 @@ return function (ContainerConfigurator $configurator) {
 		->autoconfigure()
 		->public(); 
 	
-
 	//IP Block
 	$services->set(\Framework\Middleware\MiddlewareIpBlock::class)
 		->args(['%kernel.project_dir%/config/iplist.php'])
@@ -241,7 +207,7 @@ return function (ContainerConfigurator $configurator) {
 
 
 
-    // 👇 加载中间件配置
+    // 加载中间件配置
     $middlewareConfig = require __DIR__ . '/../config/middleware.php';
 
     // -----------------------------
@@ -284,10 +250,8 @@ return function (ContainerConfigurator $configurator) {
     // ------------------------------
     // TWIG配置加载
     // ------------------------------
-
 	$viewConfig = require dirname(__DIR__) . '/config/view.php';
 	$services->set(\Twig\Loader\FilesystemLoader::class)->args([$viewConfig['paths']])->public();
-	
 	
 	//注册 AppTwigExtension 扩展
 	$services->set(\App\Twig\AppTwigExtension::class)
@@ -329,7 +293,6 @@ return function (ContainerConfigurator $configurator) {
 		->public();	
 	// Markdown Twig 扩展结束
 
-
 	$services->set(\Twig\Environment::class) // ✅ 显式指定类
 		->args([
 			service(\Twig\Loader\FilesystemLoader::class),
@@ -346,8 +309,6 @@ return function (ContainerConfigurator $configurator) {
 
     // 别名
     $services->alias('view', \Twig\Environment::class)->public();
-		
-
 	
 	$services->load('App\\Middleware\\', '../app/Middleware/**/*Middleware.php')
 		->autowire()      // 支持中间件的依赖自动注入（如注入UserService）
@@ -356,7 +317,6 @@ return function (ContainerConfigurator $configurator) {
 
 
 	#$services->load('App\\', '../app/*/*')->exclude('../app/{Entity,Tests}/*') ->autowire()->autoconfigure();
-	
 	
     // ✅ 自动注册所有 Services（包括 UserService）
     $services->load('App\\Services\\', '../app/Services/*Service.php')
