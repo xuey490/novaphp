@@ -37,8 +37,11 @@ class BlogController
 		}
 
 		
-        // 动态获取文章数据
-        $posts = $this->blogService->getList();
+		$mdContent = $this->twig->render('makedown.html.twig', ['title' => 'Hello']);
+		
+		
+    // 动态获取文章数据
+    $posts = $this->blogService->getList();
 		// 热门文章数据
 		$popularPosts = $this->blogService->getpopularPosts();
 
@@ -46,7 +49,8 @@ class BlogController
             'posts' => $posts,
             'current_user' => app('session')->get('user'),
             'page_title' => '最新文章',
-			'popularPosts' => $popularPosts,
+						 'popularPosts' => $popularPosts,
+						 'mdContent' => $mdContent,
         ]);
 
         return new Response($html);

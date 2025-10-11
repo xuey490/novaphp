@@ -45,4 +45,8 @@
         'popularPosts': popularPosts|default([])
     }) }}
 
+{{ mdContent | markdown_to_html }}
+
+
 {% endblock %}
+

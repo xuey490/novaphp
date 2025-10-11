@@ -12,9 +12,9 @@ use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorage;
 use Symfony\Component\HttpFoundation\Session\Storage\Handler\StrictSessionHandler;
 use Symfony\Component\HttpFoundation\Session\Storage\Handler\RedisSessionHandler;
-
-
-
+use Twig\Extra\Markdown\MarkdownExtension;
+use Twig\Extra\Markdown\DefaultMarkdown;
+use Twig\Extra\Markdown\MarkdownRuntime;
 
 //i18n 多国语言翻译
 use Framework\Translation\TransHelper;
@@ -282,19 +282,55 @@ return function (ContainerConfigurator $configurator) {
 	
 
     // ------------------------------
-    // 配置加载A
+    // TWIG配置加载
     // ------------------------------
+
 	$viewConfig = require dirname(__DIR__) . '/config/view.php';
+	$services->set(\Twig\Loader\FilesystemLoader::class)->args([$viewConfig['paths']])->public();
+	
+	
+	//注册 AppTwigExtension 扩展
 	$services->set(\App\Twig\AppTwigExtension::class)
         ->args([
             service(\Framework\Security\CsrfTokenManager::class),
             '_token' // 👈 显式传入字段名
         ])
         ->public();
+	
+	//注册 markdown 服务开始
+	$services->set(\League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension::class)
+		->public(); 
+	
+	// 注册 markdown Environment 
+	$services->set(\League\CommonMark\Environment\Environment::class)
+    ->args([
+        [
+            // 这是传递给 Environment 构造函数的配置数组
+            'html_input' => 'strip',
+            'allow_unsafe_links' => false,
+        ]
+    ])->call('addExtension', [service(\League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension::class)])
+    ->public();    // Environment 对象需要加载核心扩展才能工作
 
-	$services->set(\Twig\Loader\FilesystemLoader::class)->args([$viewConfig['paths']])->public();
+	// 注册 MarkdownConverter 服务
+	//    它依赖于 上面 Environment 服务。
+	$services->set(\League\CommonMark\MarkdownConverter::class)
+		->args([
+			service(\League\CommonMark\Environment\Environment::class),
+		])
+		->public();
+	
+	// 注册自定义 Markdown Twig 扩展
+	// 注意：这个扩展现在依赖于 MarkdownConverter 服务
+	$services->set(\App\Twig\MarkdownExtension::class)
+		->args([
+			service(\League\CommonMark\MarkdownConverter::class), // 注入 MarkdownConverter
+		])
+		->public();	
+	// Markdown Twig 扩展结束
 
-	$services->set(\Twig\Environment::class)
+
+	$services->set(\Twig\Environment::class) // ✅ 显式指定类
 		->args([
 			service(\Twig\Loader\FilesystemLoader::class),
 			[
@@ -305,20 +341,12 @@ return function (ContainerConfigurator $configurator) {
 			],
 		])
 		->call('addExtension', [service(\App\Twig\AppTwigExtension::class) ])
+		->call('addExtension', [service(\App\Twig\MarkdownExtension::class)]) // ✅ 添加新的 Markdown 扩展
 		->public();
 
     // 别名
     $services->alias('view', \Twig\Environment::class)->public();
 		
-
-	//视图错误类服务
-	/*
-	$services->set(\Framework\Core\Exception\ErrorHandler::class)
-		->args([
-			service(\Twig\Environment::class),
-			'%kernel.debug%'
-		])->public();
-	*/
 
 	
 	$services->load('App\\Middleware\\', '../app/Middleware/**/*Middleware.php')

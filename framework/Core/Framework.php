@@ -156,7 +156,7 @@ class Framework
 			$this->logger->logException($e, $request);
 
 			// 返回友好错误响应
-			//$response = $this->handleException($e);
+			$response = $this->handleException($e);
 		}
 
 		// 统一日志记录（包括异常情况）
@@ -286,7 +286,7 @@ class Framework
 	/*
 	500 错误的友好页面
 	*/
-    private function handleException(\Exception $e)
+    private function handleException(\Throwable $e)
     {
 		// 设置HTTP响应头为500
 		http_response_code(500);

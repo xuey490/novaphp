@@ -14,6 +14,7 @@
         "doctrine/annotations": "^2.0",
         "ezyang/htmlpurifier": "^4.18",
         "fig/http-message-util": "^1.1",
+        "league/commonmark": "^2.6",
         "monolog/monolog": "3.7.0",
         "psr/http-message": "*",
         "psr/http-server-middleware": "^1.0",
@@ -26,13 +27,13 @@
         "symfony/http-foundation": "^7.3",
         "symfony/http-kernel": "^7.2",
         "symfony/mime": "^7.3",
-
         "symfony/rate-limiter": "^7.2",
         "symfony/routing": "^6.0",
         "symfony/translation": "^7.3",
         "symfony/yaml": "^7.3",
         "topthink/think-cache": "^3.0",
         "topthink/think-orm": "^3.0",
+        "twig/markdown-extra": "^3.17",
         "twig/twig": "^3.14"
     },
     "require-dev": {

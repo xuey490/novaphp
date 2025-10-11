@@ -1,5 +1,9 @@
-/storage/cache/
-/storage/logs/
-/storage/view/
-/storage/tests/
-/.env
+# 忽略 storage/cache/ 目录下的所有内容
+/storage/cache/*
+/storage/logs/*
+/storage/view/*
+
+# 但不要忽略 .gitkeep 文件，
+!/storage/cache/.gitkeep
+!/storage/logs/.gitkeep
+!/storage/view/.gitkeep
