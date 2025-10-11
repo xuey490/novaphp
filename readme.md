@@ -46,7 +46,7 @@ http://localhost:8000/user/add
 	- 引入phpunit，生成测试类php phpunit.php， vendor\bin\phpunit
 	- 增加了版本彩蛋（纯粹无聊）http://localhost:8000/version 可以访问彩蛋
 	- 增加了i18n多国语言环境，自动检测载入语言包，http://localhost:8000/?lang=en/zh_CN/zh_TW/ja 切换
-	- 0.0.9 完成
+- 0.0.9 完成
 	- 重写中间件，添加多个全局变量Cors，RateLimiter（限流器）、CircuitBreaker（熔断器）、XSS过滤，IP Block（IP拦截）等
 	- 注册session服务，支持redis/file切换
 - 0.0.10
