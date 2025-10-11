@@ -57,6 +57,8 @@ http://localhost:8000/user/add
 	- 优化错误显示的页面
 	- 修改核心文件Framework.php 去除PSR-7的兼容
 	- 修改日志类，去除PSR-7的兼容
+	- 增加twig解析markdown的功能
+	- 引入thinkphp的模板引擎，可以自动同时使用两个模板引擎
 > 0.0.10是一个里程碑的版本，已经基本具备所有现代php框架的特性。
 
 
