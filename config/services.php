@@ -342,6 +342,9 @@ return function (ContainerConfigurator $configurator) {
 =======
 	// 第二种方法 注册thinkTemp
 >>>>>>> Stashed changes
+=======
+	// 第二种方法 注册thinkTemp
+>>>>>>> Stashed changes
 
     $parameters = $configurator->parameters();
 	
@@ -367,7 +370,10 @@ return function (ContainerConfigurator $configurator) {
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -387,6 +393,9 @@ return function (ContainerConfigurator $configurator) {
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
