@@ -21,6 +21,7 @@ http://localhost:8000/user/add
 
 
 ## 版本里程: 更多见
+https://github.com/xuey490/novaphp/blob/main/version.md
 - 0.0.10
 	- 引入Twig模板引擎，完成模板引擎注册服务，扩展，演示以及模板 http://localhost:8000/blog/ http://localhost:8000/view
 	- 重写了熔断器和csrf中间件，增加了referer来路检测中间件
