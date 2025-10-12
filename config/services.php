@@ -328,6 +328,7 @@ return function (ContainerConfigurator $configurator) {
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 	// 第二种方法
 =======
 	// 第二种方法 注册thinkTemp
