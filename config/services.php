@@ -324,27 +324,7 @@ return function (ContainerConfigurator $configurator) {
 		->public();	
 	*/
 	
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-	// 第二种方法
-=======
 	// 第二种方法 注册thinkTemp
->>>>>>> Stashed changes
-=======
-	// 第二种方法 注册thinkTemp
->>>>>>> Stashed changes
-=======
-	// 第二种方法 注册thinkTemp
->>>>>>> Stashed changes
-=======
-	// 第二种方法 注册thinkTemp
->>>>>>> Stashed changes
-=======
-	// 第二种方法 注册thinkTemp
->>>>>>> Stashed changes
 
     $parameters = $configurator->parameters();
 	
@@ -366,20 +346,6 @@ return function (ContainerConfigurator $configurator) {
         ])
         ->public(); // 允许从容器外部获取
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 	
     // 注册 MIME 检查器
     $services->set(\Framework\Utils\MimeTypeChecker::class)
@@ -390,19 +356,6 @@ return function (ContainerConfigurator $configurator) {
 
     $services->set(\Framework\Utils\FileUploader::class)
              ->args([$uploadConfig, service(\Framework\Utils\MimeTypeChecker::class)])->public();	
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 
 	
 	
