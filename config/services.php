@@ -324,7 +324,11 @@ return function (ContainerConfigurator $configurator) {
 		->public();	
 	*/
 	
+<<<<<<< Updated upstream
 	// 第二种方法
+=======
+	// 第二种方法 注册thinkTemp
+>>>>>>> Stashed changes
 
     $parameters = $configurator->parameters();
 	
@@ -346,6 +350,19 @@ return function (ContainerConfigurator $configurator) {
         ])
         ->public(); // 允许从容器外部获取
 
+<<<<<<< Updated upstream
+=======
+	
+    // 注册 MIME 检查器
+    $services->set(\Framework\Utils\MimeTypeChecker::class)
+             ->args([dirname(__DIR__) . '/config/mime_types.php'])->public();
+
+    // 注册文件上传器，注入上传配置 + MIME 检查器
+    $uploadConfig = include dirname(__DIR__) . '/config/upload.php';
+
+    $services->set(\Framework\Utils\FileUploader::class)
+             ->args([$uploadConfig, service(\Framework\Utils\MimeTypeChecker::class)])->public();	
+>>>>>>> Stashed changes
 
 	
 	

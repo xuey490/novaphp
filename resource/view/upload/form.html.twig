@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h3>文件上传测试</h3>
+<form id="uploadForm" method="post" action="/upload/process" enctype="multipart/form-data">
+	{{ csrf_field() }}
+    <input type="file" name="file[]" multiple />
+    <button type="submit">上传</button>
+</form>
+
+<script>
+document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+
+    const res = await fetch('/upload/process', {
+        method: 'POST',
+        body: formData
+    });
+
+    const data = await res.json();
+    console.log(data);
+});
+</script>
+
+</body>
+</html>
