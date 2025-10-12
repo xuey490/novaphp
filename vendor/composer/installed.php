@@ -4,9 +4,15 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
         'reference' => '22c6094f3d24a2ecada8ae749421f3dc3fd31774',
+=======
+        'pretty_version' => '0.0.10.x-dev',
+        'version' => '0.0.10.9999999-dev',
+        'reference' => 'b5e9ad8421cb3345a3b44e7f6e0cd3051ec8d112',
+>>>>>>> Stashed changes
 =======
         'pretty_version' => '0.0.10.x-dev',
         'version' => '0.0.10.9999999-dev',
@@ -32,9 +38,15 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
             'reference' => '22c6094f3d24a2ecada8ae749421f3dc3fd31774',
+=======
+            'pretty_version' => '0.0.10.x-dev',
+            'version' => '0.0.10.9999999-dev',
+            'reference' => 'b5e9ad8421cb3345a3b44e7f6e0cd3051ec8d112',
+>>>>>>> Stashed changes
 =======
             'pretty_version' => '0.0.10.x-dev',
             'version' => '0.0.10.9999999-dev',
