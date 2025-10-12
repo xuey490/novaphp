@@ -151,6 +151,12 @@ if (!function_exists('config')) {
     }
 }
 
+function generateUuid(): string
+{
+    //使用 ramsey/uuid
+    return time().'-' . substr(Uuid::uuid4()->toString(), 0, 16);
+}
+
 function generateRequestId(): string
 {
     //使用 ramsey/uuid
