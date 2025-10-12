@@ -20,35 +20,7 @@ http://localhost:8000/team
 http://localhost:8000/user/add
 
 
-## 版本里程:
-- 0.0.1 基础框架搭建，完成核心路由转发
-
-- 0.0.2 实现日志，DI注册依赖注入，完善路由
-
-- 0.0.3 实现中间件，注册服务
-
-- 0.0.4 实现注解路由，应用层支持多个中间件
-
-- 0.0.5 完成ORM，整合了ThinkORM，模型完全兼容Thinkphp特性
-
-- 0.0.6 完成：
-	- 容器管理, 重写Container（容器）改用symfony的容器，兼容PSR-11
-	- 容器可以直接注册服务，也可以注册具体的业务操作类，增加了助手函数
-	- 完成配置管理，增加了配置服务注册（可选）
-	- 完成日志注册服务；
-- 0.0.7 完成:
-	-  重写日志服务，对日志分类，大小，归档等；
-	-  异常服务，处理，友好错误显示，增加request-ID便于追踪堆栈
-	-  修改核心文件Framework.php 增加Symfony Request 与PSR-7的兼容
-	-  增加了Kernel核心文件，增加app()助手函数， 获取服务容器或解析服务
-- 0.0.8 完成
-	- 引入thinkcache缓存类库，实现缓存服务
-	- 引入phpunit，生成测试类php phpunit.php， vendor\bin\phpunit
-	- 增加了版本彩蛋（纯粹无聊）http://localhost:8000/version 可以访问彩蛋
-	- 增加了i18n多国语言环境，自动检测载入语言包，http://localhost:8000/?lang=en/zh_CN/zh_TW/ja 切换
-- 0.0.9 完成
-	- 重写中间件，添加多个全局变量Cors，RateLimiter（限流器）、CircuitBreaker（熔断器）、XSS过滤，IP Block（IP拦截）等
-	- 注册session服务，支持redis/file切换
+## 版本里程: 更多见
 - 0.0.10
 	- 引入Twig模板引擎，完成模板引擎注册服务，扩展，演示以及模板 http://localhost:8000/blog/ http://localhost:8000/view
 	- 重写了熔断器和csrf中间件，增加了referer来路检测中间件
