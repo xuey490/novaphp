@@ -7,17 +7,29 @@ namespace Framework\Container;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface as SymfonyContainerInterface;
+use Symfony\Component\DependencyInjection\Dumper\PhpDumper;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use UnitEnum;
 
+// 引入编译后的容器接口，我们的缓存类会实现它
+use Symfony\Component\DependencyInjection\CompiledContainerInterface;
+
 class Container implements SymfonyContainerInterface
 {
-    private static ?ContainerBuilder $container = null;
+    #private static ?ContainerBuilder $container = null;
+	
+    // 编译后容器的缓存文件路径
+    private const CACHE_FILE = BASE_PATH . '/storage/cache/container.php';
 
+    // 静态变量，用于持有最终的容器实例（无论是新建的还是从缓存加载的）
+    private static ?SymfonyContainerInterface $container = null;
+	
     /**
-     * 初始化容器，可选传入配置参数
+     * 初始化容器。
+     * - 在生产环境：尝试加载缓存。如果缓存不存在，则构建、编译并缓存。
+     * - 在开发环境：总是重新构建，以保证配置实时生效。
      */
-    public static function init(array $parameters = []): void
+    public static function init1(array $parameters = []): void
     {
         if (self::$container !== null) {
             return;
@@ -59,6 +71,83 @@ class Container implements SymfonyContainerInterface
 
         self::$container = $container;
     }
+	
+	
+    /**
+     * 初始化容器。
+     * - 在生产环境：尝试加载缓存。如果缓存不存在，则构建、编译并缓存。
+     * - 在开发环境：总是重新构建，以保证配置实时生效。
+     */
+    public static function init(array $parameters = []): void
+    {
+        if (self::$container !== null) {
+            return;
+        }
+
+        // 加载 .env 文件来获取环境变量
+        $dotenv = new \Symfony\Component\Dotenv\Dotenv();
+        $dotenv->load(BASE_PATH . '/.env');
+
+        $env = env('APP_ENV') ?: 'dev';
+        $isProd = $env === 'prod';
+
+        // --- 开发环境或缓存不存在：构建新容器 ---
+        $projectRoot = dirname(__DIR__, 2);
+        $configDir   = $projectRoot . '/config';
+
+        if (!is_dir($configDir)) {
+            throw new \RuntimeException("配置目录不存在: {$configDir}");
+        }
+
+        $servicesFile = $configDir . '/services.php';
+        if (!file_exists($servicesFile)) {
+            throw new \RuntimeException("服务配置文件不存在: {$servicesFile}");
+        }
+
+        $containerBuilder = new ContainerBuilder();
+        $containerBuilder->setParameter('kernel.project_dir', $projectRoot);
+        $containerBuilder->setParameter('kernel.debug', (bool)getenv('APP_DEBUG'));
+        $containerBuilder->setParameter('kernel.environment', $env);
+
+        // 注入全局配置作为参数
+        if (!empty($parameters)) {
+            $containerBuilder->setParameter('config', $parameters);
+        }
+
+        // 加载你的服务配置文件
+        $loader = new PhpFileLoader($containerBuilder, new FileLocator($configDir));
+        $loader->load('services.php');
+
+        // 编译容器。这会冻结所有定义，进行优化。
+        // 注意：编译后，你将不能再使用 $containerBuilder->set() 或修改定义。
+        $containerBuilder->compile();
+
+        // --- 如果是生产环境，将编译结果缓存起来 ---
+
+        if ($isProd) {
+            @mkdir(dirname(self::CACHE_FILE), 0777, true);
+            
+            $dumper = new PhpDumper($containerBuilder);
+            $cacheContent = $dumper->dump(['class' => 'ProjectServiceContainer']);
+
+            // ✅ 关键修复：使用 flags 参数确保以无BOM的UTF-8编码写入文件
+            file_put_contents(self::CACHE_FILE, $cacheContent);
+            
+            // 重新 require 刚刚生成的缓存文件
+            $loadedContainer = require self::CACHE_FILE;
+            if ($loadedContainer instanceof SymfonyContainerInterface) {
+                self::$container = $loadedContainer;
+            } else {
+                // 如果仍然失败，作为最后的安全措施，使用未缓存的容器
+                self::$container = $containerBuilder;
+            }
+        } else {
+            // 开发环境，直接使用构建好的容器
+            self::$container = $containerBuilder;
+        }		
+    }
+	
+	
 
     public static function getInstance(): self
     {
