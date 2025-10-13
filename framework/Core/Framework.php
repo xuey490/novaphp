@@ -82,7 +82,8 @@ class Framework
             $this->container,	//或者new Container()
             self::CONTROLLER_NAMESPACE
         );
- 
+		
+		//print_r($this->router);
     }
 
     /**
@@ -229,7 +230,6 @@ class Framework
         return $response;
     }
 
-
     /**
      * 加载所有路由（手动路由 + 注解路由），支持缓存
      */
@@ -253,17 +253,34 @@ class Framework
             $allRoutes->addCollection($manualRoutes);
         }
 
-        // 2. 加载注解路由（通过 AnnotationRouterLoader）
-        $annotationLoader = new AnnotationRouteLoader(
-            self::CONTROLLER_DIR,
-            self::CONTROLLER_NAMESPACE
-        );
-        $annotatedRoutes = $annotationLoader->loadRoutes(); // 调用正确的方法名
-        //print_r($annotatedRoutes);
-        $allRoutes->addCollection($annotatedRoutes);
+		// 2. 加载 Attribute 注解路由
+		$attrLoader = new \Framework\Core\AttributeRouteLoader(
+			self::CONTROLLER_DIR,
+			self::CONTROLLER_NAMESPACE
+		);
+		$annotatedRoutes = $attrLoader->loadRoutes();
+		$allRoutes->addCollection($annotatedRoutes);
+
+
+		/* 
+		* doctrine/annotations 注解路由，遗弃 https://packagist.org/packages/doctrine/annotations
+		* composer remove doctrine/annotations
+		* 移除Framework\Annotations\下面的包文件
+		* 移除Framework\Annotations\AnnotationRouteLoader
+		* 具体测试：TestController.php
+		*/
+
+        // 2. 加载注解路由（通过 AnnotationRouterLoader） 
+        //$annotationLoader = new AnnotationRouteLoader(
+        //    self::CONTROLLER_DIR,
+        //    self::CONTROLLER_NAMESPACE
+        //);
+        //$annotatedRoutes = $annotationLoader->loadRoutes(); // 调用正确的方法名
+        //$allRoutes->addCollection($annotatedRoutes);
+
 
         // 缓存合并后的路由
-        //$this->cacheRoutes($allRoutes, self::ROUTE_CACHE_FILE);
+		$this->cacheRoutes($allRoutes, self::ROUTE_CACHE_FILE);
 
         return $allRoutes;
     }

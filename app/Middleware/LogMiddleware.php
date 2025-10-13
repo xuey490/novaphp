@@ -8,7 +8,7 @@ class LogMiddleware
 {
     public function handle(Request $request, callable $next): Response
     {
-		dump('--- 进入 LogMiddleware (中间件) ---'); 
+		//dump('--- 进入 LogMiddleware (中间件) ---'); 
 			//$id = $request->getSession();
         // 模拟鉴权：如果没有登录，返回401
        // if (!$id->get('user_id')) {
@@ -19,7 +19,7 @@ class LogMiddleware
 		$response =$next($request);
 		
 		
-		dump('--- 退出 LogMiddleware (中间件) ---'); 
+		//dump('--- 退出 LogMiddleware (中间件) ---'); 
         return $response;
     }
 }

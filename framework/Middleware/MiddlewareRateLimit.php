@@ -7,17 +7,31 @@ use Symfony\Component\HttpFoundation\Response;
 
 class MiddlewareRateLimit
 {
-    private int $maxRequests = 1000;
-    private int $period = 60; // seconds
-    private string $cacheDir;
-
+    #private int $maxRequests = 10;
+    #private int $period = 60; // seconds
+    #private string $cacheDir;
+	
+	/*
     public function __construct(string $cacheDir )
     {
+		$this->maxRequests = 
         $this->cacheDir = rtrim($cacheDir, '/') . '/';
         if (!is_dir($this->cacheDir)) {
             mkdir($this->cacheDir, 0755, true);
         }
     }
+	*/
+
+    public function __construct(private int $maxRequests , private int $period , private string $cacheDir   )
+    {
+		$this->maxRequests = $maxRequests;
+		$this->period = $period;
+        $this->cacheDir = rtrim($cacheDir, '/') . '/';
+        if (!is_dir($this->cacheDir)) {
+            mkdir($this->cacheDir, 0755, true);
+        }
+    }
+
 
     /**
      * 处理请求并应用限流

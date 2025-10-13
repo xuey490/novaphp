@@ -1,13 +1,10 @@
 <?php
-
 // Framework/Utils/FileUploader.php
 
 namespace Framework\Utils;
 
-//use App\Utils\MimeTypeChecker;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
-//use Symfony\Component\Uid\Uuid;
 use finfo;
 
 class FileUploader

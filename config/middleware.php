@@ -9,7 +9,7 @@ return [
     |--------------------------------------------------------------------------
     | 控制哪些中间件启用，以及它们的参数
     */
-
+	// Csrf的配置
     'csrf_protection' => [
         'enabled' => true,
         'token_name' => '_token',
@@ -22,6 +22,7 @@ return [
         'remove_after_validation' => true, // 用完即焚
     ],
 
+	// Referer配置
     'referer_check' => [
         'enabled' => true,
         'allowed_hosts' => [
@@ -37,6 +38,13 @@ return [
         ],
         'strict' => false, // false = 允许空 Referer（如隐私模式）
         'error_message' => '请求来源不被允许。',
+    ],
+	
+	
+    'rate_limit' => [
+        'enabled' => true,
+        'maxRequests' => 1000,	//60秒内的最大请求数
+		'period'	=> 60,  //60秒
     ],
 
     // 可扩展其他中间件

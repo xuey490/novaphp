@@ -39,24 +39,29 @@ class MiddlewareDispatcher
     {
         // 1. 获取路由中间件（从请求的_route属性中获取）
         $route = $request->attributes->get('_route', []);
+
         // 假设路由定义中的 middleware 可能是多维或混合的，我们先获取它
-        $rawRouteMiddleware = $route['middleware'] ?? [];
+        $rawRouteMiddleware = $route['middleware'] ? $route['params']['_middleware'] : [];
+       // $rawRouteMiddleware = $route['middleware'] ?? [];
+		#print_r($route);
 
         // 2. 【核心步骤】规范化路由中间件数组
         // 将可能嵌套的多维数组合并成一维数组
         $flattenedRouteMiddleware = $this->flattenArray($rawRouteMiddleware);
-        
-        // 从路由中间件中移除掉那些已经在全局中间件中定义过的项，避免重复执行
+
+        // 3. 从路由中间件中移除掉那些已经在全局中间件中定义过的项，避免重复执行
         $uniqueRouteMiddleware = array_values(array_diff(
             $flattenedRouteMiddleware, 
             $this->globalMiddleware
         ));
+
         
-        // 3. 合并中间件（全局 + 干净的路由中间件）
+        // 4. 合并中间件（全局 + 干净的路由中间件）
         // 这将得到你期望的顺序：[全局1, 全局2, 路由1, 路由2]
         $allMiddleware = array_merge($this->globalMiddleware, $uniqueRouteMiddleware);
 
-        // 4. 构建中间件链条（从后往前包装，确保执行顺序正确）
+
+        // 5. 构建中间件链条（从后往前包装，确保执行顺序正确）
         $middlewareChain = $next;
         // 关键：翻转合并后的数组
         $reversedMiddleware = array_reverse($allMiddleware);

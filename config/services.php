@@ -69,10 +69,12 @@ return function (ContainerConfigurator $configurator) {
     if ($storageType === 'redis') {
         // 使用 Redis 作为 handler
         $services->set('session.handler', RedisSessionHandler::class)
-            ->args([new Reference('redis.client')]);
+            //->args([new Reference('redis.client')]);
+            ->args([service('redis.client')]);
 
         $services->set('session.storage', NativeSessionStorage::class)
-            ->args([$sessionOptions, new Reference('session.handler')])
+            //->args([$sessionOptions, new Reference('session.handler')])
+            ->args([$sessionOptions, service('session.handler')])
             ->public();
     } else {
         // 默认：使用原生文件存储（PHP 默认）
@@ -180,12 +182,7 @@ return function (ContainerConfigurator $configurator) {
 		->autowire()
 		->autoconfigure()->public();
 		
-	//限流器
-	$services->set(\Framework\Middleware\MiddlewareRateLimit::class)
-		->args(['%kernel.project_dir%/storage/cache/'])
-		->autoconfigure()
-		->public(); 
-		
+
 	//熔断器
 	$services->set(\Framework\Middleware\MiddlewareCircuitBreaker::class)
 		->args(['%kernel.project_dir%/storage/cache/'])
@@ -212,15 +209,34 @@ return function (ContainerConfigurator $configurator) {
     $middlewareConfig = require __DIR__ . '/../config/middleware.php';
 
     // -----------------------------
+    // 动态注册：Rate_Limit 中间件
+    // -----------------------------
+	if ($middlewareConfig['rate_limit']['enabled']) {
+
+		//限流器
+		$services->set(\Framework\Middleware\MiddlewareRateLimit::class)
+			->args([
+			$middlewareConfig['rate_limit']['maxRequests'],
+			$middlewareConfig['rate_limit']['period'],
+			'%kernel.project_dir%/storage/cache/'
+			
+			])
+			->autoconfigure()
+			->public(); 
+			
+	}
+
+    // -----------------------------
     // 动态注册：CSRF 保护中间件 use Framework\Security\CsrfTokenManager;
     // -----------------------------
+	// Session 必须已注册（确保你的框架已启动 session）
+	$services->set(\Framework\Security\CsrfTokenManager::class)
+		->args([
+			new Reference('session'), // 假设你已注册 'session' 服务
+			'csrf_token'
+		])->public();
+	
     if ($middlewareConfig['csrf_protection']['enabled']) {
-        // Session 必须已注册（确保你的框架已启动 session）
-        $services->set(\Framework\Security\CsrfTokenManager::class)
-            ->args([
-                new Reference('session'), // 假设你已注册 'session' 服务
-                'csrf_token'
-            ])->public();
         $services->set(\Framework\Middleware\MiddlewareCsrfProtection::class)
             ->args([
                 new Reference(\Framework\Security\CsrfTokenManager::class),
@@ -325,11 +341,12 @@ return function (ContainerConfigurator $configurator) {
 	*/
 	
 	// 第二种方法 注册thinkTemp
-
     $parameters = $configurator->parameters();
 	
 	// 0.注册模板工厂类
-	$services->set(\App\twig\ThinkTemplateFactory::class);
+	$services->set(\App\twig\ThinkTemplateFactory::class)
+		->args([$tpTemplateConfig])
+		->public();	;
 
     // 1. 将 ThinkPHP 模板配置定义为一个容器参数
     // 这是一种更 Symfony 的做法，便于管理
@@ -338,7 +355,8 @@ return function (ContainerConfigurator $configurator) {
     // 2. 注册 'thinkTemp' 服务
     $services->set('thinkTemp', \think\Template::class)
         // 使用 factory() 方法，并指向我们的工厂类
-		->factory(service(\App\twig\ThinkTemplateFactory::class))
+		//->factory(service(\App\twig\ThinkTemplateFactory::class))
+		->factory([service(\App\twig\ThinkTemplateFactory::class), 'create'])
         // 为工厂方法注入配置参数
         ->args([
             // 使用 param() 来引用上面定义的参数

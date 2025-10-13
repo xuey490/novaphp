@@ -29,7 +29,18 @@
 <!-- 3. 直接传递字面量参数 -->
 <p>固定欢迎语：{$hello('所有用户')}</p>
 <p>指定时间格式化：{$formatDate(1718000000, 'Y年m月d日')}</p>	
-	
-	
+
+
+	<hr />
+<p>
+在表单模板插入 $csrf_field() 自动生成token 隐藏表单</p>	
+
+
+
+{$web_csrf_field()}
+
+<p>直接生成js用的token</p>
+
+const token ='{$api_csrf_field()}';
 </body>
 </html>

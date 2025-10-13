@@ -9,7 +9,7 @@ class AuthMiddleware
 {
     public function handle(Request $request, callable $next): Response
     {
-		dump('--- 进入 AuthMiddleware (中间件) ---'); 
+		//dump('--- 进入 AuthMiddleware (中间件) ---'); 
 		
 
 		//$id = $request->getSession();
@@ -21,7 +21,7 @@ class AuthMiddleware
         // 鉴权通过，执行下一个中间件/控制器
 		$response =$next($request);
 		
-		dump('--- 退出 AuthMiddleware (中间件) ---');
+		//dump('--- 退出 AuthMiddleware (中间件) ---');
         return $response;
     }
 }

@@ -1,31 +1,39 @@
 <?php
-// src/Factory/ThinkTemplateFactory.php
 
-namespace App\twig;
+// app/Twig/ThinkTemplateFactory.php
 
+/*
+改成符合psr-4规则
+*/
+namespace App\Twig;
+
+use think\Template;
 
 class ThinkTemplateFactory
 {
-    public function __invoke(array $config)
+    private array $config;
+
+    public function __construct(array $config = [])
     {
-        // 这个 __invoke 方法将被 Symfony 调用
-        // $config 参数会自动从服务定义中注入
+        $this->config = $config;
+    }
 
-        // 1. 创建并返回模板引擎实例
-        $template = new \think\Template($config);
+    public function create(): Template
+    {
+        // 1. 创建模板引擎实例
+        $template = new Template($this->config);
 
-
-        // 2. 在这里“注入”您的自定义函数
-        // 我们使用 assign 方法，这是所有版本都支持的
+        // 2. 注册自定义函数（通过 assign 模拟函数注入）
         $template->assign([
-            'hello' => 'tpTemplateHello', // '模板中使用的名称' => 'PHP中的函数名'
+            'hello' => 'tpTemplateHello',
             'formatDate' => 'tpTemplateFormatDate',
+			'web_csrf_field' => 'WebCsrfField',
+			'api_csrf_field' => 'APICsrfField',
         ]);
 
-        // 3. (可选) 在这里可以进行任何额外的初始化
-        // 例如注册自定义函数、标签库等
-        // $template->registerFunction('my_func', 'App\Helper\MyHelper::myFunc');
-        
+        // 3. 可扩展：注册更多自定义功能（如标签、过滤器等）
+        // 示例：$template->registerFunction('myFunc', 'MyClass::myFunc');
+
         return $template;
     }
 }

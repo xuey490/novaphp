@@ -24,3 +24,32 @@ function tpTemplateHello($name) {
 function tpTemplateFormatDate($timestamp, $format = 'Y-m-d H:i:s') {
     return date($format, $timestamp);
 }
+
+/**
+ * ThinTemplate 自动渲染中间件csrf的token 
+ * @param int $_token 字段
+ * @return string
+ */
+function WebCsrfField(): string
+{
+	$token = app(\Framework\Security\CsrfTokenManager::class)->getToken('default');
+	$_token ='_token'; //token field
+	$html = sprintf(
+		'<input type="hidden" name="%s" value="%s">',
+		htmlspecialchars($_token, ENT_QUOTES, 'UTF-8'),
+		htmlspecialchars($token, ENT_QUOTES, 'UTF-8')
+	);
+	return $html;
+}
+
+/**
+ * ThinTemplate 自动渲染中间件csrf的token 
+ * @param int $_token 字段
+ * @return string
+ */
+function APICsrfField(): string
+{
+	$token = app(\Framework\Security\CsrfTokenManager::class)->getToken('default');
+
+	return $token;
+}
