@@ -11,7 +11,6 @@
     ],
     "require": {
         "php": "^8.1",
-        "doctrine/annotations": "^2.0",
         "ezyang/htmlpurifier": "^4.18",
         "fig/http-message-util": "^1.1",
         "league/commonmark": "^2.6",
@@ -19,19 +18,18 @@
         "psr/http-message": "*",
         "psr/http-server-middleware": "^1.0",
         "ramsey/uuid": "^4.9",
-        "symfony/cache": "^7.2",
+        "symfony/cache": "^7.3",
         "symfony/config": "^7.3",
         "symfony/dependency-injection": "^7.3",
-        "symfony/dotenv": "^7.2",
+        "symfony/dotenv": "^7.3",
         "symfony/finder": "^7.3",
         "symfony/http-foundation": "^7.3",
-        "symfony/http-kernel": "^7.2",
+        "symfony/http-kernel": "^7.3",
         "symfony/mime": "^7.3",
-        "symfony/rate-limiter": "^7.2",
-        "symfony/routing": "^6.0",
+        "symfony/rate-limiter": "^7.3",
+        "symfony/routing": "7.3.4",
         "symfony/translation": "^7.3",
         "symfony/yaml": "^7.3",
-        "topthink/think-cache": "^3.0",
         "topthink/think-orm": "^3.0",
         "topthink/think-template": "^3.0",
         "twig/markdown-extra": "^3.17",
@@ -59,7 +57,5 @@
         "platform-check": false,
         "preferred-install": "dist",
         "sort-packages": true
-    },
-    "minimum-stability": "stable",
-    "prefer-stable": true
+    }
 }
