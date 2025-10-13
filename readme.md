@@ -22,6 +22,16 @@ http://localhost:8000/user/add
 
 ## 版本里程: 更多见：https://github.com/xuey490/novaphp/blob/main/version.md
 
+- 0.1.1
+	- 遗弃thinkcache
+	- 遗弃doctrine/annotations，改成Symfony 路由写法的 Attribute 路由定义类
+	- 在Symfony 注解路由上实现中间件加载
+	- 实现验证码,并完成控制器编写测试
+	- 改写了ThinkTemp的扩展
+	- app下的测试文件修改
+	- 其它细节修改
+
+
 - 0.1.0
 	- 增加文件上传组件，并完成控制器编写测试，http://localhost:8000/upload/form
 
