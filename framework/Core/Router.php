@@ -86,47 +86,50 @@ class Router
         return null;
     }
 
+
+
     /**
-     * 匹配手动路由和注解路由（两者已合并到 $allRoutes）
+     * 匹配路由
      */
-    private function matchManualAndAnnotationRoutes1(string $path, RequestContext $context): ?array
+    private function matchManualAndAnnotationRoutes(string $path, RequestContext $context): ?array
     {
+
         try {
             $matcher = new UrlMatcher($this->allRoutes, $context);
             $parameters = $matcher->match($path);
 
-            // 4. 提取并执行中间件（核心新增逻辑）
-            //$middlewareList = $parameters['_route_object']->getOptions()['_middleware'] ?? [];
-
+            // 获取路由对象，提取中间件
+            $routeName = $parameters['_route'];
+            $routeObject = $this->allRoutes->get($routeName);
+            $middlewareList = $routeObject ? $routeObject->getDefault('_middleware', []) : [];
 
             // 提取控制器和方法（支持 "Class::method" 格式）
             if (!isset($parameters['_controller'])) {
                 return null;
             }
+
+            // 解析控制器
             list($controllerClass, $actionMethod) = explode('::', $parameters['_controller'], 2);
 
-            // 提取路由元数据：控制器、方法、参数、中间件
-            $middleware = $parameters['_middleware'] ?? []; // 路由绑定的中间件
-            // 移除框架保留参数（不传递给控制器方法）
-            unset($parameters['_controller'], $parameters['_middleware'], $parameters['_route']);
-
+            // 移除保留字段 $parameters['_middleware']
+            unset($parameters['_controller'], $parameters['_route']);
 
             return [
                 'controller' => $controllerClass,
                 'method' => $actionMethod,
                 'params' => $parameters,
-                'middleware' => $middleware
+                'middleware' => $middlewareList,
             ];
         } catch (ResourceNotFoundException $e) {
-            // 手动/注解路由未匹配，返回null进入自动路由逻辑
             return null;
         }
     }
 
     /**
      * 匹配手动路由和注解路由（两者已合并到 $allRoutes）
+	 * 遗弃 AnnotationRouterLoader
      */
-    private function matchManualAndAnnotationRoutes(string $path, RequestContext $context): ?array
+    private function matchManualAndAnnotationRoutes_010(string $path, RequestContext $context): ?array
     {
         try {
             $matcher = new UrlMatcher($this->allRoutes, $context);
@@ -151,7 +154,7 @@ class Router
             unset($parameters['_controller'], $parameters['_route']);
 
             // 打印中间件列表进行验证
-            //print_r($middlewareList);
+            print_r($middlewareList);
 
             return [
                 'controller' => $controllerClass,
@@ -164,9 +167,6 @@ class Router
             return null;
         }
     }
-
-
-
 
     /**
      * 匹配自动解析路由（支持多级命名空间、自动参数映射）
