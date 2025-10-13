@@ -10,7 +10,7 @@ declare(strict_types=1);
 namespace Nette\Utils;
 
 use Nette;
-use function is_array, is_object, is_string;
+use function explode, func_get_args, ini_get, is_array, is_callable, is_object, is_string, preg_replace, restore_error_handler, set_error_handler, sprintf, str_contains, str_ends_with;
 
 
 /**
@@ -94,7 +94,7 @@ final class Callback
 		}
 
 		if (is_string($callable) && str_contains($callable, '::')) {
-			return new ReflectionMethod($callable);
+			return new ReflectionMethod(...explode('::', $callable, 2));
 		} elseif (is_array($callable)) {
 			return new ReflectionMethod($callable[0], $callable[1]);
 		} elseif (is_object($callable) && !$callable instanceof \Closure) {

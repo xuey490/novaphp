@@ -13,7 +13,7 @@ namespace Symfony\Component\Routing\Loader;
 
 use Symfony\Component\Config\FileLocatorInterface;
 use Symfony\Component\Config\Loader\FileLoader;
-use Symfony\Component\Config\Resource\FileResource;
+use Symfony\Component\Config\Resource\ReflectionClassResource;
 use Symfony\Component\Routing\RouteCollection;
 
 /**
@@ -25,17 +25,15 @@ use Symfony\Component\Routing\RouteCollection;
  */
 class AttributeFileLoader extends FileLoader
 {
-    protected $loader;
-
-    public function __construct(FileLocatorInterface $locator, AttributeClassLoader $loader)
-    {
+    public function __construct(
+        FileLocatorInterface $locator,
+        protected AttributeClassLoader $loader,
+    ) {
         if (!\function_exists('token_get_all')) {
             throw new \LogicException('The Tokenizer extension is required for the routing attribute loader.');
         }
 
         parent::__construct($locator);
-
-        $this->loader = $loader;
     }
 
     /**
@@ -54,7 +52,7 @@ class AttributeFileLoader extends FileLoader
                 return null;
             }
 
-            $collection->addResource(new FileResource($path));
+            $collection->addResource(new ReflectionClassResource($refl));
             $collection->addCollection($this->loader->load($class, $type));
         }
 
@@ -65,11 +63,7 @@ class AttributeFileLoader extends FileLoader
 
     public function supports(mixed $resource, ?string $type = null): bool
     {
-        if ('annotation' === $type) {
-            trigger_deprecation('symfony/routing', '6.4', 'The "annotation" route type is deprecated, use the "attribute" route type instead.');
-        }
-
-        return \is_string($resource) && 'php' === pathinfo($resource, \PATHINFO_EXTENSION) && (!$type || \in_array($type, ['annotation', 'attribute'], true));
+        return \is_string($resource) && 'php' === pathinfo($resource, \PATHINFO_EXTENSION) && (!$type || 'attribute' === $type);
     }
 
     /**
@@ -138,8 +132,4 @@ class AttributeFileLoader extends FileLoader
 
         return false;
     }
-}
-
-if (!class_exists(AnnotationFileLoader::class, false)) {
-    class_alias(AttributeFileLoader::class, AnnotationFileLoader::class);
 }

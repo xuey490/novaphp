@@ -48,6 +48,8 @@ foreach ($routes as $routeName => $symfonyRoute) {
 */
 //die("Routing debug output complete.");
 
+
+
 // 启动框架
 $framework = new \Framework\Core\Framework();
 $framework->run();
