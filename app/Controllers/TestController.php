@@ -43,8 +43,8 @@ class TestController
         return new Response('Test Controller Index Page');
     }
 
-
-		/** http://www.nova.net/test8/edits/111
+	//http://www.nova.net/test8/edits/111
+		/** 
 		 * @Get(
 		 *   path="/test8/edits/{id}",
 		 *   name="test.edit",

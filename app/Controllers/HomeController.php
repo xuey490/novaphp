@@ -29,7 +29,7 @@ class HomeController
         //$logger = app('log');
         //$logger->info('Homepage visited--------------------');
 		
-		
+		//echo renderCsrfField();
 
         /* thinkcache测试
 		$cache = app('cache');
@@ -53,11 +53,11 @@ class HomeController
         //print_r( cache_get('post_1') );
 
         //session测试
-        //$session = app('session');
+        $session = app('session');
         // 设置一个 session 属性
-        //$session->set('user_id', 1283);
+        $session->set('user_id', 1283);
         // 获取一个 session 属性
-        //$userId = $session->get('user_id');
+        $userId = $session->get('user_id');
         //echo $userId;
 
         //配置获取测试
