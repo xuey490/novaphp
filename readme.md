@@ -9,10 +9,8 @@
 -  从GitHub下载main版本，解压到本地目录，在根目录下运行php -S localhost:8000 -t public
 - 打开浏览器，输入地址http://localhost:8000
 
-## 彩蛋
-打开浏览器，输入地址http://localhost:8000/version ,
-http://localhost:8000/team
-
+## 应用文档
+强烈推荐Zread.Ai，感谢他们提供项目文档分析生成。https://zread.ai/xuey490/novaphp
 
 ## 测试路由:
 所有的控制器，都在App/controllers, 按http://localhost:8000/控制器名/动作名  访问，如下面
@@ -49,3 +47,8 @@ http://localhost:8000/user/add
 
 
 **祝您使用愉快！**
+
+## 彩蛋
+打开浏览器，输入地址http://localhost:8000/version ,
+http://localhost:8000/team
+
