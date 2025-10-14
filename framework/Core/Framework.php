@@ -60,8 +60,8 @@ class Framework
 
 
         // ✅ 1. 自动创建并启动 Kernel（注册服务）
-        $env = $_ENV['APP_ENV'] ?? 'prod';
-        $debug = filter_var($_ENV['DEBUG'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        //$env = $_ENV['APP_ENV'] ?? 'prod';
+        //$debug = filter_var($_ENV['DEBUG'] ?? false, FILTER_VALIDATE_BOOLEAN);
         //$this->kernel = new Kernel($env, $debug);
         $this->kernel = new Kernel($this->container);
         $this->kernel->boot(); // <-- 容器在此时初始化，App::setContainer() 被调用

@@ -16,13 +16,13 @@ use Symfony\Component\DependencyInjection\CompiledContainerInterface;
 
 class Container implements SymfonyContainerInterface
 {
-    private static ?ContainerBuilder $container = null;
+    //private static ?ContainerBuilder $container = null;
 	
     // 编译后容器的缓存文件路径
     private const CACHE_FILE = BASE_PATH . '/storage/cache/container.php';
 
     // 静态变量，用于持有最终的容器实例（无论是新建的还是从缓存加载的）
-    #private static ?SymfonyContainerInterface $container = null;
+    private static ?SymfonyContainerInterface $container = null;
 	
     /**
      * 初始化容器。
