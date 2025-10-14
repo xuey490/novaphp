@@ -1,9 +1,6 @@
 <?php
 
-// framework/Core/Kernel.php
-/*
- * 纯服务容器构建器
-*/
+// Framework/Core/Kernel.php
 
 namespace Framework\Core;
 
@@ -15,37 +12,18 @@ use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Framework\Core\Exception\Handler; //异常处理
 use Symfony\Component\DependencyInjection\Reference;
-
-
-
+use Framework\Container\Container;
 
 class Kernel
 {
-    protected string $environment;
-    protected bool $debug;
-    protected ?ContainerBuilder $container = null;
 
-    public function __construct(string $environment = 'prod', bool $debug = false)
+    //protected ?ContainerBuilder $container = null;
+	protected $container;
+
+    public function __construct(Container $container)
     {
-        $this->environment = $environment;
-        $this->debug = $debug;
+		$this-> container = $container;
 
-        if ($debug) {
-            ini_set('display_errors', '1');
-            error_reporting(-1);
-        } else {
-            ini_set('display_errors', '0');
-        }
-    }
-
-    public function getEnvironment(): string
-    {
-        return $this->environment;
-    }
-
-    public function isDebug(): bool
-    {
-        return $this->debug;
     }
 
     /**
@@ -53,12 +31,7 @@ class Kernel
      */
     public function boot(): void
     {
-
-        $this->buildContainer();
-		
 		date_default_timezone_set(config('app.time_zone'));
-
-
         /*在容器编译前 注册,要在调用前进行编译 $containerBuilder->compile()*/
         // 在容器构建阶段（使用 Symfony ContainerBuilder）
         /*
@@ -72,7 +45,7 @@ class Kernel
 					->setShared(true); // 默认就是 singleton
 				*/
 
-        $this->container->compile();
+
         // ✅ 设置全局 App 容器（你的助手函数依赖它）
         App::setContainer($this->container);
 
@@ -123,69 +96,4 @@ class Kernel
         return $this->container;
     }
 
-    /**
-     * 构建服务容器
-     */
-    protected function buildContainer(): void
-    {
-		$request = Request::createFromGlobals();
-		$requestStack = new RequestStack();
-		$requestStack->push($request); // 👈 关键！
-
-		//初始化容器构造类
-		$container = new ContainerBuilder();
-
-		// 注册 RequestStack 到容器（关键！）
-		$container->set(RequestStack::class, $requestStack);
-		// 或者用字符串别名（如果你在 services.php 中用 'request_stack'）
-		$container->set('request_stack', $requestStack);
-
-		// 设置内核参数（必须，因为你的 services.php 用到了 %kernel.project_dir%）
-		$container->setParameter('kernel.environment', $this->environment);
-		$container->setParameter('kernel.debug', $this->debug);
-		$container->setParameter('kernel.project_dir', $this->getProjectDir());
-
-		// ✅ 使用 PhpFileLoader 加载你的 services.php（支持 Configurator DSL）
-		$loader = new PhpFileLoader($container, new FileLocator($this->getConfigDir()));
-		$loader->load('services.php'); // <-- 自动识别并执行你的闭包
-
-		$this->container = $container;
-
-		// 添加资源用于缓存
-		$container->addResource(new \Symfony\Component\Config\Resource\FileResource(
-			$this->getConfigDir() . '/services.php'
-		));
-    }
-
-    /**
-     * 获取项目根目录
-     */
-    public function getProjectDir(): string
-    {
-        return dirname(__DIR__, 2); // 从 framework/Core 到项目根
-    }
-
-    /**
-     * 获取配置目录
-     */
-    public function getConfigDir(): string
-    {
-        return $this->getProjectDir() . '/config';
-    }
-
-    /**
-     * 获取缓存目录（可扩展）
-     */
-    public function getCacheDir(): string
-    {
-        return $this->getProjectDir() . '/storage/cache/' . $this->environment;
-    }
-
-    /**
-     * 获取日志目录（可扩展）
-     */
-    public function getLogDir(): string
-    {
-        return $this->getProjectDir() . '/storage/logs';
-    }
 }
