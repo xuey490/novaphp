@@ -15,6 +15,7 @@ use Framework\Config\ConfigLoader;
 use think\facade\Db;
 use Framework\Log\Logger;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+#use Framework\Annotations\AnnotationRouteLoader
 
 class Framework
 {	
