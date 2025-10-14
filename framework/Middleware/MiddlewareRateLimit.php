@@ -7,9 +7,13 @@ use Symfony\Component\HttpFoundation\Response;
 
 class MiddlewareRateLimit
 {
-    #private int $maxRequests = 10;
-    #private int $period = 60; // seconds
-    #private string $cacheDir;
+    private int $maxRequests = 10;
+	
+    private int $period = 60; // seconds
+	
+    //private string $cacheDir;
+	
+	private array $except =[];
 	
 	/*
     public function __construct(string $cacheDir )
@@ -22,10 +26,11 @@ class MiddlewareRateLimit
     }
 	*/
 
-    public function __construct(private int $maxRequests , private int $period , private string $cacheDir   )
+    public function __construct(private array $config , private string $cacheDir   )
     {
-		$this->maxRequests = $maxRequests;
-		$this->period = $period;
+		$this->maxRequests = $config['maxRequests'] ?? $this->maxRequests;
+		$this->period = $config['period'] ?? $this->period;
+		$this->except = $config['except'] ?? $this->except;
         $this->cacheDir = rtrim($cacheDir, '/') . '/';
         if (!is_dir($this->cacheDir)) {
             mkdir($this->cacheDir, 0755, true);
@@ -42,6 +47,13 @@ class MiddlewareRateLimit
      */
 	public function handle(Request $request, callable $next): Response
 	{
+		
+        foreach ($this->except as $pattern) {
+            if ($this->matchPath($request->getPathInfo(), $pattern)) {
+                return $next($request);
+            }
+        }
+		
 		$ip = $request->getClientIp() ?: 'unknown';
 		$key = $this->cacheDir . 'rate_limit_' . md5($ip);
 		$now = time();
@@ -97,4 +109,12 @@ class MiddlewareRateLimit
 
 		return $response;
 	}
+	
+    private function matchPath(string $path, string $pattern): bool
+    {
+        $regex = str_replace('\*', '.*', preg_quote($pattern, '#'));
+        return (bool) preg_match('#^' . $regex . '$#', $path);
+    }
+
+	
 }

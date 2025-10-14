@@ -216,10 +216,8 @@ return function (ContainerConfigurator $configurator) {
 		//限流器
 		$services->set(\Framework\Middleware\MiddlewareRateLimit::class)
 			->args([
-			$middlewareConfig['rate_limit']['maxRequests'],
-			$middlewareConfig['rate_limit']['period'],
+			$middlewareConfig['rate_limit'],
 			'%kernel.project_dir%/storage/cache/'
-			
 			])
 			->autoconfigure()
 			->public(); 
