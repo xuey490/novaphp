@@ -53,6 +53,7 @@ class Framework
         // 1. 初始化DI容器（核心：后续所有依赖从这里获取）
         Container::init(); // 加载服务配置
         $this->container = Container::getInstance();
+
         // 示例
         //$loggers = $this->container->get(\Framework\Log\LoggerService::class);
         //$loggers->info('Container loaded successfully!');
@@ -61,7 +62,8 @@ class Framework
         // ✅ 1. 自动创建并启动 Kernel（注册服务）
         $env = $_ENV['APP_ENV'] ?? 'prod';
         $debug = filter_var($_ENV['DEBUG'] ?? false, FILTER_VALIDATE_BOOLEAN);
-        $this->kernel = new Kernel($env, $debug);
+        //$this->kernel = new Kernel($env, $debug);
+        $this->kernel = new Kernel($this->container);
         $this->kernel->boot(); // <-- 容器在此时初始化，App::setContainer() 被调用
 
         // 2. 初始化数据库ORM
