@@ -43,8 +43,13 @@ return [
 	
     'rate_limit' => [
         'enabled' => true,
-        'maxRequests' => 1000,	//60秒内的最大请求数
+        'maxRequests' => 10,	//60秒内的最大请求数
 		'period'	=> 60,  //60秒
+        'except' => [
+            '/api/*',
+            '/webhook/*',
+            '/payment/notify'
+        ],		
     ],
 
     // 可扩展其他中间件
