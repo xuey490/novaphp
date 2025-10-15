@@ -4,8 +4,8 @@ namespace App\Controllers;
 use Framework\Attributes\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use App\Middleware\AuthMiddleware;
-use App\Middleware\LogMiddleware;
+use App\Middlewares\AuthMiddleware;
+use App\Middlewares\LogMiddleware;
 
 
 #[Route(prefix: '/api/v1/demo', group: 'api', middleware: [AuthMiddleware::class, LogMiddleware::class])]

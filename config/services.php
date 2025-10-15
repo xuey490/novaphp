@@ -376,7 +376,7 @@ return function (ContainerConfigurator $configurator) {
 	
 	
 	
-	$services->load('App\\Middleware\\', '../app/Middleware/**/*Middleware.php')
+	$services->load('App\\Middlewares\\', '../app/Middlewares/**/*Middleware.php')
 		->autowire()      // 支持中间件的依赖自动注入（如注入UserService）
 		->autoconfigure() // 支持中间件添加标签（如后续需要事件监听）
 		->public(); // 关键：标记为公开，因为中间件需要通过容器动态获取（如从注解解析后）

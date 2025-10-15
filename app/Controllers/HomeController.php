@@ -23,7 +23,7 @@ class HomeController
         #print_r( $userService->getUsers(111) );
         // ✅ 此时 app() 已可用！
 
-        //dump(app()->getServiceIds()); // 查看所有服务 ID
+        #dump(app()->getServiceIds()); // 查看所有服务 ID
 
         //日志测试
         //$logger = app('log');

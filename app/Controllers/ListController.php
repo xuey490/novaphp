@@ -7,7 +7,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 
-#[Route(prefix: '/lists', middleware: [\App\Middleware\AuthMiddleware::class , \App\Middleware\LogMiddleware::class ])]
+#[Route(prefix: '/lists', middleware: [\App\Middlewares\AuthMiddleware::class , \App\Middlewares\LogMiddleware::class ])]
 class ListController 
 {
     #[Route(path:'/', methods: ['GET'])]
@@ -19,7 +19,7 @@ class ListController
     #[Route(path:'/profile', methods: ['GET'])]
 
 	/*
-	@Middleware(class="App\Middleware\AuthMiddleware")
+	@Middleware(class="App\Middlewares\AuthMiddleware")
 	*/
     public function profile(Request $request)
     {

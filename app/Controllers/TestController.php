@@ -49,7 +49,7 @@ class TestController
 		 *   path="/test8/edits/{id}",
 		 *   name="test.edit",
 		 *   requirements={"id": "\d+"},
-		 *   options={"_middleware": {"App\Middleware\LogMiddleware",   "App\Middleware\AuthMiddleware"} }
+		 *   options={"_middleware": {"App\Middlewares\LogMiddleware",   "App\Middlewares\AuthMiddleware"} }
 		 * )
 		 */
     public function edit(int $id)
@@ -68,7 +68,7 @@ class TestController
     }
     
     /**
-     * @Get(path="/gets/user/{id<\d+>}",  name="test.user" , options={"_middleware":  {"App\Middleware\AuthMiddleware",   "App\Middleware\LogMiddleware"}  })
+     * @Get(path="/gets/user/{id<\d+>}",  name="test.user" , options={"_middleware":  {"App\Middlewares\AuthMiddleware",   "App\Middlewares\LogMiddleware"}  })
      */
     public function getUser($id)
     {
