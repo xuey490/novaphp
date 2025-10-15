@@ -1,0 +1,20 @@
+{
+    "name": "composer-unused/contracts",
+    "description": "Contract repository for composer-unused",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "ComposerUnused\\Contracts\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Andreas Frömer",
+            "email": "composer-unused@icanhazstring.com"
+        }
+    ],
+    "require": {
+        "php": "^7.4 || ^8.0"
+    }
+}

@@ -23,7 +23,7 @@ class HomeController
         #print_r( $userService->getUsers(111) );
         // ✅ 此时 app() 已可用！
 
-        //dump(app()->getServiceIds()); // 查看所有服务 ID
+        #dump(app()->getServiceIds()); // 查看所有服务 ID
 
         //日志测试
         //$logger = app('log');
@@ -53,18 +53,34 @@ class HomeController
         //print_r( cache_get('post_1') );
 
         //session测试
-        $session = app('session');
+        //$session = app('session');
         // 设置一个 session 属性
-        $session->set('user_id', 1283);
+        //$session->set('user_id', 1283);
         // 获取一个 session 属性
-        $userId = $session->get('user_id');
+        //$userId = $session->get('user_id');
         //echo $userId;
 
         //配置获取测试
         //print_r(config('database'));
 
-        echo trans('hello'); // 自动输出对应语言
-        echo '<br />当前语言包：' . current_locale();
+        // 在返回响应之前，收集信息
+        $includedFiles = get_included_files();
+        $loadedClasses = get_declared_classes();
+        
+        // 你可以选择将信息追加到响应内容中
+        $debugInfo = sprintf(
+            '<hr><pre>'.
+            'Included files: %d' . PHP_EOL .
+            'Loaded classes: %d' . PHP_EOL .
+            '</pre>',
+            count($includedFiles),
+            count($loadedClasses)
+        );
+
+		echo $debugInfo;
+
+        //echo trans('hello'); // 自动输出对应语言
+        //echo '<br />当前语言包：' . current_locale();
         return new Response('<h1>Welcome to My Framework!</h1>');
     }
 

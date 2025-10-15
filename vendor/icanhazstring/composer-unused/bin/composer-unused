@@ -1,0 +1,78 @@
+#!/usr/bin/env php
+<?php
+
+use ComposerUnused\ComposerUnused\Console\Command\DebugConsumedSymbolsCommand;
+use ComposerUnused\ComposerUnused\Console\Command\DebugProvidedSymbolsCommand;
+use ComposerUnused\ComposerUnused\Console\Command\UnusedCommand;
+use Composer\XdebugHandler\XdebugHandler;
+use Psr\Container\ContainerInterface;
+use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Input\ArgvInput;
+
+(static function ($argv) {
+    foreach (
+        [
+            __DIR__ . '/vendor/autoload.php',
+            __DIR__ . '/../vendor/autoload.php',
+            __DIR__ . '/../../vendor/autoload.php',
+            __DIR__ . '/../../../autoload.php',
+        ] as $file) {
+        if (!defined('UNUSED_COMPOSER_INSTALL') && file_exists($file)) {
+            define('UNUSED_COMPOSER_INSTALL', $file);
+
+            break;
+        }
+    }
+
+    if (!defined('UNUSED_COMPOSER_INSTALL')) {
+        fwrite(
+            STDERR,
+            'You need to set up the project dependencies using Composer:' . PHP_EOL . PHP_EOL .
+            '    composer install' . PHP_EOL . PHP_EOL .
+            'You can learn all about Composer on https://getcomposer.org/.' . PHP_EOL
+        );
+
+        die(1);
+    }
+
+    require UNUSED_COMPOSER_INSTALL;
+
+    // Restart process without XDebug if it's enabled (unless explicitly allowed)
+    $xdebug = new XdebugHandler('COMPOSER_UNUSED');
+    $xdebug->check();
+    unset($xdebug);
+
+    /** @var ContainerInterface $container */
+    $container = require __DIR__ . '/../config/container.php';
+
+    $getVersion = static function (): string {
+        if (file_exists(__DIR__ . '/../.version')) {
+            return trim(file_get_contents(__DIR__ . '/../.version'));
+        }
+
+        try {
+            $version = Composer\InstalledVersions::getPrettyVersion('icanhazstring/composer-unused');
+            $ref = Composer\InstalledVersions::getReference('icanhazstring/composer-unused');
+            if ($ref) {
+                $version .= '@' . substr($ref, 0, 7);
+            }
+
+            return $version;
+        } catch (\OutOfBoundsException $a) {
+            return 'unknown';
+        }
+    };
+
+    $application = new Application('composer-unused', $getVersion());
+    $application->add($container->get(UnusedCommand::class));
+    $application->add($container->get(DebugConsumedSymbolsCommand::class));
+    $application->add($container->get(DebugProvidedSymbolsCommand::class));
+
+    $argvInput = new ArgvInput($argv);
+
+    if (!in_array($argvInput->getFirstArgument(), [DebugProvidedSymbolsCommand::getDefaultName(), DebugConsumedSymbolsCommand::getDefaultName()], true)) {
+        $application->setDefaultCommand('unused', true);
+    }
+
+    $application->run($argvInput);
+})($argv);

@@ -1,0 +1,25 @@
+#!/usr/bin/env php
+<?php
+
+require __DIR__ . '/vendor/autoload.php';
+
+use Symfony\Component\Console\Application;
+use Framework\Console\Commands\MakeControllerCommand;
+use Framework\Console\Commands\MakeModelCommand;
+use Framework\Console\Commands\MakeMiddlewareCommand; // 新增Middleware
+
+$application = new Application('Novaphp Framework', '0.1.1');
+$application->add(new MakeControllerCommand());
+$application->add(new MakeModelCommand());
+$application->add(new MakeMiddlewareCommand()); // 新增Middleware
+$application->run();
+    
+
+# 生成控制器
+#php novaphp make:controller User
+
+# 生成模型
+#php novaphp make:model User
+
+# 生成Auth中间件
+#php novaphp make:middleware Auth

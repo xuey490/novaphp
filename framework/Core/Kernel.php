@@ -5,22 +5,22 @@
 namespace Framework\Core;
 
 use Throwable;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Framework\Core\Exception\Handler; //异常处理
 use Symfony\Component\DependencyInjection\Reference;
-use Framework\Container\Container;
+
 
 class Kernel
 {
 
-    //protected ?ContainerBuilder $container = null;
-	protected $container;
+    protected ?ContainerInterface $container = null;
+	//protected $container;
 
-    public function __construct(Container $container)
+    public function __construct(ContainerInterface $container)
     {
 		$this-> container = $container;
 

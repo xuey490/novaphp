@@ -1,0 +1,34 @@
+version: "3.7"
+
+services:
+  php7.4:
+    build: .docker/php7.4
+    container_name: symbol-parser-7.4
+    volumes:
+      - .:/docker/symbol-parser:rw
+      - ../contracts:/docker/contracts:rw
+    tty: true
+
+  php8.0:
+    build: .docker/php8.0
+    container_name: symbol-parser-8.0
+    volumes:
+      - .:/docker/symbol-parser:rw
+      - ../contracts:/docker/contracts:rw
+    tty: true
+
+  php8.1:
+    build: .docker/php8.1
+    container_name: symbol-parser-8.1
+    volumes:
+      - .:/docker/symbol-parser:rw
+      - ../contracts:/docker/contracts:rw
+    tty: true
+
+  php8.2:
+    build: .docker/php8.2
+    container_name: symbol-parser-8.2
+    volumes:
+      - .:/docker/symbol-parser:rw
+      - ../contracts:/docker/contracts:rw
+    tty: true
