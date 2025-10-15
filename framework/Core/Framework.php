@@ -59,34 +59,34 @@ class Framework
         //$loggers->info('Container loaded successfully!');
 
 
-        // ✅ 1. 自动创建并启动 Kernel（注册服务）
+        // ✅ 2. 自动创建并启动 Kernel（注册服务）
         //$env = $_ENV['APP_ENV'] ?? 'prod';
         //$debug = filter_var($_ENV['DEBUG'] ?? false, FILTER_VALIDATE_BOOLEAN);
         //$this->kernel = new Kernel($env, $debug);
         $this->kernel = new Kernel($this->container);
         $this->kernel->boot(); // <-- 容器在此时初始化，App::setContainer() 被调用
 
-        // 2. 初始化数据库ORM
+        // 3. 初始化数据库ORM
         $this->initORM();
 
-        // 3. 初始化日志服务
+        // 4. 初始化日志服务
         $this->logger = app('log');
 
-        // 4. 加载所有路由（手动+注解）
+        // 5. 加载所有路由（手动+注解）
         $allRoutes = $this->loadAllRoutes();
 		
 		
 		// 6. 加载中间件调度器
 		$this->middlewareDispatcher = new MiddlewareDispatcher($this->container);   
 
-        // 5. 初始化路由和中间件调度器
+        // 7. 初始化路由和中间件调度器
         $this->router = new Router(
             $allRoutes,
             $this->container,	//或者new Container()
             self::CONTROLLER_NAMESPACE
         );
 		
-		//print_r($this->router);
+
     }
 
     /**
