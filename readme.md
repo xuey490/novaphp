@@ -5,8 +5,9 @@
 这是一款基于symfony的底层代码开发的轻量级，强大，快速，简单，安全的php框架。
 
 ## 下载安装:
-- 本地环境:php8.1及以上，Redis，MySQL5.7及以上
--  从GitHub下载main版本，解压到本地目录，在根目录下运行php -S localhost:8000 -t public
+- 本地环境:php8.1及以上，Redis，MySQL5.7, composer 2.x及以上
+-  从GitHub下载main版本，解压到本地目录，在根目录下运行composer install ,
+-  等组件包下载完毕后，运行php -S localhost:8000 -t public
 - 打开浏览器，输入地址http://localhost:8000
 
 ## 应用文档
@@ -27,6 +28,8 @@ http://localhost:8000/user/add
 	- 实现验证码,并完成控制器编写测试
 	- 改写了ThinkTemp的扩展
 	- app下的测试文件修改
+    - 增加命令行生成控制器，模型，中间件 
+	- 生成控制器 #php novaphp make:controller User # 生成模型#php novaphp make:model User # 生成Auth中间件 #php novaphp make:middleware Auth
 	- 其它细节修改
 
 
