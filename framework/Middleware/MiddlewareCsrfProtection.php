@@ -52,13 +52,13 @@ class MiddlewareCsrfProtection
             ]);
 
             // 5. 创建一个新的Response对象
-            $response = new Response($responseContent, Response::HTTP_FORBIDDEN);
+            return new Response($responseContent, Response::HTTP_FORBIDDEN);
 
             // 6. 将这个新的Response对象设置为事件的响应
             // 这会阻止Symfony显示默认的错误页面
            // $event->setResponse($response);
 
-			return $response;			
+						
         }
 
         if ($this->removeAfterValidation) {
