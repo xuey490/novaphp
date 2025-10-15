@@ -161,7 +161,6 @@ function generateRequestId(): string
 {
     //使用 ramsey/uuid
     return 'req-' . substr(Uuid::uuid4()->toString(), 0, 8);
-    //return 'req-' . substr(bin2hex(random_bytes(8)), 0, 8);
 }
 
 //翻译服务
@@ -186,10 +185,6 @@ if (!function_exists('view')) {
 	}
 }
 
-function truncate(string $id): string
-{
-		return false;
-}
 
 
 // 缓存助手函数
