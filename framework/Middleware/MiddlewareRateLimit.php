@@ -29,17 +29,6 @@ class MiddlewareRateLimit
 
     private array $except =[];
 
-    /*
-    public function __construct(string $cacheDir )
-    {
-        $this->maxRequests =
-        $this->cacheDir = rtrim($cacheDir, '/') . '/';
-        if (!is_dir($this->cacheDir)) {
-            mkdir($this->cacheDir, 0755, true);
-        }
-    }
-    */
-
     public function __construct(private array $config, private string $cacheDir)
     {
         $this->maxRequests = $config['maxRequests'] ?? $this->maxRequests;
@@ -110,11 +99,12 @@ class MiddlewareRateLimit
             $response = new Response($html, 429, ['Content-Type' => 'text/html; charset=utf-8']);
         }
 
-        // 添加标准限流头
-        $response->headers->set('Retry-After', $retryAfter);
-        $response->headers->set('X-RateLimit-Limit', $this->maxRequests);
-        $response->headers->set('X-RateLimit-Remaining', 0);
-        $response->headers->set('X-RateLimit-Reset', time() + $retryAfter);
+		// 将整数转换为字符串
+		$response->headers->set('Retry-After', (string)$retryAfter);
+		$response->headers->set('X-RateLimit-Limit', (string)$this->maxRequests);
+		$response->headers->set('X-RateLimit-Remaining', '0'); // 直接使用字符串
+		$response->headers->set('X-RateLimit-Reset', (string)(time() + $retryAfter));
+		
 
         return $response;
     }
