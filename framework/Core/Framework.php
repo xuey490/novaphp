@@ -203,7 +203,93 @@ class Framework
         }
     }
 
-    private function callController(array $route): Response
+
+	private function callController(array $route): Response
+	{
+		$controllerClass = $route['controller'];
+		$method          = $route['method'];
+		$routeParams     = $route['params'] ?? [];
+
+		// 1. 从容器获取控制器实例
+		$controller = $this->container->get($controllerClass);
+
+		// 2. 使用反射分析方法参数
+		$reflection = new \ReflectionMethod($controllerClass, $method);
+		$parameters = $reflection->getParameters();
+
+		// 3. 处理参数并进行类型转换
+		foreach ($parameters as $param) {
+			$type = $param->getType();
+			$paramName = $param->getName();
+			$value = null;
+
+			// 检查参数是否有值（路径参数优先于查询参数）
+			if (isset($routeParams[$paramName])) {
+				$value = $routeParams[$paramName];
+			} elseif ($this->request->query->has($paramName)) {
+				$value = $this->request->query->get($paramName);
+			}
+
+			// 如果有值且需要类型转换
+			if ($value !== null && $type && $type->isBuiltin()) {
+				$typeName = $type->getName();
+				
+				// 根据目标类型进行转换
+				switch ($typeName) {
+					case 'int':
+						$value = (int)$value;
+						break;
+					case 'float':
+						$value = (float)$value;
+						break;
+					case 'bool':
+						// 特殊处理布尔值，确保 '0' 和 'false' 被正确转换
+						$value = filter_var($value, FILTER_VALIDATE_BOOLEAN);
+						break;
+					// 字符串类型不需要转换，保持原样
+					case 'string':
+					default:
+						break;
+				}
+			}
+
+			// 如果是对象类型（非内置类型），交给 ArgumentResolver 自动注入，跳过
+			if ($type && !$type->isBuiltin()) {
+				continue;
+			}
+
+			// 将处理后的值存入请求属性
+			if ($value !== null) {
+				$this->request->attributes->set($paramName, $value);
+			}
+		}
+
+		// 4. 使用 Symfony 的 ArgumentResolver 解析所有参数（包括 Request 等）
+		$argumentResolver = new ArgumentResolver();
+		$arguments        = $argumentResolver->getArguments($this->request, [$controller, $method]);
+
+		// 5. 调用控制器方法
+		$response = $controller->{$method}(...$arguments);
+
+		// 6. 确保返回 Response 对象
+		if (!$response instanceof Response) {
+			if (is_array($response) || is_object($response)) {
+				$response = new Response(
+					json_encode($response, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+					200,
+					['Content-Type' => 'application/json']
+				);
+			} else {
+				$response = new Response((string)$response);
+			}
+		}
+
+		return $response;
+	}
+
+
+
+    private function callController1(array $route): Response
     {
         $controllerClass = $route['controller'];
         $method          = $route['method'];
@@ -215,6 +301,7 @@ class Framework
         // 2. 使用反射分析方法参数
         $reflection = new \ReflectionMethod($controllerClass, $method);
         $parameters = $reflection->getParameters();
+		
 
         // 3. 只处理“标量/无类型”参数（跳过 Request、自定义服务等对象）
         foreach ($parameters as $param) {
