@@ -313,7 +313,7 @@ class Framework
         // $allRoutes->addCollection($annotatedRoutes);
 
         // 缓存合并后的路由
-        $this->cacheRoutes($allRoutes, self::ROUTE_CACHE_FILE);
+        //$this->cacheRoutes($allRoutes, self::ROUTE_CACHE_FILE);
 
         return $allRoutes;
     }
