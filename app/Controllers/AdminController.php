@@ -15,6 +15,8 @@ use PDO; // 用于API JSON响应
 use Symfony\Component\HttpFoundation\JsonResponse; // 或者你需要的其他依赖
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
+
 
 class AdminController
 {
@@ -28,7 +30,7 @@ class AdminController
         // var_dump("UserController 构造函数被调用，PDO 依赖已注入！");
     }
 
-    // 路由：/user/get/1
+    // 路由：/admin/get/1
     public function get(int $id): Response
     {
         // 使用注入的 UserService 获取数据
@@ -42,8 +44,8 @@ class AdminController
     }
 
     /**
-     * 1. 获取用户列表（GET /user）
-     * 支持分页：/user?page=1&size=10.
+     * 1. 获取用户列表（GET /admin）
+     * 支持分页：/admin?page=1&size=10.
      */
     public function index(Request $request): Response
     {
@@ -100,19 +102,19 @@ class AdminController
             $html .= '<td>' . $user['name'] . '</td>';
             $html .= '<td>' . $user['email'] . '</td>';
             $html .= '<td>';
-            $html .= '<a href="/user/show/?id=' . $user['id'] . '">View</a> | ';
-            $html .= '<a href="/user/edit/?id=' . $user['id'] . '">Edit</a> | ';
+            $html .= '<a href="/admin/show/?id=' . $user['id'] . '">View</a> | ';
+            $html .= '<a href="/admin/edit/?id=' . $user['id'] . '">Edit</a> | ';
             $html .= '<a href="javascript:deleteUser(' . $user['id'] . ')">Delete</a>';
             $html .= '</td></tr>';
         }
         $html .= '</table>';
-        $html .= '<br><a href="/user/create">Add New User</a>';
+        $html .= '<br><a href="/admin/create">Add New User</a>';
 
         // 删除用户的JS逻辑（模拟PUT/DELETE请求，实际项目用表单或Axios）
         $html .= '<script>';
         $html .= 'function deleteUser(id) {';
         $html .= 'if(confirm("Are you sure to delete user " + id + "?")) {';
-        $html .= 'fetch("/user/" + id + "", {method: "DELETE"})';
+        $html .= 'fetch("/admin/" + id + "", {method: "DELETE"})';
         $html .= '.then(res => res.json())';
         $html .= '.then(data => {';
         $html .= 'if(data.code === 200) alert("Delete success!");';
@@ -124,12 +126,13 @@ class AdminController
         return new Response($html);
     }
 
-    /**
-     * 2. 获取单个用户详情（GET /user/{id}）.
-     */
+	/**2. 获取单个用户详情（GET /user/{id}）.
+	 * @ParamConverter("id", options={"mapping": {"id": "id"}})
+	 */
     public function show(int $id, Request $request): Response
     {
         // 1. 模拟数据库查询（实际项目替换为ORM查询）
+        //$user = $this->mockUser(intval($id));
         $user = $this->mockUser($id);
         if (! $user) {
             // 用户不存在：返回404
@@ -158,8 +161,8 @@ class AdminController
         $html .= '<li><strong>Create Time:</strong> ' . $user['created_at'] . '</li>';
         $html .= '</ul>';
         $html .= '<br>';
-        $html .= '<a href="/user/' . $user['id'] . '/edit">Edit</a> | ';
-        $html .= '<a href="/user">Back to List</a>';
+        $html .= '<a href="/admin/' . $user['id'] . '/edit">Edit</a> | ';
+        $html .= '<a href="/admin">Back to List</a>';
 
         return new Response($html);
     }
@@ -171,7 +174,7 @@ class AdminController
     {
         // 创建用户的表单页面
         $html = '<h1>Create New User</h1>';
-        $html .= '<form method="POST" action="/user">';
+        $html .= '<form method="POST" action="/admin">';
         $html .= '<div>';
         $html .= '<label>Name:</label>';
         $html .= '<input type="text" name="name" required placeholder="Enter username">';
@@ -186,7 +189,7 @@ class AdminController
 
         $html .= '</div><br>';
         $html .= '<button type="submit">Create User</button>';
-        $html .= '<a href="/user" style="margin-left:10px;">Cancel</a>';
+        $html .= '<a href="/admin" style="margin-left:10px;">Cancel</a>';
         $html .= '</form>';
 
         return new Response($html);
@@ -226,12 +229,12 @@ class AdminController
             // 普通表单请求：返回带错误的表单页面
             $html = '<h1>Create New User (Error)</h1>';
             $html .= '<div style="color:red;">' . implode('<br>', $errors) . '</div><br>';
-            $html .= '<form method="POST" action="/user">';
+            $html .= '<form method="POST" action="/admin">';
             $html .= '<div><label>Name:</label><input type="text" name="name" value="' . $name . '" required></div><br>';
             $html .= '<div><label>Email:</label><input type="email" name="email" value="' . $email . '" required></div><br>';
             $html .= '<div><label>Password:</label><input type="password" name="password" required></div><br>';
             $html .= '<button type="submit">Create User</button> | ';
-            $html .= '<a href="/user">Cancel</a>';
+            $html .= '<a href="/admin">Cancel</a>';
             $html .= '</form>';
             return new Response($html);
         }
@@ -272,7 +275,7 @@ class AdminController
 
         // 2. 编辑表单页面（PUT请求通过隐藏字段模拟，浏览器默认不支持PUT）
         $html = '<h1>Edit User (ID: ' . $id . ')</h1>';
-        $html .= '<form method="POST" action="/user/update?id=' . $id . '">';
+        $html .= '<form method="POST" action="/admin/update?id=' . $id . '">';
         // 隐藏字段：标记为PUT请求（后续需在框架中处理PUT/DELETE请求）
         $html .= '<input type="hidden" name="_method" value="PUT">';
         $html .= '<div>';
@@ -289,7 +292,7 @@ class AdminController
 
         $html .= '</div><br>';
         $html .= '<button type="submit">Update User</button>';
-        $html .= '<a href="/user/' . $id . '" style="margin-left:10px;">Cancel</a>';
+        $html .= '<a href="/admin/' . $id . '" style="margin-left:10px;">Cancel</a>';
         $html .= '</form>';
 
         return new Response($html);
@@ -344,12 +347,12 @@ class AdminController
 
         // 重定向到用户详情页
         return new Response('', 302, [
-            'Location' => '/user/edit?id=' . $id . '',
+            'Location' => '/admin/edit?id=' . $id . '',
         ]);
     }
 
     /**
-     * 7. 删除用户（DELETE /user/{id}）.
+     * 7. 删除用户（DELETE /admin/{id}）.
      */
     public function destroy(int $id): Response
     {
