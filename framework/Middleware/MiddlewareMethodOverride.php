@@ -1,5 +1,18 @@
 <?php
-// framework/Middleware/MiddlewareMethodOverride.php
+
+declare(strict_types=1);
+
+/**
+ * This file is part of Navaphp Framework.
+ *
+ * @link     https://github.com/xuey490/novaphp
+ * @license  https://github.com/xuey490/novaphp/blob/main/LICENSE
+ *
+ * @Filename: %filename%
+ * @Date: 2025-10-16
+ * @Developer: xuey863toy
+ * @Email: xuey863toy@gmail.com
+ */
 
 namespace Framework\Middleware;
 
@@ -8,9 +21,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 class MiddlewareMethodOverride implements MiddlewareInterface
 {
-    public function handle(Request $request, callable $next):Response
+    public function handle(Request $request, callable $next): Response
     {
-		//dump('--- 进入 MiddlewareMethodOverride (中间件) ---'); 
+        // dump('--- 进入 MiddlewareMethodOverride (中间件) ---');
         // 检查是否是 POST 请求，并且包含 _method 参数
         if ($request->isMethod('POST') && $request->request->has('_method')) {
             $method = strtoupper($request->request->get('_method'));
@@ -24,12 +37,10 @@ class MiddlewareMethodOverride implements MiddlewareInterface
                 $request->request->remove('_method');
             }
         }
-		
-		$response = $next($request);
-		
-		//dump('--- 退出 MiddlewareMethodOverride (中间件) ---');
+
+        return $next($request);
+        // dump('--- 退出 MiddlewareMethodOverride (中间件) ---');
 
         // 继续执行下一个中间件或控制器
-        return $response;
     }
 }

@@ -1,12 +1,26 @@
 <?php
-// framework/Middleware/MiddlewareCsrfProtection.php
+
+declare(strict_types=1);
+
+/**
+ * This file is part of Navaphp Framework.
+ *
+ * @link     https://github.com/xuey490/novaphp
+ * @license  https://github.com/xuey490/novaphp/blob/main/LICENSE
+ *
+ * @Filename: %filename%
+ * @Date: 2025-10-16
+ * @Developer: xuey863toy
+ * @Email: xuey863toy@gmail.com
+ */
 
 namespace Framework\Middleware;
 
 use Framework\Security\CsrfTokenManager;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-//use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+
+// use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 class MiddlewareCsrfProtection
 {
@@ -39,26 +53,23 @@ class MiddlewareCsrfProtection
             ?? $request->headers->get('X-CSRF-TOKEN')
             ?? '';
 
-        if (!is_string($token) || !$this->tokenManager->isTokenValid('default', $token)) {
+        if (! is_string($token) || ! $this->tokenManager->isTokenValid('default', $token)) {
             if ($this->removeAfterValidation) {
                 $this->tokenManager->removeToken('default');
             }
-            //throw new AccessDeniedHttpException($this->errorMessage);
-			
+            // throw new AccessDeniedHttpException($this->errorMessage);
+
             $responseContent = view('errors/csrf_error.html.twig', [
                 'status_code' => Response::HTTP_FORBIDDEN, // 403
                 'status_text' => 'Forbidden',
-                'message' => $this->errorMessage ?: 'CSRF token validation failed. Please refresh the page and try again.',
+                'message'     => $this->errorMessage ?: 'CSRF token validation failed. Please refresh the page and try again.',
             ]);
 
             // 5. 创建一个新的Response对象
             return new Response($responseContent, Response::HTTP_FORBIDDEN);
-
             // 6. 将这个新的Response对象设置为事件的响应
             // 这会阻止Symfony显示默认的错误页面
-           // $event->setResponse($response);
-
-						
+            // $event->setResponse($response);
         }
 
         if ($this->removeAfterValidation) {

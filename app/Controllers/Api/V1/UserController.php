@@ -1,17 +1,19 @@
 <?php
 
-// app/Controllers/Api/UserController.php
+declare(strict_types=1);
+
+/**
+ * This file is part of Navaphp.
+ *
+ */
 
 namespace App\Controllers\Api\V1;
 
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
-
+use Symfony\Component\HttpFoundation\Response;
 
 class UserController
 {
-
     public function index()
     {
         return new Response('User List');
@@ -22,10 +24,10 @@ class UserController
     {
         return [
             'message' => 'User fetched successfully',
-            'id'      => $id
+            'id'      => $id,
         ];
     }
-	
+
     // ✅ 混合参数：标量 + Request 对象
     public function show(string $id, Request $request): array
     {
@@ -33,7 +35,7 @@ class UserController
         return [
             'id'     => $id,
             'action' => $action,
-            'query'  => $request->query->all()
+            'query'  => $request->query->all(),
         ];
     }
 
@@ -48,5 +50,4 @@ class UserController
     {
         return compact('id', 'redirect');
     }
-	
 }

@@ -1,5 +1,19 @@
 <?php
-// Framework/Core/EasterEgg.php
+
+declare(strict_types=1);
+
+/**
+ * This file is part of Navaphp Framework.
+ *
+ * @link     https://github.com/xuey490/novaphp
+ * @license  https://github.com/xuey490/novaphp/blob/main/LICENSE
+ *
+ * @Filename: %filename%
+ * @Date: 2025-10-16
+ * @Developer: xuey863toy
+ * @Email: xuey863toy@gmail.com
+ */
+
 namespace Framework\Core;
 
 use Symfony\Component\HttpFoundation\Request;
@@ -8,50 +22,50 @@ use Symfony\Component\HttpFoundation\Response;
 class EasterEgg
 {
     /**
-     * 支持的语言文案
+     * 支持的语言文案.
      */
     private static $messages = [
         'zh' => [
-            'title' => '🌌 框架版本',
-            'version' => '版本号',
+            'title'      => '🌌 框架版本',
+            'version'    => '版本号',
             'easter_egg' => '你发现了隐藏彩蛋！🐉',
-            'secret' => '嘘……这是核心的秘密。',
+            'secret'     => '嘘……这是核心的秘密。',
             'method_tip' => '试试用 team 请求？',
             'team_title' => '🌌 开发团队 | Development Team',
-            'member' => '成员',
-            'email' => '邮箱',
-            'project' => '个人项目'
+            'member'     => '成员',
+            'email'      => '邮箱',
+            'project'    => '个人项目',
         ],
         'en' => [
-            'title' => '🌌 Framework Version',
-            'version' => 'Version',
+            'title'      => '🌌 Framework Version',
+            'version'    => 'Version',
             'easter_egg' => 'You found the easter egg! 🐉',
-            'secret' => 'Shh... this is a secret from the core.',
+            'secret'     => 'Shh... this is a secret from the core.',
             'method_tip' => 'Try with a team request?',
             'team_title' => '🌌 Development Team',
-            'member' => 'Member',
-            'email' => 'Email',
-            'project' => 'Project'
-        ]
+            'member'     => 'Member',
+            'email'      => 'Email',
+            'project'    => 'Project',
+        ],
     ];
 
     /**
-     * 开发团队名单（可动态配置）
+     * 开发团队名单（可动态配置）.
      */
     private static $team = [
         [
-            'name' => 'Blue2004 (CYL)',
-            'email' => 'xuey863toy@gmail.com',
-            'github' => 'https://github.com/xuey490/novaphp'
+            'name'   => 'Blue2004 (CYL)',
+            'email'  => 'xuey863toy@gmail.com',
+            'github' => 'https://github.com/xuey490/novaphp',
         ],
     ];
 
     private static $path = '/version';
-	
+
     private static $TeamPath = '/team';
 
     /**
-     * 检查是否触发 版本彩蛋
+     * 检查是否触发 版本彩蛋.
      */
     public static function isTriggeredVersion(Request $request): bool
     {
@@ -59,7 +73,7 @@ class EasterEgg
     }
 
     /**
-     * 检查是否触发 团队名单彩蛋
+     * 检查是否触发 团队名单彩蛋.
      */
     public static function isTriggeredTeam(Request $request): bool
     {
@@ -67,12 +81,12 @@ class EasterEgg
     }
 
     /**
-     * 获取版本号页面（GET）
+     * 获取版本号页面（GET）.
      */
     public static function getResponse(): Response
     {
-        $lang = self::detectLanguage();
-        $msg = self::$messages[$lang];
+        $lang    = self::detectLanguage();
+        $msg     = self::$messages[$lang];
         $version = defined('FRAMEWORK_VERSION') ? FRAMEWORK_VERSION : 'dev';
 
         $html = <<<HTML
@@ -102,20 +116,20 @@ HTML;
     }
 
     /**
-     * 获取开发团队页面（POST）
+     * 获取开发团队页面（POST）.
      */
     public static function getTeamResponse(): Response
     {
         $lang = self::detectLanguage();
-        $msg = self::$messages[$lang];
+        $msg  = self::$messages[$lang];
         $team = self::$team;
 
         $rows = '';
         foreach ($team as $member) {
-            $name = htmlspecialchars($member['name']);
-            $email = htmlspecialchars($member['email']);
+            $name   = htmlspecialchars($member['name']);
+            $email  = htmlspecialchars($member['email']);
             $github = htmlspecialchars($member['github']);
-            $link = '<a href="' . $github . '" target="_blank" style="color:#3498db;">' . $github . '</a>';
+            $link   = '<a href="' . $github . '" target="_blank" style="color:#3498db;">' . $github . '</a>';
 
             $rows .= "<p><strong>👨‍💻 {$name}</strong><br>";
             $rows .= "📧 <a href='mailto:{$email}'>{$email}</a><br>";
@@ -151,18 +165,7 @@ HTML;
     }
 
     /**
-     * 语言检测
-     */
-    private static function detectLanguage(): string
-    {
-        $header = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? 'en';
-        preg_match('/^([a-z]{2})/', strtolower($header), $matches);
-        $lang = $matches[1] ?? 'en';
-        return array_key_exists($lang, self::$messages) ? $lang : 'en';
-    }
-
-    /**
-     * 返回 GET 彩蛋的路由标记
+     * 返回 GET 彩蛋的路由标记.
      */
     public static function getRouteMarker(): array
     {
@@ -170,12 +173,12 @@ HTML;
             'controller' => '__FrameworkVersionController__',
             'method'     => '__showVersion__',
             'params'     => [],
-            'middleware' => []
+            'middleware' => [],
         ];
     }
 
     /**
-     * 返回 POST 彩蛋的路由标记
+     * 返回 POST 彩蛋的路由标记.
      */
     public static function getTeamRouteMarker(): array
     {
@@ -183,7 +186,18 @@ HTML;
             'controller' => '__FrameworkTeamController__',
             'method'     => '__showTeam__',
             'params'     => [],
-            'middleware' => []
+            'middleware' => [],
         ];
+    }
+
+    /**
+     * 语言检测.
+     */
+    private static function detectLanguage(): string
+    {
+        $header = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? 'en';
+        preg_match('/^([a-z]{2})/', strtolower($header), $matches);
+        $lang = $matches[1] ?? 'en';
+        return array_key_exists($lang, self::$messages) ? $lang : 'en';
     }
 }

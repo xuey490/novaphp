@@ -1,10 +1,16 @@
 <?php
 
-// app/Twig/ThinkTemplateFactory.php
+declare(strict_types=1);
+
+/**
+ * This file is part of Navaphp.
+ *
+ */
 
 /*
 改成符合psr-4规则
 */
+
 namespace App\Twig;
 
 use think\Template;
@@ -25,10 +31,10 @@ class ThinkTemplateFactory
 
         // 2. 注册自定义函数（通过 assign 模拟函数注入）
         $template->assign([
-            'hello' => 'tpTemplateHello',
-            'formatDate' => 'tpTemplateFormatDate',
-			'web_csrf_field' => 'WebCsrfField',
-			'api_csrf_field' => 'APICsrfField',
+            'hello'          => 'tpTemplateHello',
+            'formatDate'     => 'tpTemplateFormatDate',
+            'web_csrf_field' => 'WebCsrfField',
+            'api_csrf_field' => 'APICsrfField',
         ]);
 
         // 3. 可扩展：注册更多自定义功能（如标签、过滤器等）

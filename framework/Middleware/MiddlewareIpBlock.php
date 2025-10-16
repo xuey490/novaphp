@@ -1,48 +1,63 @@
 <?php
 
+declare(strict_types=1);
+
+/**
+ * This file is part of Navaphp Framework.
+ *
+ * @link     https://github.com/xuey490/novaphp
+ * @license  https://github.com/xuey490/novaphp/blob/main/LICENSE
+ *
+ * @Filename: %filename%
+ * @Date: 2025-10-16
+ * @Developer: xuey863toy
+ * @Email: xuey863toy@gmail.com
+ */
+
 namespace Framework\Middleware;
 
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\JsonResponse;
 
 class MiddlewareIpBlock
 {
     private array $whitelist = [];
+
     private array $blacklist = [];
+
     private bool $enabled = true;
 
-    public function __construct(string $configFile = null)
+    public function __construct(?string $configFile = null)
     {
         if ($configFile && file_exists($configFile)) {
-            $config = require $configFile;
+            $config          = require $configFile;
             $this->whitelist = $config['whitelist'] ?? [];
             $this->blacklist = $config['blacklist'] ?? [];
-            $this->enabled = $config['enabled'] ?? true;
+            $this->enabled   = $config['enabled']   ?? true;
         }
-		//print_r($config);
+        // print_r($config);
     }
 
     public function handle(Request $request, callable $next): Response
     {
-        if (!$this->enabled) {
+        if (! $this->enabled) {
             return $next($request);
         }
 
         $ip = $request->getClientIp();
-
 
         if ($ip === null) {
             return $this->buildForbiddenResponse($request, '无法识别客户端 IP');
         }
 
         // 1. 检查黑名单（支持 CIDR）
-        if (!empty($this->blacklist) && $this->isIpInList($ip, $this->blacklist)) {
+        if (! empty($this->blacklist) && $this->isIpInList($ip, $this->blacklist)) {
             return $this->buildForbiddenResponse($request, '您的 IP 已被禁止访问');
         }
 
         // 2. 检查白名单（如果设置了）
-        if (!empty($this->whitelist) && !$this->isIpInList($ip, $this->whitelist)) {
+        if (! empty($this->whitelist) && ! $this->isIpInList($ip, $this->whitelist)) {
             return $this->buildForbiddenResponse($request, '仅限授权 IP 或网段访问');
         }
 
@@ -50,13 +65,15 @@ class MiddlewareIpBlock
     }
 
     /**
-     * 判断 IP 是否匹配列表中的任意 CIDR 或精确 IP
+     * 判断 IP 是否匹配列表中的任意 CIDR 或精确 IP.
      */
     private function isIpInList(string $ip, array $list): bool
     {
         foreach ($list as $entry) {
             $entry = trim($entry);
-            if ($entry === '') continue;
+            if ($entry === '') {
+                continue;
+            }
 
             // 检查是否为 CIDR 格式（包含 /）
             if (strpos($entry, '/') !== false) {
@@ -75,31 +92,35 @@ class MiddlewareIpBlock
     }
 
     /**
-     * 判断 IP 是否在 CIDR 网段内
+     * 判断 IP 是否在 CIDR 网段内.
      */
     private function cidrMatch(string $ip, string $cidr): bool
     {
-        if (!filter_var($ip, FILTER_VALIDATE_IP)) {
+        if (! filter_var($ip, FILTER_VALIDATE_IP)) {
             return false;
         }
 
         [$subnet, $mask] = explode('/', $cidr, 2);
 
-        if (!filter_var($subnet, FILTER_VALIDATE_IP)) {
+        if (! filter_var($subnet, FILTER_VALIDATE_IP)) {
             return false;
         }
 
-        $mask = (int)$mask;
-        if ($mask < 0) return false;
+        $mask = (int) $mask;
+        if ($mask < 0) {
+            return false;
+        }
 
         // IPv4
         if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-            if (!filter_var($subnet, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            if (! filter_var($subnet, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
                 return false;
             }
-            if ($mask > 32) return false;
+            if ($mask > 32) {
+                return false;
+            }
 
-            $ipLong = ip2long($ip);
+            $ipLong     = ip2long($ip);
             $subnetLong = ip2long($subnet);
             if ($ipLong === false || $subnetLong === false) {
                 return false;
@@ -111,17 +132,19 @@ class MiddlewareIpBlock
 
         // IPv6
         if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
-            if (!filter_var($subnet, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+            if (! filter_var($subnet, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
                 return false;
             }
-            if ($mask > 128) return false;
+            if ($mask > 128) {
+                return false;
+            }
 
-            $ipBin = $this->ip2bin($ip);
+            $ipBin     = $this->ip2bin($ip);
             $subnetBin = $this->ip2bin($subnet);
 
             // 比较前 $mask 位
             $bytes = intval($mask / 8);
-            $bits = $mask % 8;
+            $bits  = $mask % 8;
 
             // 先比较完整字节
             if ($bytes > 0) {
@@ -132,8 +155,8 @@ class MiddlewareIpBlock
 
             // 再比较剩余比特
             if ($bits > 0) {
-                $maskByte = 0xFF << (8 - $bits);
-                $ipByte = ord($ipBin[$bytes] ?? "\x00");
+                $maskByte   = 0xFF << (8 - $bits);
+                $ipByte     = ord($ipBin[$bytes] ?? "\x00");
                 $subnetByte = ord($subnetBin[$bytes] ?? "\x00");
                 if (($ipByte & $maskByte) !== ($subnetByte & $maskByte)) {
                     return false;
@@ -147,7 +170,7 @@ class MiddlewareIpBlock
     }
 
     /**
-     * 将 IPv6 地址转换为 128 位二进制字符串
+     * 将 IPv6 地址转换为 128 位二进制字符串.
      */
     private function ip2bin(string $ip): string
     {
@@ -167,16 +190,15 @@ class MiddlewareIpBlock
 
     private function buildForbiddenResponse(Request $request, string $reason): Response
     {
-        $message = '访问被拒绝：' . $reason;
+        $message  = '访问被拒绝：' . $reason;
         $clientIp = $request->getClientIp() ?: '未知';
 
-        if ($request->isXmlHttpRequest() || 
-            strpos($request->headers->get('Accept', ''), 'application/json') !== false) {
-            
+        if ($request->isXmlHttpRequest()
+            || strpos($request->headers->get('Accept', ''), 'application/json') !== false) {
             return new JsonResponse([
-                'success' => false,
-                'error' => 'forbidden',
-                'message' => $message,
+                'success'   => false,
+                'error'     => 'forbidden',
+                'message'   => $message,
                 'client_ip' => $clientIp,
             ], 403);
         }

@@ -1,29 +1,43 @@
 <?php
 
+declare(strict_types=1);
+
+/**
+ * This file is part of Navaphp Framework.
+ *
+ * @link     https://github.com/xuey490/novaphp
+ * @license  https://github.com/xuey490/novaphp/blob/main/LICENSE
+ *
+ * @Filename: %filename%
+ * @Date: 2025-10-16
+ * @Developer: xuey863toy
+ * @Email: xuey863toy@gmail.com
+ */
+
 namespace Framework\Console\Commands;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
+use Symfony\Component\Filesystem\Filesystem;
 
 class MakeControllerCommand extends Command
 {
     /**
      * 命令名称 - 必须定义
-     * 这是修复错误的关键
+     * 这是修复错误的关键.
      */
     protected static $defaultName = 'make:controller';
-    
+
     /**
-     * 命令描述
+     * 命令描述.
      */
     protected static $defaultDescription = '创建一个新的控制器类';
 
     /**
-     * 配置命令
+     * 配置命令.
      */
     protected function configure(): void
     {
@@ -41,18 +55,18 @@ class MakeControllerCommand extends Command
     }
 
     /**
-     * 执行命令
+     * 执行命令.
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $controllerBaseName = $input->getArgument('name');
-        $controllerName = ucfirst($controllerBaseName) . 'Controller';
-        $directory = __DIR__ . '/../../../app/Controllers';
-        $filePath = $directory . '/' . $controllerName . '.php';
+        $controllerName     = ucfirst($controllerBaseName) . 'Controller';
+        $directory          = __DIR__ . '/../../../app/Controllers';
+        $filePath           = $directory . '/' . $controllerName . '.php';
 
         // 检查文件是否已存在
         if (file_exists($filePath)) {
-            $output->writeln("<error>错误：控制器 $controllerName 已存在于 $filePath</error>");
+            $output->writeln("<error>错误：控制器 {$controllerName} 已存在于 {$filePath}</error>");
             return Command::FAILURE;
         }
 
@@ -69,33 +83,32 @@ class MakeControllerCommand extends Command
             // 写入文件
             $filesystem->dumpFile($filePath, $content);
 
-            $output->writeln("<info>成功生成控制器：</info>");
-            $output->writeln("路径：$filePath");
+            $output->writeln('<info>成功生成控制器：</info>');
+            $output->writeln("路径：{$filePath}");
             return Command::SUCCESS;
-
         } catch (IOExceptionInterface $e) {
-            $output->writeln("<error>文件操作错误：" . $e->getMessage() . "</error>");
+            $output->writeln('<error>文件操作错误：' . $e->getMessage() . '</error>');
             return Command::FAILURE;
         } catch (\Exception $e) {
-            $output->writeln("<error>发生错误：" . $e->getMessage() . "</error>");
+            $output->writeln('<error>发生错误：' . $e->getMessage() . '</error>');
             return Command::FAILURE;
         }
     }
 
     /**
-     * 生成控制器类内容
+     * 生成控制器类内容.
      */
     private function generateControllerContent(string $controllerName): string
     {
         return <<<PHP
 <?php
 
-namespace App\Controllers;
+namespace App\\Controllers;
 
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\\Component\\HttpFoundation\\Request;
+use Symfony\\Component\\HttpFoundation\\Response;
 
-class $controllerName
+class {$controllerName}
 {
     /**
      * 显示资源列表
@@ -103,7 +116,7 @@ class $controllerName
     public function index(Request \$request): Response
     {
         // 实现列表展示逻辑
-        return new Response('$controllerName index');
+        return new Response('{$controllerName} index');
     }
 
     /**
@@ -112,7 +125,7 @@ class $controllerName
     public function create(Request \$request): Response
     {
         // 实现创建表单展示逻辑
-        return new Response('$controllerName create');
+        return new Response('{$controllerName} create');
     }
 
     /**
@@ -121,7 +134,7 @@ class $controllerName
     public function save(Request \$request): Response
     {
         // 实现资源保存逻辑
-        return new Response('$controllerName save');
+        return new Response('{$controllerName} save');
     }
 
     /**
@@ -130,7 +143,7 @@ class $controllerName
     public function show(Request \$request): Response
     {
         // 实现资源详情展示逻辑
-        return new Response('$controllerName show');
+        return new Response('{$controllerName} show');
     }
 
     /**
@@ -139,7 +152,7 @@ class $controllerName
     public function edit(Request \$request): Response
     {
         // 实现编辑表单展示逻辑
-        return new Response('$controllerName edit');
+        return new Response('{$controllerName} edit');
     }
 
     /**
@@ -148,7 +161,7 @@ class $controllerName
     public function update(Request \$request): Response
     {
         // 实现资源更新逻辑
-        return new Response('$controllerName update');
+        return new Response('{$controllerName} update');
     }
 
     /**
@@ -157,10 +170,9 @@ class $controllerName
     public function delete(Request \$request): Response
     {
         // 实现资源删除逻辑
-        return new Response('$controllerName delete');
+        return new Response('{$controllerName} delete');
     }
 }
 PHP;
     }
 }
-    

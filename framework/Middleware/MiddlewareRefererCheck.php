@@ -1,5 +1,18 @@
 <?php
-// framework/Middleware/MiddlewareRefererCheck.php
+
+declare(strict_types=1);
+
+/**
+ * This file is part of Navaphp Framework.
+ *
+ * @link     https://github.com/xuey490/novaphp
+ * @license  https://github.com/xuey490/novaphp/blob/main/LICENSE
+ *
+ * @Filename: %filename%
+ * @Date: 2025-10-16
+ * @Developer: xuey863toy
+ * @Email: xuey863toy@gmail.com
+ */
 
 namespace Framework\Middleware;
 
@@ -31,7 +44,7 @@ class MiddlewareRefererCheck
 
         $referer = $request->headers->get('Referer');
 
-        if (!$referer) {
+        if (! $referer) {
             if ($this->strict) {
                 throw new AccessDeniedHttpException($this->errorMessage);
             }
@@ -39,18 +52,18 @@ class MiddlewareRefererCheck
         }
 
         $parsed = parse_url($referer);
-        if (!$parsed || !isset($parsed['host'])) {
+        if (! $parsed || ! isset($parsed['host'])) {
             throw new AccessDeniedHttpException($this->errorMessage);
         }
 
         $scheme = strtolower($parsed['scheme'] ?? '');
-        $host = strtolower($parsed['host']);
+        $host   = strtolower($parsed['host']);
 
-        if (!in_array($scheme, $this->allowedSchemes)) {
+        if (! in_array($scheme, $this->allowedSchemes)) {
             throw new AccessDeniedHttpException($this->errorMessage);
         }
 
-        if (!$this->isHostAllowed($host)) {
+        if (! $this->isHostAllowed($host)) {
             throw new AccessDeniedHttpException($this->errorMessage);
         }
 

@@ -1,8 +1,16 @@
 <?php
+
+declare(strict_types=1);
+
+/**
+ * This file is part of Navaphp.
+ *
+ */
+
 namespace App\Controllers\Admin;
 
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class UserController
 {
@@ -13,7 +21,7 @@ class UserController
 
     public function edit(Request $request)
     {
-		$id = $request->get('id');
-        return new Response("<h1>$id,Admin Edit User ID: $id</h1>");
+        $id = $request->get('id');
+        return new Response("<h1>{$id},Admin Edit User ID: {$id}</h1>");
     }
 }

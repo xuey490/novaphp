@@ -1,6 +1,18 @@
 <?php
 
-// Framework/Cache/TaggedCacheProxy.php
+declare(strict_types=1);
+
+/**
+ * This file is part of Navaphp Framework.
+ *
+ * @link     https://github.com/xuey490/novaphp
+ * @license  https://github.com/xuey490/novaphp/blob/main/LICENSE
+ *
+ * @Filename: %filename%
+ * @Date: 2025-10-16
+ * @Developer: xuey863toy
+ * @Email: xuey863toy@gmail.com
+ */
 
 namespace Framework\Cache;
 
@@ -8,9 +20,7 @@ use think\cache\TagSet;
 
 class TaggedCacheProxy implements TaggedCacheInterface
 {
-    public function __construct(protected TagSet $tagSet)
-    {
-    }
+    public function __construct(protected TagSet $tagSet) {}
 
     public function get($key, $default = null)
     {

@@ -1,5 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
+/**
+ * This file is part of Navaphp.
+ *
+ */
+
 namespace App\Twig;
 
 use League\CommonMark\Environment\Environment;
@@ -16,7 +23,7 @@ class MarkdownExtension extends AbstractExtension
     {
         // 1. 配置解析环境
         $config = [
-            'html_input' => 'strip', // 安全处理：剥离输入中的 HTML
+            'html_input'         => 'strip', // 安全处理：剥离输入中的 HTML
             'allow_unsafe_links' => false,
         ];
 
@@ -39,10 +46,10 @@ class MarkdownExtension extends AbstractExtension
     }
 
     /**
-     * 将 Markdown 文本转换为 HTML
+     * 将 Markdown 文本转换为 HTML.
      *
-     * @param string $markdown The Markdown text to convert.
-     * @return string The converted HTML.
+     * @param  string $markdown the Markdown text to convert
+     * @return string the converted HTML
      */
     public function convertMarkdownToHtml(string $markdown): string
     {

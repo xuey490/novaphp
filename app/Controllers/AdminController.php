@@ -1,65 +1,65 @@
 <?php
+
+declare(strict_types=1);
+
+/**
+ * This file is part of Navaphp.
+ *
+ */
+
 namespace App\Controllers;
 
+use App\Services\UserService;
+use Framework\Container\Container;
+use PDO; // 用于API JSON响应
+use Symfony\Component\HttpFoundation\JsonResponse; // 或者你需要的其他依赖
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\JsonResponse; // 用于API JSON响应
-use Framework\Container\Container; // 或者你需要的其他依赖
-use App\Services\UserService;
-use PDO;
-
-
-
 
 class AdminController
 {
-	private UserService $userService;
-	
-	
+    private UserService $userService;
+
     // 构造函数依赖注入
     public function __construct(UserService $userService)
     {
         $this->userService = $userService;
-		//var_dump($this->userService->getUserById(1));
-        //var_dump("UserController 构造函数被调用，PDO 依赖已注入！");
+        // var_dump($this->userService->getUserById(1));
+        // var_dump("UserController 构造函数被调用，PDO 依赖已注入！");
     }
-	
 
-
-	
     // 路由：/user/get/1
     public function get(int $id): Response
     {
         // 使用注入的 UserService 获取数据
         $user = $this->userService->getUserById($id);
-        
+
         if (empty($user)) {
             return new Response('<h1>User Not Found</h1>', 404);
         }
 
         return new Response("ID: {$user['id']}, Name: {$user['name']}");
     }
-	
-	
+
     /**
      * 1. 获取用户列表（GET /user）
-     * 支持分页：/user?page=1&size=10
+     * 支持分页：/user?page=1&size=10.
      */
     public function index(Request $request): Response
     {
-		// 获取容器
-		$container = Container::getInstance();
-		// 获取DI服务
-		//$test = $container->get('test.service');	
-		//print_r($test);
-				
-				//// 获取控制器（自动创建）
-		//$homeController = $container->get('App\Controllers\HomeController');
-		//$homeController->index();
-		
+        // 获取容器
+        $container = Container::getInstance();
+        // 获取DI服务
+        // $test = $container->get('test.service');
+        // print_r($test);
+
+        // // 获取控制器（自动创建）
+        // $homeController = $container->get('App\Controllers\HomeController');
+        // $homeController->index();
+
         // 1. 获取请求参数（分页）
-        $page = (int)$request->get('page', 1); // 默认第1页
-        $size = (int)$request->get('size', 10); // 默认每页10条
+        $page = (int) $request->get('page', 1); // 默认第1页
+        $size = (int) $request->get('size', 10); // 默认每页10条
         $page = $page < 1 ? 1 : $page; // 防止页数小于1
         $size = $size < 1 || $size > 50 ? 10 : $size; // 限制每页最大50条
 
@@ -68,12 +68,12 @@ class AdminController
         $users = $this->mockUserList($page, $size); // 模拟用户列表数据
 
         // 3. 计算分页信息
-        $totalPages = (int)ceil($total / $size);
+        $totalPages = (int) ceil($total / $size);
         $pagination = [
-            'page' => $page,
-            'size' => $size,
-            'total' => $total,
-            'totalPages' => $totalPages
+            'page'       => $page,
+            'size'       => $size,
+            'total'      => $total,
+            'totalPages' => $totalPages,
         ];
 
         // 4. 返回响应（支持HTML/JSON两种格式，通过format参数控制）
@@ -81,12 +81,12 @@ class AdminController
         if ($format === 'json') {
             // API场景：返回JSON格式
             return new JsonResponse([
-                'code' => 200,
+                'code'    => 200,
                 'message' => 'success',
-                'data' => [
-                    'users' => $users,
-                    'pagination' => $pagination
-                ]
+                'data'    => [
+                    'users'      => $users,
+                    'pagination' => $pagination,
+                ],
             ]);
         }
 
@@ -125,17 +125,17 @@ class AdminController
     }
 
     /**
-     * 2. 获取单个用户详情（GET /user/{id}）
+     * 2. 获取单个用户详情（GET /user/{id}）.
      */
     public function show(int $id, Request $request): Response
     {
         // 1. 模拟数据库查询（实际项目替换为ORM查询）
         $user = $this->mockUser($id);
-        if (!$user) {
+        if (! $user) {
             // 用户不存在：返回404
             return new JsonResponse([
-                'code' => 404,
-                'message' => 'User not found (ID: ' . $id . ')'
+                'code'    => 404,
+                'message' => 'User not found (ID: ' . $id . ')',
             ], 404);
         }
 
@@ -143,9 +143,9 @@ class AdminController
         $format = $request->get('format', 'html');
         if ($format === 'json') {
             return new JsonResponse([
-                'code' => 200,
+                'code'    => 200,
                 'message' => 'success',
-                'data' => $user
+                'data'    => $user,
             ]);
         }
 
@@ -165,7 +165,7 @@ class AdminController
     }
 
     /**
-     * 3. 显示创建用户表单（GET /user/create）
+     * 3. 显示创建用户表单（GET /user/create）.
      */
     public function create(): Response
     {
@@ -193,28 +193,34 @@ class AdminController
     }
 
     /**
-     * 4. 提交创建用户数据（POST /user）
+     * 4. 提交创建用户数据（POST /user）.
      */
     public function store(Request $request): Response
     {
         // 1. 获取并验证请求参数
-        $name = trim($request->request->get('name', ''));
-        $email = trim($request->request->get('email', ''));
+        $name     = trim($request->request->get('name', ''));
+        $email    = trim($request->request->get('email', ''));
         $password = $request->request->get('password', '');
 
         // 参数验证（实际项目可使用验证组件，如symfony/validator）
         $errors = [];
-        if (empty($name)) $errors[] = 'Name is required';
-        if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'Valid email is required';
-        if (strlen($password) < 6) $errors[] = 'Password must be at least 6 characters';
+        if (empty($name)) {
+            $errors[] = 'Name is required';
+        }
+        if (empty($email) || ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors[] = 'Valid email is required';
+        }
+        if (strlen($password) < 6) {
+            $errors[] = 'Password must be at least 6 characters';
+        }
 
         // 验证失败：返回错误信息
-        if (!empty($errors)) {
+        if (! empty($errors)) {
             if ($request->isXmlHttpRequest()) { // AJAX请求返回JSON
                 return new JsonResponse([
-                    'code' => 400,
+                    'code'    => 400,
                     'message' => 'Validation failed',
-                    'errors' => $errors
+                    'errors'  => $errors,
                 ], 400);
             }
             // 普通表单请求：返回带错误的表单页面
@@ -237,30 +243,30 @@ class AdminController
         // 3. 响应结果（重定向或JSON）
         if ($request->isXmlHttpRequest()) {
             return new JsonResponse([
-                'code' => 201,
+                'code'    => 201,
                 'message' => 'User created successfully',
-                'data' => ['id' => $newUserId, 'name' => $name, 'email' => $email]
+                'data'    => ['id' => $newUserId, 'name' => $name, 'email' => $email],
             ], 201);
         }
 
         // 普通表单：重定向到用户详情页（避免表单重复提交）
         return new Response('', 302, [
-            'Location' => '/user/' . $newUserId . ''
+            'Location' => '/user/' . $newUserId . '',
         ]);
     }
 
     /**
-     * 5. 显示编辑用户表单（GET /user/{id}/edit）
+     * 5. 显示编辑用户表单（GET /user/{id}/edit）.
      */
     public function edit(Request $request, int $id): Response
     {
         // 1. 模拟查询用户数据
-		$id =$request->get('id');
+        $id   =$request->get('id');
         $user = $this->mockUser($id);
-        if (!$user) {
+        if (! $user) {
             return new JsonResponse([
-                'code' => 404,
-                'message' => 'User not found (ID: ' . $id . ')'
+                'code'    => 404,
+                'message' => 'User not found (ID: ' . $id . ')',
             ], 404);
         }
 
@@ -290,33 +296,37 @@ class AdminController
     }
 
     /**
-     * 6. 提交更新用户数据（PUT /user/{id}）
+     * 6. 提交更新用户数据（PUT /user/{id}）.
      */
     public function update(int $id, Request $request): Response
     {
         // 1. 检查用户是否存在
         $user = $this->mockUser($id);
-        if (!$user) {
+        if (! $user) {
             return new JsonResponse([
-                'code' => 404,
-                'message' => 'User not found (ID: ' . $id . ')'
+                'code'    => 404,
+                'message' => 'User not found (ID: ' . $id . ')',
             ], 404);
         }
 
         // 2. 获取并验证参数
-        $name = trim($request->request->get('name', ''));
-        $email = trim($request->request->get('email', ''));
+        $name     = trim($request->request->get('name', ''));
+        $email    = trim($request->request->get('email', ''));
         $password = $request->request->get('password', ''); // 可选：为空则不更新密码
 
         $errors = [];
-        if (empty($name)) $errors[] = 'Name is required';
-        if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'Valid email is required';
+        if (empty($name)) {
+            $errors[] = 'Name is required';
+        }
+        if (empty($email) || ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors[] = 'Valid email is required';
+        }
 
-        if (!empty($errors)) {
+        if (! empty($errors)) {
             return new JsonResponse([
-                'code' => 400,
+                'code'    => 400,
                 'message' => 'Validation failed',
-                'errors' => $errors
+                'errors'  => $errors,
             ], 400);
         }
 
@@ -326,29 +336,29 @@ class AdminController
         // 4. 响应结果
         if ($request->isXmlHttpRequest()) {
             return new JsonResponse([
-                'code' => 200,
+                'code'    => 200,
                 'message' => 'User updated successfully',
-                'data' => ['id' => $id, 'name' => $name, 'email' => $email]
+                'data'    => ['id' => $id, 'name' => $name, 'email' => $email],
             ]);
         }
 
         // 重定向到用户详情页
         return new Response('', 302, [
-            'Location' => '/user/edit?id=' . $id . ''
+            'Location' => '/user/edit?id=' . $id . '',
         ]);
     }
 
     /**
-     * 7. 删除用户（DELETE /user/{id}）
+     * 7. 删除用户（DELETE /user/{id}）.
      */
     public function destroy(int $id): Response
     {
         // 1. 检查用户是否存在
         $user = $this->mockUser($id);
-        if (!$user) {
+        if (! $user) {
             return new JsonResponse([
-                'code' => 404,
-                'message' => 'User not found (ID: ' . $id . ')'
+                'code'    => 404,
+                'message' => 'User not found (ID: ' . $id . ')',
             ], 404);
         }
 
@@ -357,9 +367,9 @@ class AdminController
 
         // 3. 响应结果（JSON，删除后通常不返回HTML）
         return new JsonResponse([
-            'code' => 200,
+            'code'    => 200,
             'message' => 'User deleted successfully',
-            'data' => ['id' => $id]
+            'data'    => ['id' => $id],
         ]);
     }
 
@@ -367,7 +377,7 @@ class AdminController
     // 以下为模拟数据方法（实际项目替换为ORM）
     // ------------------------------
     /**
-     * 模拟用户列表数据
+     * 模拟用户列表数据.
      */
     // ... (前面的 index, show, create, store, edit, update, destroy 方法)
 
@@ -376,31 +386,31 @@ class AdminController
     // ------------------------------
 
     /**
-     * 模拟获取单个用户数据
+     * 模拟获取单个用户数据.
      */
     private function mockUser(int $id): ?array
     {
         // 仅模拟少量数据用于测试
         $mockUsers = [
             1 => [
-                'id' => 1,
-                'name' => 'Admin User',
-                'email' => 'admin@example.com',
-                'password' => password_hash('admin123', PASSWORD_DEFAULT),
+                'id'         => 1,
+                'name'       => 'Admin User',
+                'email'      => 'admin@example.com',
+                'password'   => password_hash('admin123', PASSWORD_DEFAULT),
                 'created_at' => '2023-01-01 10:00:00',
             ],
             2 => [
-                'id' => 2,
-                'name' => 'Normal User',
-                'email' => 'user@example.com',
-                'password' => password_hash('user123', PASSWORD_DEFAULT),
+                'id'         => 2,
+                'name'       => 'Normal User',
+                'email'      => 'user@example.com',
+                'password'   => password_hash('user123', PASSWORD_DEFAULT),
                 'created_at' => '2023-02-15 15:30:00',
             ],
             3 => [
-                'id' => 3,
-                'name' => 'Test User',
-                'email' => 'test@example.com',
-                'password' => password_hash('test123', PASSWORD_DEFAULT),
+                'id'         => 3,
+                'name'       => 'Test User',
+                'email'      => 'test@example.com',
+                'password'   => password_hash('test123', PASSWORD_DEFAULT),
                 'created_at' => '2023-03-20 09:45:00',
             ],
         ];
@@ -409,28 +419,28 @@ class AdminController
     }
 
     /**
-     * 模拟用户列表数据
+     * 模拟用户列表数据.
      */
     private function mockUserList(int $page, int $size): array
     {
         $users = [];
         $start = ($page - 1) * $size + 1;
-        $end = $start + $size - 1;
+        $end   = $start              + $size - 1;
 
         // 生成连续的用户数据用于列表展示
-        for ($i = $start; $i <= $end; $i++) {
+        for ($i = $start; $i <= $end; ++$i) {
             $users[] = [
-                'id' => $i,
-                'name' => 'User_' . $i,
-                'email' => 'user_' . $i . '@example.com',
-                'created_at' => date('Y-m-d H:i:s', strtotime("-$i days")),
+                'id'         => $i,
+                'name'       => 'User_' . $i,
+                'email'      => 'user_' . $i . '@example.com',
+                'created_at' => date('Y-m-d H:i:s', strtotime("-{$i} days")),
             ];
         }
         return $users;
     }
 
     /**
-     * 模拟保存新用户
+     * 模拟保存新用户.
      */
     private function mockSaveUser(int $id, string $name, string $email, string $password): void
     {
@@ -440,7 +450,7 @@ class AdminController
     }
 
     /**
-     * 模拟更新用户
+     * 模拟更新用户.
      */
     private function mockUpdateUser(int $id, string $name, string $email, string $password = ''): void
     {
@@ -450,7 +460,7 @@ class AdminController
     }
 
     /**
-     * 模拟删除用户
+     * 模拟删除用户.
      */
     private function mockDeleteUser(int $id): void
     {
