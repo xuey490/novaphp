@@ -1,24 +1,31 @@
 <?php
+
+declare(strict_types=1);
+
+/**
+ * This file is part of Navaphp.
+ *
+ */
+
 namespace App\Controllers;
 
+use App\Middlewares\AuthMiddleware;
+use App\Middlewares\LogMiddleware;
 use Framework\Attributes\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use App\Middlewares\AuthMiddleware;
-use App\Middlewares\LogMiddleware;
-
 
 #[Route(
-    prefix: '/api/v1', 
-    group: 'api', 
+    prefix: '/api/v1',
+    group: 'api',
     middleware: [AuthMiddleware::class, LogMiddleware::class]
 )]
 class UserController
 {
     // GET /api/v1/users
     #[Route(
-        path: '/users', 
-        methods: ['GET'], 
+        path: '/users',
+        methods: ['GET'],
         name: 'user.list',
         middleware: [AuthMiddleware::class]
     )]
@@ -29,8 +36,8 @@ class UserController
 
     // POST /api/v1/users
     #[Route(
-        path: '/users', 
-        methods: ['POST'], 
+        path: '/users',
+        methods: ['POST'],
         name: 'user.create',
         middleware: [LogMiddleware::class]
     )]
@@ -41,8 +48,8 @@ class UserController
 
     // GET /api/v1/users/{id}，要求 id 是数字
     #[Route(
-        path: '/users/{id}', 
-        methods: ['GET'], 
+        path: '/users/{id}',
+        methods: ['GET'],
         name: 'user.show',
         requirements: ['id' => '\d+']
     )]
@@ -53,8 +60,8 @@ class UserController
 
     // PUT /api/v1/users/{id}，修改用户
     #[Route(
-        path: '/users/{id}', 
-        methods: ['PUT'], 
+        path: '/users/{id}',
+        methods: ['PUT'],
         name: 'user.update',
         requirements: ['id' => '\d+'],
         middleware: [AuthMiddleware::class]
@@ -66,8 +73,8 @@ class UserController
 
     // DELETE /api/v1/users/{id}
     #[Route(
-        path: '/users/{id}', 
-        methods: ['DELETE'], 
+        path: '/users/{id}',
+        methods: ['DELETE'],
         name: 'user.delete',
         requirements: ['id' => '\d+'],
         middleware: [AuthMiddleware::class]

@@ -1,17 +1,42 @@
 <?php
 
-// 定义项目根目录常量（可选）
-define('BASE_PATH', dirname(__DIR__));
+// 框架入口文件
+
+define('BASE_PATH', realpath(dirname(__DIR__)));
 define('APP_DEBUG', true);
 
 define('FRAMEWORK_VERSION', '0.0.10-Bate (Powered by Blue2004)');
 
-// 引入 Composer 自动加载
-require_once BASE_PATH . '/vendor/autoload.php';
+// 引入 Composer 自动加载（确保 vendor 目录在 BASE_PATH 下）
+if (file_exists(BASE_PATH . '/vendor/autoload.php')) {
+    require_once BASE_PATH . '/vendor/autoload.php';
+} else {
+    die('Composer autoload file not found. Please run "composer install".');
+}
 
-require_once __DIR__ . '/../framework/helpers.php';
-require_once __DIR__ . '/../App/function.php';
+// 检查并引入框架辅助函数
+$helpersFile = BASE_PATH . '/framework/helpers.php';
+if (file_exists($helpersFile)) {
+    require_once $helpersFile;
+} else {
+    die("Framework helpers file not found: $helpersFile");
+}
 
+// 检查并引入应用函数
+$appFunctionsFile = BASE_PATH . '/App/function.php';
+if (file_exists($appFunctionsFile)) {
+    require_once $appFunctionsFile;
+} else {
+    die("App functions file not found: $appFunctionsFile");
+}
+
+// 启动框架
+if (class_exists('\Framework\Core\Framework')) {
+    $framework = new \Framework\Core\Framework();
+    $framework->run();
+} else {
+    die('Framework core class not found.');
+}
 
 // 假设这是您加载路由的代码
 /*
@@ -47,10 +72,3 @@ foreach ($routes as $routeName => $symfonyRoute) {
 }
 */
 //die("Routing debug output complete.");
-
-
-
-// 启动框架
-$framework = new \Framework\Core\Framework();
-$framework->run();
-

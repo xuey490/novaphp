@@ -1,12 +1,25 @@
 <?php
 
-// Framework/Cache/CacheService.php
+declare(strict_types=1);
+
+/**
+ * This file is part of Navaphp Framework.
+ *
+ * @link     https://github.com/xuey490/novaphp
+ * @license  https://github.com/xuey490/novaphp/blob/main/LICENSE
+ *
+ * @Filename: %filename%
+ * @Date: 2025-10-16
+ * @Developer: xuey863toy
+ * @Email: xuey863toy@gmail.com
+ */
 
 namespace Framework\Cache;
 
-use think\facade\Cache; // ✅ 正确的入口类（替代 Store）
-use think\cache\Driver;
-use Framework\Cache\CacheInterface; // 注意命名空间
+use think\cache\Driver; // ✅ 正确的入口类（替代 Store）
+use think\facade\Cache;
+
+// 注意命名空间
 
 /*
 $cache = getService('cache');
@@ -18,23 +31,35 @@ echo $cache->get('key');
 class CacheService
 {
     protected array $config;
+
     protected array $instances = [];
+
     protected string $default;
 
     public function __construct(array $config)
     {
-        $this->config = $config;
+        $this->config  = $config;
         $this->default = $config['default'] ?? 'file';
     }
 
     /**
-     * 获取指定名称的缓存实例
+     * 快捷方法：直接调用默认缓存.
+     * @param mixed $method
+     * @param mixed $args
      */
-    public function store(string $name = null): CacheInterface
+    public function __call($method, $args)
+    {
+        return $this->store()->{$method}(...$args);
+    }
+
+    /**
+     * 获取指定名称的缓存实例.
+     */
+    public function store(?string $name = null): CacheInterface
     {
         $name = $name ?? $this->default;
 
-        if (!isset($this->instances[$name])) {
+        if (! isset($this->instances[$name])) {
             $this->instances[$name] = $this->resolve($name);
         }
 
@@ -42,11 +67,11 @@ class CacheService
     }
 
     /**
-     * 解析并创建缓存驱动
+     * 解析并创建缓存驱动.
      */
     protected function resolve(string $name): CacheInterface
     {
-        if (!isset($this->config['stores'][$name])) {
+        if (! isset($this->config['stores'][$name])) {
             throw new \InvalidArgumentException("Cache store [{$name}] is not defined.");
         }
 
@@ -56,10 +81,8 @@ class CacheService
         $driver = Cache::connect($config);
 
         // 包装为接口实现
-        return new class ($driver) implements CacheInterface {
-            public function __construct(protected Driver $driver)
-            {
-            }
+        return new class($driver) implements CacheInterface {
+            public function __construct(protected Driver $driver) {}
 
             public function get($key, $default = null)
             {
@@ -86,19 +109,11 @@ class CacheService
                 return $this->driver->clear();
             }
 
-            public function tag(string|array $name): TaggedCacheInterface
+            public function tag(array|string $name): TaggedCacheInterface
             {
                 $tagSet = $this->driver->tag($name); // 返回 think\cache\TagSet
-                return new \Framework\Cache\TaggedCacheProxy($tagSet);
+                return new TaggedCacheProxy($tagSet);
             }
         };
-    }
-
-    /**
-     * 快捷方法：直接调用默认缓存
-     */
-    public function __call($method, $args)
-    {
-        return $this->store()->$method(...$args);
     }
 }

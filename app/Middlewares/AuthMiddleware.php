@@ -1,5 +1,12 @@
 <?php
-// app/Middlewares/AuthMiddleware.php
+
+declare(strict_types=1);
+
+/**
+ * This file is part of Navaphp.
+ *
+ */
+
 namespace App\Middlewares;
 
 use Symfony\Component\HttpFoundation\Request;
@@ -9,19 +16,16 @@ class AuthMiddleware
 {
     public function handle(Request $request, callable $next): Response
     {
-		//dump('--- 进入 AuthMiddleware (中间件) ---'); 
-		
+        // dump('--- 进入 AuthMiddleware (中间件) ---');
 
-		//$id = $request->getSession();
+        // $id = $request->getSession();
         // 模拟鉴权：如果没有登录，返回401
-       // if (!$id->get('user_id')) {
+        // if (!$id->get('user_id')) {
         //    return new Response('<h1>401 Unauthorized: Please login first</h1>', 401);
-        //}
-		
+        // }
+
         // 鉴权通过，执行下一个中间件/控制器
-		$response =$next($request);
-		
-		//dump('--- 退出 AuthMiddleware (中间件) ---');
-        return $response;
+        return $next($request);
+        // dump('--- 退出 AuthMiddleware (中间件) ---');
     }
 }

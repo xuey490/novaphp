@@ -1,33 +1,37 @@
 <?php
 
-// app/Controllers/UploadController.php
+declare(strict_types=1);
+
+/**
+ * This file is part of Navaphp.
+ *
+ */
+
 namespace App\Controllers;
 
-use Twig\Environment;
+use Framework\Utils\FileUploader;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Framework\Utils\FileUploader;
+use Twig\Environment;
 
 class UploadController
 {
     private Environment $twig;
 
-	private FileUploader $uploader;
+    private FileUploader $uploader;
 
     public function __construct(Environment $twig, FileUploader $uploader)
     {
-        $this->twig = $twig;
+        $this->twig     = $twig;
         $this->uploader = $uploader;
     }
 
-
-	public function form()		
-	{
-		//echo generateUuid();
-		$html = $this->twig->render('upload/form.html.twig');
-		return new Response($html);
-	}
-	
+    public function form()
+    {
+        // echo generateUuid();
+        $html = $this->twig->render('upload/form.html.twig');
+        return new Response($html);
+    }
 
     public function process(Request $request)
     {
@@ -38,5 +42,4 @@ class UploadController
             return json_encode(['status' => 'error', 'message' => $e->getMessage()], 400);
         }
     }
-	
 }

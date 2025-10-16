@@ -1,35 +1,36 @@
 <?php
 
+declare(strict_types=1);
+
+/**
+ * This file is part of Navaphp.
+ *
+ */
 
 namespace App\Controllers;
 
-
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Request;
 use Framework\Utils\Captcha;
-
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class CaptchaController
 {
-	public function captchaImage(Request $request): Response
-	{
-		$config = require __DIR__ . '/../../config/captcha.php';
-		$captcha = new Captcha($config);
-		return $captcha->outputImage();
-	}
-	
-	
+    public function captchaImage(Request $request): Response
+    {
+        $config  = require __DIR__ . '/../../config/captcha.php';
+        $captcha = new Captcha($config);
+        return $captcha->outputImage();
+    }
 
-	public function checkCaptcha(Request $request): Response
-	{
-		$config = require __DIR__ . '/../../config/captcha.php';
-		$captcha = new Captcha($config);
-		$userInput = $request->request->get('captcha');
+    public function checkCaptcha(Request $request): Response
+    {
+        $config    = require __DIR__ . '/../../config/captcha.php';
+        $captcha   = new Captcha($config);
+        $userInput = $request->request->get('captcha');
 
-		if ($captcha->validate($userInput)) {
-			return new Response('验证成功');
-		} else {
-			return new Response('验证码错误', 400);
-		}
-	}
+        if ($captcha->validate($userInput)) {
+            return new Response('验证成功');
+        }
+        return new Response('验证码错误', 400);
+    }
 }

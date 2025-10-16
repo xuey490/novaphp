@@ -1,22 +1,35 @@
 <?php
+// 命令：php vendor/bin/php-cs-fixer fix --dry-run --diff 
+// --dry-run：仅检查问题，不实际修改文件
+// --diff：显示具体的代码差异
+// 自动修复代码风格问题 php-cs-fixer fix /path/to/code
+// 如果不指定路径，默认处理当前目录
 
 $header = <<<'EOF'
-This file is part of NextPHP.
+This file is part of Navaphp Framework.
 
-@link     https://github.com/next-laboratory
-@license  https://github.com/next-laboratory/next/blob/master/LICENSE
+@link     https://github.com/xuey490/novaphp
+@license  https://github.com/xuey490/novaphp/blob/main/LICENSE
+
+@Filename: %s
+@Date: %s
+@Developer: xuey863toy
+@Email: xuey863toy@gmail.com
 EOF;
+
+// 生成当前日期，格式为YYYY-MM-DD
+$currentDate = date('Y-m-d');
 
 return (new PhpCsFixer\Config())
     ->setRiskyAllowed(true)
     ->setRules([
-        '@PSR2'                                  => true,
+        '@PSR12'                                  => true,
         '@Symfony'                               => true,
         '@DoctrineAnnotation'                    => true,
         '@PhpCsFixer'                            => true,
         'header_comment'                         => [
             'comment_type' => 'PHPDoc',
-            'header'       => $header,
+            'header'       => sprintf($header, '%filename%', $currentDate),
             'separate'     => 'both',
             'location'     => 'after_declare_strict',
         ],
@@ -90,6 +103,6 @@ return (new PhpCsFixer\Config())
                          ->exclude('storage')
                          ->exclude('resource')
                          ->exclude('vendor')
-                         ->in(__DIR__)
+                         ->in(__DIR__ . '/framework')
     )
-    ->setUsingCache(false);
+    ->setCacheFile(__DIR__ . '/.php-cs-fixer.cache');

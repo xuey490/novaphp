@@ -1,5 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
+/**
+ * This file is part of Navaphp Framework.
+ *
+ * @link     https://github.com/xuey490/novaphp
+ * @license  https://github.com/xuey490/novaphp/blob/main/LICENSE
+ *
+ * @Filename: %filename%
+ * @Date: 2025-10-16
+ * @Developer: xuey863toy
+ * @Email: xuey863toy@gmail.com
+ */
+
 namespace Framework\Utils;
 
 use Symfony\Component\HttpFoundation\Request;
@@ -7,7 +21,7 @@ use Symfony\Component\HttpFoundation\Request;
 class SafeInput
 {
     /**
-     * 获取过滤后的 GET 参数
+     * 获取过滤后的 GET 参数.
      */
     public static function query(Request $request, ?string $key = null, mixed $default = null): mixed
     {
@@ -19,7 +33,7 @@ class SafeInput
     }
 
     /**
-     * 获取过滤后的 POST 参数
+     * 获取过滤后的 POST 参数.
      */
     public static function request(Request $request, ?string $key = null, mixed $default = null): mixed
     {
@@ -31,7 +45,7 @@ class SafeInput
     }
 
     /**
-     * 获取过滤后的 JSON 请求体
+     * 获取过滤后的 JSON 请求体.
      */
     public static function json(Request $request, ?string $key = null, mixed $default = null): mixed
     {

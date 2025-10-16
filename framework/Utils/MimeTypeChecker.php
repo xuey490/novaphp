@@ -1,12 +1,25 @@
 <?php
 
-// Framework/Utils/MimeTypeChecker.php
+declare(strict_types=1);
+
+/**
+ * This file is part of Navaphp Framework.
+ *
+ * @link     https://github.com/xuey490/novaphp
+ * @license  https://github.com/xuey490/novaphp/blob/main/LICENSE
+ *
+ * @Filename: %filename%
+ * @Date: 2025-10-16
+ * @Developer: xuey863toy
+ * @Email: xuey863toy@gmail.com
+ */
 
 namespace Framework\Utils;
 
 class MimeTypeChecker
 {
     private array $extToMime;        // 扩展名 → MIME
+
     private array $mimeToExtensions; // MIME → 所有扩展名（支持多个）
 
     public function __construct(string $configPath)
@@ -19,7 +32,7 @@ class MimeTypeChecker
             $this->mimeToExtensions[$mime][] = $ext;
         }
     }
-	
+
     public function getAllowedMimesByExtension(string $ext): array
     {
         return [$this->extToMime[strtolower($ext)] ?? 'application/octet-stream'];

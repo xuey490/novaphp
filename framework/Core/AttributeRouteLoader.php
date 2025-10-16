@@ -1,14 +1,24 @@
 <?php
+
+declare(strict_types=1);
+
+/**
+ * This file is part of Navaphp Framework.
+ *
+ * @link     https://github.com/xuey490/novaphp
+ * @license  https://github.com/xuey490/novaphp/blob/main/LICENSE
+ *
+ * @Filename: %filename%
+ * @Date: 2025-10-16
+ * @Developer: xuey863toy
+ * @Email: xuey863toy@gmail.com
+ */
+
 namespace Framework\Core;
 
 use Framework\Attributes\Route;
-use ReflectionClass;
-use ReflectionMethod;
 use Symfony\Component\Routing\Route as SymfonyRoute;
 use Symfony\Component\Routing\RouteCollection;
-use Symfony\Component\Config\Loader\LoaderInterface;
-use Symfony\Component\Config\Loader\LoaderResolverInterface;
-
 
 /**
  * AttributeRouteLoader：
@@ -16,53 +26,53 @@ use Symfony\Component\Config\Loader\LoaderResolverInterface;
  * 🔹 完全兼容 Symfony Route 写法
  * 🔹 支持控制器级 prefix / middleware / group 继承
  */
-class AttributeRouteLoader  
+class AttributeRouteLoader
 {
     private string $controllerDir;
+
     private string $controllerNamespace;
 
     public function __construct(string $controllerDir, string $controllerNamespace)
     {
-        $this->controllerDir = rtrim($controllerDir, '/');
+        $this->controllerDir       = rtrim($controllerDir, '/');
         $this->controllerNamespace = rtrim($controllerNamespace, '\\');
     }
 
     /**
-     * 扫描控制器目录并加载所有注解路由
+     * 扫描控制器目录并加载所有注解路由.
      */
     public function loadRoutes(): RouteCollection
     {
-
         $routeCollection = new RouteCollection();
-		
-		$controllerFiles = $this->scanDirectory($this->controllerDir);
+
+        $controllerFiles = $this->scanDirectory($this->controllerDir);
 
         foreach ($controllerFiles as $file) {
             $className = $this->convertFileToClass($file);
-            if (!class_exists($className)) {
+            if (! class_exists($className)) {
                 continue;
             }
 
-            $refClass = new ReflectionClass($className);
+            $refClass = new \ReflectionClass($className);
             if ($refClass->isAbstract()) {
                 continue;
             }
 
             // === 类级注解 ===
-            $classAttrs = $refClass->getAttributes(Route::class);
-            $classPrefix = '';
-            $classGroup = null;
+            $classAttrs      = $refClass->getAttributes(Route::class);
+            $classPrefix     = '';
+            $classGroup      = null;
             $classMiddleware = [];
 
             if ($classAttrs) {
-                $classRoute = $classAttrs[0]->newInstance();
-                $classPrefix = $classRoute->prefix ?? '';
-                $classGroup = $classRoute->group ?? null;
+                $classRoute      = $classAttrs[0]->newInstance();
+                $classPrefix     = $classRoute->prefix     ?? '';
+                $classGroup      = $classRoute->group      ?? null;
                 $classMiddleware = $classRoute->middleware ?? [];
             }
 
             // === 方法级注解 ===
-            foreach ($refClass->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+            foreach ($refClass->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
                 $methodAttrs = $method->getAttributes(Route::class);
 
                 if (empty($methodAttrs)) {
@@ -74,7 +84,7 @@ class AttributeRouteLoader
                         $autoPath,
                         defaults: [
                             '_controller' => "{$className}::{$method->getName()}",
-                            '_group' => $classGroup,
+                            '_group'      => $classGroup,
                             '_middleware' => $classMiddleware,
                         ],
                         methods: ['GET']
@@ -89,14 +99,14 @@ class AttributeRouteLoader
                     $routeAttr = $attr->newInstance();
 
                     // ==== 合并路径 ====
-                    $prefix = trim($classPrefix, '/');
-                    $path = trim($routeAttr->path ?? '', '/');
+                    $prefix    = trim($classPrefix, '/');
+                    $path      = trim($routeAttr->path ?? '', '/');
                     $finalPath = '/' . trim($prefix . '/' . $path, '/');
 
                     // ==== 合并中间件并去重 ====
                     $mergedMiddleware = array_unique(array_merge(
-                        (array)$classMiddleware,
-                        (array)$routeAttr->middleware
+                        (array) $classMiddleware,
+                        (array) $routeAttr->middleware
                     ));
 
                     // ==== 创建 Symfony 路由 ====
@@ -106,7 +116,7 @@ class AttributeRouteLoader
                             $routeAttr->defaults,
                             [
                                 '_controller' => "{$className}::{$method->getName()}",
-                                '_group' => $routeAttr->group ?? $classGroup,
+                                '_group'      => $routeAttr->group ?? $classGroup,
                                 '_middleware' => $mergedMiddleware,
                             ]
                         ),
@@ -118,22 +128,20 @@ class AttributeRouteLoader
                     );
 
                     // ==== 路由命名 ====
-                    $name = $routeAttr->name ??
-                        strtolower(str_replace('\\', '_', $className)) . '_' . $method->getName();
+                    $name = $routeAttr->name
+                        ?? strtolower(str_replace('\\', '_', $className)) . '_' . $method->getName();
 
                     $routeCollection->add($name, $sfRoute);
                 }
             }
         }
 
-        //$this->loaded = true;
+        // $this->loaded = true;
         return $routeCollection;
     }
 
-
-	
     /**
-     * 从类或方法中提取 Route Attribute
+     * 从类或方法中提取 Route Attribute.
      */
     private function getRouteAttribute(\Reflector $ref): ?RouteAttribute
     {
@@ -142,14 +150,16 @@ class AttributeRouteLoader
     }
 
     /**
-     * 扫描控制器目录，返回所有PHP文件
+     * 扫描控制器目录，返回所有PHP文件.
      */
     private function scanDirectory(string $dir): array
     {
-        $rii = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir));
+        $rii   = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir));
         $files = [];
         foreach ($rii as $file) {
-            if ($file->isDir()) continue;
+            if ($file->isDir()) {
+                continue;
+            }
             if (pathinfo($file->getFilename(), PATHINFO_EXTENSION) === 'php') {
                 $files[] = $file->getPathname();
             }
@@ -159,7 +169,7 @@ class AttributeRouteLoader
 
     /**
      * 将文件路径转换为完整类名
-     * 例：app/Controllers/Api/UserController.php → App\Controllers\Api\UserController
+     * 例：app/Controllers/Api/UserController.php → App\Controllers\Api\UserController.
      */
     private function convertFileToClass(string $file): string
     {
@@ -169,23 +179,22 @@ class AttributeRouteLoader
     }
 
     /**
-     * 拼接控制器级别 prefix 与方法级别 path
+     * 拼接控制器级别 prefix 与方法级别 path.
      */
     private function joinPath(string $prefix, string $path): string
     {
         $prefix = rtrim($prefix ?? '', '/');
-        $path = '/' . ltrim($path ?? '', '/');
+        $path   = '/' . ltrim($path ?? '', '/');
         return $prefix . $path;
     }
 
     /**
-     * 自动生成路由名称
+     * 自动生成路由名称.
      */
     private function generateRouteName(string $class, string $method): string
     {
-        $class = str_replace([$this->controllerNamespace . '\\', '\\Controller'], '', $class);
+        $class = str_replace([$this->controllerNamespace . '\\', '\Controller'], '', $class);
         $class = strtolower(str_replace('\\', '.', $class));
         return "{$class}.{$method}";
     }
-	
 }

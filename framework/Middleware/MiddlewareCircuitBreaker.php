@@ -1,38 +1,52 @@
 <?php
 
+declare(strict_types=1);
+
+/**
+ * This file is part of Navaphp Framework.
+ *
+ * @link     https://github.com/xuey490/novaphp
+ * @license  https://github.com/xuey490/novaphp/blob/main/LICENSE
+ *
+ * @Filename: %filename%
+ * @Date: 2025-10-16
+ * @Developer: xuey863toy
+ * @Email: xuey863toy@gmail.com
+ */
+
 namespace Framework\Middleware;
 
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\JsonResponse;
 
 class MiddlewareCircuitBreaker
 {
-    private int $failureThreshold = 3; //重试次数，如果超过次数，直接调整到 return new Response('服务熔断，暂不可用！', 503); 这行
+    private int $failureThreshold = 3; // 重试次数，如果超过次数，直接调整到 return new Response('服务熔断，暂不可用！', 503); 这行
+
     private int $timeout = 10; // 秒
+
     private string $cacheDir;
 
-    public function __construct(string $cacheDir )
+    public function __construct(string $cacheDir)
     {
         $this->cacheDir = rtrim(str_replace('\\', '/', $cacheDir), '/') . '/';
-        if (!is_dir($this->cacheDir)) {
+        if (! is_dir($this->cacheDir)) {
             mkdir($this->cacheDir, 0755, true);
         }
     }
 
     /**
-     * 处理请求，实现熔断逻辑
+     * 处理请求，实现熔断逻辑.
      *
-     * @param Request $request
      * @param callable $next 下一个中间件或控制器
-     * @return Response
      */
     public function handle(Request $request, callable $next): Response
     {
-		//echo 'MiddlewareCircuitBreaker==>in';
+        // echo 'MiddlewareCircuitBreaker==>in';
         $service = 'default'; // 可扩展为按路由/服务名区分
-        $key = $this->cacheDir . 'breaker_' . md5($service);
-        $now = time();
+        $key     = $this->cacheDir . 'breaker_' . md5($service);
+        $now     = time();
 
         // 读取当前熔断器状态
         $state = ['status' => 'closed', 'failures' => 0];
@@ -47,18 +61,17 @@ class MiddlewareCircuitBreaker
         if ($state['status'] === 'open') {
             if (isset($state['opened_at']) && $state['opened_at'] + $this->timeout > $now) {
                 // 熔断中，直接返回 503，超过次数，直接不可用
-									return new Response('服务熔断，暂不可用！', 503);
-                //return $this->buildServiceUnavailableResponse($request);
-            } else {
-                // 超时，进入 half-open 状态，允许一次试探
-                $state = ['status' => 'half-open', 'attempts' => 1];
-                file_put_contents($key, json_encode($state));
+                return new Response('服务熔断，暂不可用！', 503);
+                // return $this->buildServiceUnavailableResponse($request);
             }
+            // 超时，进入 half-open 状态，允许一次试探
+            $state = ['status' => 'half-open', 'attempts' => 1];
+            file_put_contents($key, json_encode($state));
         }
 
         try {
             $response = $next($request);
-						 //echo $response->getStatusCode();
+            // echo $response->getStatusCode();
 
             // 判断是否为服务端错误（可自定义）
             if (in_array($response->getStatusCode(), [500, 502, 503, 504], true)) {
@@ -67,12 +80,11 @@ class MiddlewareCircuitBreaker
 
             // 成功：重置为 closed
             file_put_contents($key, json_encode([
-                'status' => 'closed',
-                'failures' => 0
+                'status'   => 'closed',
+                'failures' => 0,
             ]));
 
             return $response;
-
         } catch (\Throwable $e) {
             // 记录失败
             $failures = ($state['status'] === 'closed' ? ($state['failures'] ?? 0) : 0) + 1;
@@ -80,38 +92,37 @@ class MiddlewareCircuitBreaker
             if ($failures >= $this->failureThreshold) {
                 // 触发熔断
                 file_put_contents($key, json_encode([
-                    'status' => 'open',
-                    'opened_at' => $now
+                    'status'    => 'open',
+                    'opened_at' => $now,
                 ]));
             } else {
                 // 继续累积失败
                 file_put_contents($key, json_encode([
-                    'status' => 'closed',
-                    'failures' => $failures
+                    'status'   => 'closed',
+                    'failures' => $failures,
                 ]));
             }
-						  //echo 'MiddlewareCircuitBreaker==>out';
+            // echo 'MiddlewareCircuitBreaker==>out';
             // 返回 503 响应（不抛出异常，避免中断中间件链）
             return $this->buildServiceUnavailableResponse($request);
         }
     }
 
     /**
-     * 构建友好的 503 响应
+     * 构建友好的 503 响应.
      */
     private function buildServiceUnavailableResponse(Request $request): Response
     {
         $message = '服务暂时不可用，请稍后再试。';
 
         // 判断是否为 API 请求
-        if ($request->isXmlHttpRequest() || 
-            strpos($request->headers->get('Accept', ''), 'application/json') !== false) {
-            
+        if ($request->isXmlHttpRequest()
+            || strpos($request->headers->get('Accept', ''), 'application/json') !== false) {
             return new JsonResponse([
                 'success' => false,
-                'error' => 'service_unavailable',
+                'error'   => 'service_unavailable',
                 'message' => $message,
-                'details' => '系统正在保护性熔断中，稍后自动恢复。'
+                'details' => '系统正在保护性熔断中，稍后自动恢复。',
             ], 503);
         }
 

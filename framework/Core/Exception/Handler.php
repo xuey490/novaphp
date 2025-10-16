@@ -1,16 +1,28 @@
 <?php
 
-// Framework/Core/Exception/Handler.php
+declare(strict_types=1);
+
+/**
+ * This file is part of Navaphp Framework.
+ *
+ * @link     https://github.com/xuey490/novaphp
+ * @license  https://github.com/xuey490/novaphp/blob/main/LICENSE
+ *
+ * @Filename: %filename%
+ * @Date: 2025-10-16
+ * @Developer: xuey863toy
+ * @Email: xuey863toy@gmail.com
+ */
 
 namespace Framework\Core\Exception;
 
-use Throwable;
-use Framework\Core\App;
 use Framework\Config\ConfigService;
+use Psr\Log\LoggerInterface;
 
 class Handler
 {
     protected bool $debug;
+
     private string $requestId;
 
     public function __construct(ConfigService $config)
@@ -19,98 +31,60 @@ class Handler
         $this->debug = $config->get('app.debug', false);
 
         // 如果是 Web 请求，尝试从 $_SERVER 获取
-        $incoming = $_SERVER['HTTP_X_REQUEST_ID'] ?? null;
+        $incoming        = $_SERVER['HTTP_X_REQUEST_ID'] ?? null;
         $this->requestId = $incoming ?: generateRequestId();
-
     }
 
     /**
-     * 报告异常：记录日志
+     * 报告异常：记录日志.
      */
-    public function report(Throwable $e): void
+    public function report(\Throwable $e): void
     {
-        /** @var \Psr\Log\LoggerInterface $logger */
+        /** @var LoggerInterface $logger */
         $logger = app('log');
         // 你可以根据异常类型选择 error、critical 等级别
         $logger->error('Uncaught Exception', [
-            'class'   => get_class($e),
-            'message' => $e->getMessage(),
-            'file'    => $e->getFile(),
-            'line'    => $e->getLine(),
-            'trace'   => $e->getTraceAsString(),
+            'class'      => get_class($e),
+            'message'    => $e->getMessage(),
+            'file'       => $e->getFile(),
+            'line'       => $e->getLine(),
+            'trace'      => $e->getTraceAsString(),
             'request_id'	=> $this->requestId,
         ]);
     }
 
-
-
     /**
-     * 获取错误行附近的代码片段（带行号和高亮）
+     * 渲染异常：友好错误，输出给用户.
      */
-    private function getCodeSnippet(string $filePath, int $errorLine, int $context = 5): string
-    {
-        if (!file_exists($filePath)) {
-            return "<span class='code-line'>// File not found: " . htmlspecialchars($filePath) . "</span>";
-        }
-
-        $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        $total = count($lines);
-
-        // 确保行号有效（PHP 行号从 1 开始）
-        $errorLine = max(1, min($errorLine, $total));
-        $start = max(0, $errorLine - 1 - $context); // 数组索引从 0 开始
-        $end   = min($total, $errorLine + $context);
-
-        $output = '';
-        for ($i = $start; $i < $end; $i++) {
-            $lineNum = $i + 1;
-            $content = htmlspecialchars($lines[$i]);
-
-            $isErrorLine = ($lineNum === $errorLine);
-            $class = $isErrorLine ? 'code-line highlight' : 'code-line';
-
-            $output .= "<span class='{$class}'>";
-            $output .= "<span class='code-line-number'>{$lineNum}</span>";
-            $output .= "{$content}";
-            $output .= "</span>\n";
-        }
-
-        return $output;
-    }
-
-
-    /**
-     * 渲染异常：友好错误，输出给用户
-     */
-    public function render(Throwable $e): void
+    public function render(\Throwable $e): void
     {
         if ($this->debug) {
             // 裁剪文件路径
-            $file = $e->getFile();
+            $file         = $e->getFile();
             $originalFile = $file;
             if (defined('BASE_PATH') && str_starts_with($file, BASE_PATH)) {
-                //$file = substr($file, strlen(BASE_PATH));
+                // $file = substr($file, strlen(BASE_PATH));
                 $file = ltrim($file, '/\\');
             }
 
-            $line = $e->getLine();
+            $line        = $e->getLine();
             $codeSnippet = $this->getCodeSnippet($originalFile, $line);
 
             // 转义安全内容
             $class   = htmlspecialchars(get_class($e));
-            //$message = htmlspecialchars($e->getMessage());
+            // $message = htmlspecialchars($e->getMessage());
             $displayFile = htmlspecialchars($file);
-            $reqId   = htmlspecialchars($this->requestId);
+            $reqId       = htmlspecialchars($this->requestId);
 
             $message = htmlspecialchars(str_replace(BASE_PATH, '/\\', $e->getMessage()));
-            //$fullTrace   = htmlspecialchars(str_replace(BASE_PATH , '' ,$e->getTraceAsString()) );
+            // $fullTrace   = htmlspecialchars(str_replace(BASE_PATH , '' ,$e->getTraceAsString()) );
 
             $fullTrace = htmlspecialchars($e->getTraceAsString());
 
             // 默认显示前 N 行（例如 10 行）
-            $traceLines = explode("\n", $fullTrace);
+            $traceLines   = explode("\n", $fullTrace);
             $previewLines = array_slice($traceLines, 0, 10);
-            $hasMore = count($traceLines) > 10;
+            $hasMore      = count($traceLines) > 10;
             $previewTrace = implode("\n", $previewLines);
 
             echo <<<HTML
@@ -233,7 +207,7 @@ class Handler
 	HTML;
             }
 
-            echo <<<HTML
+            echo <<<'HTML'
 				</td>
 			</tr>
 		</table>
@@ -241,22 +215,43 @@ class Handler
 	HTML;
         } else {
             http_response_code(500);
-            echo "<h1>Server Error</h1>";
+            echo '<h1>Server Error</h1>';
             echo "<p>We're sorry, something went wrong on our end.</p>";
-            echo "<p><small>Request-ID: <code>" . htmlspecialchars($this->requestId) . "</code></small></p>";
+            echo '<p><small>Request-ID: <code>' . htmlspecialchars($this->requestId) . '</code></small></p>';
         }
     }
 
+    /**
+     * 获取错误行附近的代码片段（带行号和高亮）.
+     */
+    private function getCodeSnippet(string $filePath, int $errorLine, int $context = 5): string
+    {
+        if (! file_exists($filePath)) {
+            return "<span class='code-line'>// File not found: " . htmlspecialchars($filePath) . '</span>';
+        }
 
+        $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        $total = count($lines);
 
+        // 确保行号有效（PHP 行号从 1 开始）
+        $errorLine = max(1, min($errorLine, $total));
+        $start     = max(0, $errorLine - 1 - $context); // 数组索引从 0 开始
+        $end       = min($total, $errorLine + $context);
 
+        $output = '';
+        for ($i = $start; $i < $end; ++$i) {
+            $lineNum = $i + 1;
+            $content = htmlspecialchars($lines[$i]);
 
+            $isErrorLine = ($lineNum === $errorLine);
+            $class       = $isErrorLine ? 'code-line highlight' : 'code-line';
 
+            $output .= "<span class='{$class}'>";
+            $output .= "<span class='code-line-number'>{$lineNum}</span>";
+            $output .= "{$content}";
+            $output .= "</span>\n";
+        }
 
-
-
-
-
-
-
+        return $output;
+    }
 }

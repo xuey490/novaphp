@@ -1,5 +1,11 @@
 <?php
-// app/Controllers/HomeController.php
+
+declare(strict_types=1);
+
+/**
+ * This file is part of Navaphp.
+ *
+ */
 
 namespace App\Controllers;
 
@@ -17,88 +23,88 @@ class HomeController
 
     public function index(): Response
     {
-        //getService(\Framework\Log\LoggerService::class)->info('App started');
+        // getService(\Framework\Log\LoggerService::class)->info('App started');
 
-        #$userService = getService('App\Service\UserService'); // ✅ 只要容器已 set，就可以
-        #print_r( $userService->getUsers(111) );
+        # $userService = getService('App\Service\UserService'); // ✅ 只要容器已 set，就可以
+        # print_r( $userService->getUsers(111) );
         // ✅ 此时 app() 已可用！
 
-        #dump(app()->getServiceIds()); // 查看所有服务 ID
+        # dump(app()->getServiceIds()); // 查看所有服务 ID
 
-        //日志测试
-        //$logger = app('log');
-        //$logger->info('Homepage visited--------------------');
-		
-		//echo renderCsrfField();
+        // 日志测试
+        // $logger = app('log');
+        // $logger->info('Homepage visited--------------------');
+
+        // echo renderCsrfField();
 
         /* thinkcache测试
-		$cache = app('cache');
-		$cache->set('test1', ['name' => 'mike'], 3600);
-		$test1 =$cache->get('test1');
-		//$test1 = $cache->clear();
-		print_r($test1);
-		*/
+        $cache = app('cache');
+        $cache->set('test1', ['name' => 'mike'], 3600);
+        $test1 =$cache->get('test1');
+        //$test1 = $cache->clear();
+        print_r($test1);
+        */
 
-        //Symfony缓存
-        //cache_set('user_1', ['name' => 'Alice'], 3600);
-        //$user = cache_get('user_1');
-        #print_r( $user );
+        // Symfony缓存
+        // cache_set('user_1', ['name' => 'Alice'], 3600);
+        // $user = cache_get('user_1');
+        # print_r( $user );
 
-        //$post = ['name' => 'Alice'];
-        //cache_set('post_1', $post, 3600, ['posts', 'user_123']);
-        //cache_set('post_2', $post, 3600, ['posts', 'category_news']);
+        // $post = ['name' => 'Alice'];
+        // cache_set('post_1', $post, 3600, ['posts', 'user_123']);
+        // cache_set('post_2', $post, 3600, ['posts', 'category_news']);
         // 删除所有 posts 相关缓存
-        //cache_invalidate_tags(['posts']);
-        //cache_invalidate_tags(['user_123']);
-        //print_r( cache_get('post_1') );
+        // cache_invalidate_tags(['posts']);
+        // cache_invalidate_tags(['user_123']);
+        // print_r( cache_get('post_1') );
 
-        //session测试
-        //$session = app('session');
+        // session测试
+        // $session = app('session');
         // 设置一个 session 属性
-        //$session->set('user_id', 1283);
+        // $session->set('user_id', 1283);
         // 获取一个 session 属性
-        //$userId = $session->get('user_id');
-        //echo $userId;
+        // $userId = $session->get('user_id');
+        // echo $userId;
 
-        //配置获取测试
-        //print_r(config('database'));
+        // 配置获取测试
+        // print_r(config('database'));
 
         // 在返回响应之前，收集信息
         $includedFiles = get_included_files();
         $loadedClasses = get_declared_classes();
-        
+
         // 你可以选择将信息追加到响应内容中
         $debugInfo = sprintf(
-            '<hr><pre>'.
-            'Included files: %d' . PHP_EOL .
-            'Loaded classes: %d' . PHP_EOL .
-            '</pre>',
+            '<hr><pre>'
+            . 'Included files: %d' . PHP_EOL
+            . 'Loaded classes: %d' . PHP_EOL
+            . '</pre>',
             count($includedFiles),
             count($loadedClasses)
         );
 
-		echo $debugInfo;
+        echo $debugInfo;
 
-        //echo trans('hello'); // 自动输出对应语言
-        //echo '<br />当前语言包：' . current_locale();
+        // echo trans('hello'); // 自动输出对应语言
+        // echo '<br />当前语言包：' . current_locale();
         return new Response('<h1>Welcome to My Framework!</h1>');
     }
 
-    //http://localhost:8000/home/xss?name=mike<script>alert('ok');</script>
+    // http://localhost:8000/home/xss?name=mike<script>alert('ok');</script>
     public function xss(Request $request): Response
     {
         // 如果是 JSON 请求，使用过滤后的数据
         $data = MiddlewareXssFilter::getFilteredJsonBody($request);
 
-        //if ($data === null) {
+        // if ($data === null) {
         // 可能是表单提交，用 $request->request->all()
         //	$data = $request->request->all();
-        //}
+        // }
 
         $name = $request->get('name');
 
         // $data 中的字符串已自动 XSS 过滤
-        //$name = $data['name'] ?? '';
+        // $name = $data['name'] ?? '';
         // 直接输出是安全的（无需再 htmlspecialchars）
 
         return new Response("Hello, {$name}");
@@ -115,24 +121,23 @@ class HomeController
         </form>");
     }
 
-    //CSRF token测试。
+    // CSRF token测试。
     public function getForm(Request $request)
     {
         // 1.【可选】兜底验证（如果中间件可能失效）
         $token = $request->request->get('_token');
         if (! $this->csrf->isTokenValid('default', $token)) {
-            //return new Response('Invalid CSRF token.', 503);
+            // return new Response('Invalid CSRF token.', 503);
         }
 
         $title = $request->request->get('title');
         return new Response("Hello, {$title}");
         // 2. 重定向到成功页面（✅ 正确）
-        //return new RedirectResponse('/home/successPage');
+        // return new RedirectResponse('/home/successPage');
     }
 
     public function successPage(Request $request)
     {
-
         return new Response('<h1>提交成功！</h1>');
     }
 
@@ -144,16 +149,16 @@ class HomeController
     }
 
     public function uploadform(): Response
-    {   //echo BASE_PATH;
-        //$token = $this->csrf->getToken('default');
+    {   // echo BASE_PATH;
+        // $token = $this->csrf->getToken('default');
         $html = view('upload/index');
         return new Response($html);
     }
 
     public function upload(Request $request)
     {
-        return ;
-        //下面是文件上传的测试
+        return;
+        // 下面是文件上传的测试
         // 获取普通字段
         $title = $request->request->get('title'); // request->get() 也可以，但明确用 ->request 更清晰
 
@@ -177,12 +182,12 @@ class HomeController
             // 你可以返回 JSON、重定向或渲染模板
             return json_encode([
                 'title' => $title,
-                'file' => [
+                'file'  => [
                     'original_name' => $originalName,
                     'saved_as'      => $newFilename,
                     'mime_type'     => $mimeType,
                     'size'          => $size,
-                ]
+                ],
             ]);
         }
 
@@ -190,27 +195,19 @@ class HomeController
         return json_encode(['error' => '文件上传失败'], 400);
     }
 
-
-
-
-
-
-    //列举自己需要的参数
+    // 列举自己需要的参数
     public function show($id)
     {
         // 获取所有用户 => 返回数组数据或 json 响应
         $users = Admin::select()->toArray();
         print_r($users); // 因为你框架会处理 array => json
 
-        //$id = $request->get('id');
-        //return new Response("<h1>User ID: $id</h1>");
+        // $id = $request->get('id');
+        // return new Response("<h1>User ID: $id</h1>");
     }
 
     // 只获取需要的参数
-    public function search1(Request $request, $roleid, $name, $status)
-    {
-
-    }
+    public function search1(Request $request, $roleid, $name, $status) {}
 
     // 或者只获取Request对象
     public function search2(Request $request)
@@ -228,5 +225,4 @@ class HomeController
         $name = $request->get('name');
         // ...
     }
-
 }

@@ -1,32 +1,39 @@
 <?php
 
+declare(strict_types=1);
+
+/**
+ * This file is part of Navaphp.
+ *
+ */
+
 namespace App\Controllers;
 
+use App\Middlewares\AuthMiddleware;
+use App\Middlewares\LogMiddleware;
 use Framework\Attributes\Route;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 
-
-#[Route(prefix: '/lists', middleware: [\App\Middlewares\AuthMiddleware::class , \App\Middlewares\LogMiddleware::class ])]
-class ListController 
+#[Route(prefix: '/lists', middleware: [AuthMiddleware::class, LogMiddleware::class])]
+class ListController
 {
-    #[Route(path:'/', methods: ['GET'])]
+    #[Route(path: '/', methods: ['GET'])]
     public function index(Request $request)
     {
         echo 'index';
     }
 
-    #[Route(path:'/profile', methods: ['GET'])]
+    #[Route(path: '/profile', methods: ['GET'])]
 
-	/*
-	@Middleware(class="App\Middlewares\AuthMiddleware")
-	*/
+    /*
+    @Middleware(class="App\Middlewares\AuthMiddleware")
+    */
     public function profile(Request $request)
     {
         echo 'profile';
     }
 
-    #[Route(path:'/get/{id}', methods: ['GET'])]
+    #[Route(path: '/get/{id}', methods: ['GET'])]
     public function show(Request $request, string $id)
     {
         echo 'show: ' . $id;

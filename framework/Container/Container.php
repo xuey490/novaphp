@@ -1,6 +1,18 @@
 <?php
 
-# framework/Container/Container.php
+declare(strict_types=1);
+
+/**
+ * This file is part of Navaphp Framework.
+ *
+ * @link     https://github.com/xuey490/novaphp
+ * @license  https://github.com/xuey490/novaphp/blob/main/LICENSE
+ *
+ * @Filename: %filename%
+ * @Date: 2025-10-16
+ * @Developer: xuey863toy
+ * @Email: xuey863toy@gmail.com
+ */
 
 namespace Framework\Container;
 
@@ -9,21 +21,19 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface as SymfonyContainerInterface;
 use Symfony\Component\DependencyInjection\Dumper\PhpDumper;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
-use UnitEnum;
-
 // 引入编译后的容器接口，我们的缓存类会实现它
-use Symfony\Component\DependencyInjection\CompiledContainerInterface;
+use Symfony\Component\Dotenv\Dotenv;
 
 class Container implements SymfonyContainerInterface
 {
-    //private static ?ContainerBuilder $container = null;
-	
+    // private static ?ContainerBuilder $container = null;
+
     // 编译后容器的缓存文件路径
     private const CACHE_FILE = BASE_PATH . '/storage/cache/container.php';
 
     // 静态变量，用于持有最终的容器实例（无论是新建的还是从缓存加载的）
     private static ?SymfonyContainerInterface $container = null;
-	
+
     /**
      * 初始化容器。
      * - 在生产环境：尝试加载缓存。如果缓存不存在，则构建、编译并缓存。
@@ -36,18 +46,18 @@ class Container implements SymfonyContainerInterface
         }
 
         // 👇 在这里加载 .env 文件
-        $dotenv = new \Symfony\Component\Dotenv\Dotenv();
-        $dotenv->load(__DIR__.'/../../.env'); // 路径根据你的项目结构调整
+        $dotenv = new Dotenv();
+        $dotenv->load(__DIR__ . '/../../.env'); // 路径根据你的项目结构调整
 
         $projectRoot = dirname(__DIR__, 2);
         $configDir   = $projectRoot . '/config';
 
-        if (!is_dir($configDir)) {
+        if (! is_dir($configDir)) {
             throw new \RuntimeException("配置目录不存在: {$configDir}");
         }
 
         $servicesFile = $configDir . '/services.php';
-        if (!file_exists($servicesFile)) {
+        if (! file_exists($servicesFile)) {
             throw new \RuntimeException("服务配置文件不存在: {$servicesFile}");
         }
 
@@ -56,7 +66,7 @@ class Container implements SymfonyContainerInterface
         $container->setParameter('kernel.debug', APP_DEBUG);
 
         // 注入全局配置作为参数
-        if (!empty($parameters)) {
+        if (! empty($parameters)) {
             $container->setParameter('config', $parameters);
         }
 
@@ -67,12 +77,11 @@ class Container implements SymfonyContainerInterface
         // 或者提供一个“开发模式”开关
         $container->compile(true); // 编译后 set() 将失效！
 
-        //var_dump(($container->getServiceIds()));
+        // var_dump(($container->getServiceIds()));
 
         self::$container = $container;
     }
-	
-	
+
     /**
      * 初始化容器。
      * - 在生产环境：尝试加载缓存。如果缓存不存在，则构建、编译并缓存。
@@ -85,32 +94,32 @@ class Container implements SymfonyContainerInterface
         }
 
         // 加载 .env 文件来获取环境变量
-        $dotenv = new \Symfony\Component\Dotenv\Dotenv();
+        $dotenv = new Dotenv();
         $dotenv->load(BASE_PATH . '/.env');
 
-        $env = env('APP_ENV') ?: 'dev';
+        $env    = env('APP_ENV') ?: 'dev';
         $isProd = $env === 'prod';
 
         // --- 开发环境或缓存不存在：构建新容器 ---
         $projectRoot = dirname(__DIR__, 2);
         $configDir   = $projectRoot . '/config';
 
-        if (!is_dir($configDir)) {
+        if (! is_dir($configDir)) {
             throw new \RuntimeException("配置目录不存在: {$configDir}");
         }
 
         $servicesFile = $configDir . '/services.php';
-        if (!file_exists($servicesFile)) {
+        if (! file_exists($servicesFile)) {
             throw new \RuntimeException("服务配置文件不存在: {$servicesFile}");
         }
 
         $containerBuilder = new ContainerBuilder();
         $containerBuilder->setParameter('kernel.project_dir', $projectRoot);
-        $containerBuilder->setParameter('kernel.debug', (bool)getenv('APP_DEBUG'));
+        $containerBuilder->setParameter('kernel.debug', (bool) getenv('APP_DEBUG'));
         $containerBuilder->setParameter('kernel.environment', $env);
 
         // 注入全局配置作为参数
-        if (!empty($parameters)) {
+        if (! empty($parameters)) {
             $containerBuilder->setParameter('config', $parameters);
         }
 
@@ -126,13 +135,13 @@ class Container implements SymfonyContainerInterface
 
         if ($isProd) {
             @mkdir(dirname(self::CACHE_FILE), 0777, true);
-            
-            $dumper = new PhpDumper($containerBuilder);
+
+            $dumper       = new PhpDumper($containerBuilder);
             $cacheContent = $dumper->dump(['class' => 'ProjectServiceContainer']);
 
             // ✅ 关键修复：使用 flags 参数确保以无BOM的UTF-8编码写入文件
             file_put_contents(self::CACHE_FILE, $cacheContent);
-            
+
             // 重新 require 刚刚生成的缓存文件
             $loadedContainer = require self::CACHE_FILE;
             if ($loadedContainer instanceof SymfonyContainerInterface) {
@@ -144,10 +153,8 @@ class Container implements SymfonyContainerInterface
         } else {
             // 开发环境，直接使用构建好的容器
             self::$container = $containerBuilder;
-        }		
+        }
     }
-	
-	
 
     public static function getInstance(): self
     {
@@ -183,7 +190,7 @@ class Container implements SymfonyContainerInterface
         return self::$container->getServiceIds();
     }
 
-    public function setParameter(string $name, UnitEnum|array|string|int|float|bool|null $value): void
+    public function setParameter(string $name, array|bool|float|int|string|\UnitEnum|null $value): void
     {
         self::$container->setParameter($name, $value);
     }
@@ -193,7 +200,7 @@ class Container implements SymfonyContainerInterface
         return self::$container->hasParameter($name);
     }
 
-    public function getParameter(string $name): UnitEnum|array|string|int|float|bool|null
+    public function getParameter(string $name): array|bool|float|int|string|\UnitEnum|null
     {
         return self::$container->getParameter($name);
     }

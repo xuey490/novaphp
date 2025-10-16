@@ -2,11 +2,21 @@
     "name": "blue2004/novaphp",
     "description": "A lightweight Powerful Fast, Simple, Safty PHP framework with Symfony components",
     "type": "project",
+	 "keywords": [
+		"novaphp",
+		"Symfony",
+		"Thinkphp",
+		"ThinkORM",
+		"FPM",
+		"flexible",
+		"php framework"
+	],
+	
     "license": "MIT",
     "authors": [
         {
             "name": "blue2004",
-            "email": "your.email@example.com"
+            "email": "xuey863toy@gmail.com"
         }
     ],
     "require": {
@@ -30,6 +40,7 @@
         "twig/twig": "^3.14"
     },
     "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.88",
         "icanhazstring/composer-unused": "^0.9.5",
         "phpunit/phpunit": "*",
         "symfony/var-dumper": "^6.0 || ^7.0"
