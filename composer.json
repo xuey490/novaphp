@@ -37,7 +37,8 @@
         "symfony/yaml": "^7.3",
         "topthink/think-orm": "^3.0",
         "topthink/think-template": "^3.0",
-        "twig/twig": "^3.14"
+        "twig/twig": "^3.14",
+        "vlucas/valitron": "^1.4"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.88",
