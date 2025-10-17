@@ -43,7 +43,7 @@ return [
 	
     'rate_limit' => [
         'enabled' => true,
-        'maxRequests' => 10,	//60秒内的最大请求数
+        'maxRequests' => 10000,	//60秒内的最大请求数 ,测试设大一点的数
 		'period'	=> 60,  //60秒
         'except' => [
             '/api/*',

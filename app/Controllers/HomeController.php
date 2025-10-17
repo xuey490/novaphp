@@ -83,7 +83,63 @@ class HomeController
             count($loadedClasses)
         );
 
-        echo $debugInfo;
+        //echo $debugInfo;
+		
+		$data = [
+			'email' => 'invalid-email',
+			'password' => '123'
+		];
+
+		$rules = [
+			'email'    => 'required|email|lengthMin:10',
+			'password' => 'required|lengthMin:6'
+		];
+
+		$errors = validate($data, $rules, 'zh-cn');
+
+		if (!empty($errors)) {
+			print_r($errors);
+			// 输出：['email' => ['不是有效的电子邮件地址'], 'password' => ['长度必须大于等于6']]
+		}
+		
+		/*
+		$data1 = [
+			'name' => '',
+			'age'  => 50,
+			'email' => 'bad-email',
+		];
+
+		$validate = new \App\Validate\User();
+		if (!$validate->check($data1)) {
+			print_r($validate->getError());
+		}
+		*/		
+		
+		
+		$PostData = [
+			'name'               => 'user_++123',
+			'email'              => 'test@example.com',
+			'age'				 => 20,
+			'password'           => '12345678',
+			'password_confirmation' => '12345679',
+			'birthday'           => '1990-05-20',
+			'start_at'           => '2025-10-18', // 今天之后
+			'phone'              => '13800138000',
+			'id_card'            => '110101199003072316',
+			'config'             => '{"debug":true}',
+		];
+
+		$validate = new \App\Validate\User();
+		
+		//$validate->check($data, 'create');
+		if (!$validate->check($PostData)) {
+			print_r($validate->getError());
+		} else {
+			echo "验证通过！";
+		}
+		
+
+		
 
         // echo trans('hello'); // 自动输出对应语言
         // echo '<br />当前语言包：' . current_locale();

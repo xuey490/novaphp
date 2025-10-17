@@ -14,6 +14,8 @@ use Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorage;
 use Symfony\Component\HttpFoundation\Session\Storage\Handler\StrictSessionHandler;
 use Symfony\Component\HttpFoundation\Session\Storage\Handler\RedisSessionHandler;
 
+use Valitron\Validator;
+
 
 return function (ContainerConfigurator $configurator) {
     $services = $configurator->services();
@@ -373,8 +375,19 @@ return function (ContainerConfigurator $configurator) {
     $services->set(\Framework\Utils\FileUploader::class)
              ->args([$uploadConfig, service(\Framework\Utils\MimeTypeChecker::class)])->public();	
 
+
+    // 🔹 1. 注册 ValidatorFactory（用于创建 Validator 实例）
+    $services->set(\Framework\Validation\ValidatorFactory::class)
+        ->public();
+
+    // 🔹 2. （可选）注册一个别名服务，方便通过 'validator.factory' 获取
+    $services->alias('validator.factory', \Framework\Validation\ValidatorFactory::class)->public();
 	
-	
+    $services->set('validator', \Valitron\Validator::class)
+        // 使用 factory() 方法，并指向我们的工厂类
+		->factory([service(\Framework\Validation\ValidatorFactory::class), 'create'])
+		->public(); // 允许从容器外部获取
+
 	
 	$services->load('App\\Middlewares\\', '../app/Middlewares/**/*Middleware.php')
 		->autowire()      // 支持中间件的依赖自动注入（如注入UserService）
