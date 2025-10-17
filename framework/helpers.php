@@ -261,7 +261,7 @@ if (!function_exists('validate')) {
     function validate(array $data, array $rules, string $lang = 'en'): array
     {
         // 尝试从容器获取工厂
-        if (function_exists('container')) {
+        if (function_exists('getService')) {
             /** @var ValidatorFactory $factory */
             $factory = getService(\Framework\Validation\ValidatorFactory::class);
             $v = $factory->create($data, array_keys($rules), $lang);

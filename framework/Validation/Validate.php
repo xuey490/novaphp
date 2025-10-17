@@ -78,13 +78,36 @@ abstract class Validate
 
 		// 规则别名映射（ThinkPHP → Valitron）
 		$ruleAlias = [
-			'require' => 'required',
-			'number'  => 'numeric',
-			'max'     => 'lengthMax',   // 字符串长度最大值
-			'min'     => 'lengthMin',   // 字符串长度最小值
-			'maxVal'  => 'max',         // 数值最大值（可选扩展语法）
-			'minVal'  => 'min',         // 数值最小值
+			// 基础
+			'require'      => 'required',
+			'number'       => 'numeric',
+			'integer'      => 'integer',
+			'float'        => 'float',
+			'boolean'      => 'boolean',
+			'array'        => 'array',
+			'accepted'     => 'accepted',
+
+			// 字符串长度
+			'max'          => 'lengthMax',	// 字符串长度最大值
+			'min'          => 'lengthMin',	// 字符串长度最小值
+			'length'       => 'length',
+
+			// 数值范围（Valitron 用 max/min 表示数值）
+			'maxVal'       => 'max',		// 数值最大值（可选扩展语法）
+			'minVal'       => 'min',		// 数值最小值
+			'between'      => 'between', // Valitron 支持 [min, max]
+
+			// 格式
+			'email'        => 'email',
+			'url'          => 'url',
+			'ip'           => 'ip',
+			'json'         => 'json', // 我们已自定义
+
+			// 其他 Valitron 原生支持
+			'alpha'        => 'alpha',
+			'slug'         => 'slug',
 		];
+		
 
 		// 遍历每个字段的规则
 		foreach ($rules as $field => $ruleString) {
@@ -167,37 +190,45 @@ abstract class Validate
      */
 	protected function registerCustomRules(ValitronValidator $v): void
 	{
-		static $registeredRules = [];
+		static $registeredRulesRules = [];
 
 		// 手机号规则
-		if (!in_array('mobile', $registeredRules, true)) {
+		if (!in_array('mobile', $registeredRulesRules, true)) {
 			ValitronValidator::addRule('mobile', function ($field, $value, array $params, array $fields) {
 				return is_string($value) && preg_match('/^1[3-9]\d{9}$/', $value);
 			});
-			$registeredRules[] = 'mobile';
+			$registeredRulesRules[] = 'mobile';
 		}
 
 		// 身份证（简单18位校验）
-		if (!in_array('idcard', $registeredRules, true)) {
+		if (!in_array('idcard', $registeredRulesRules, true)) {
 			ValitronValidator::addRule('idcard', function ($field, $value, array $params, array $fields) {
 				return is_string($value) && preg_match('/^\d{17}[\dXx]$/', $value);
 			});
-			$registeredRules[] = 'idcard';
+			$registeredRulesRules[] = 'idcard';
 		}
 
 		// 字母、数字、下划线、中划线（类似 ThinkPHP 的 alphaDash）
-		if (!in_array('alphaDash', $registeredRules, true)) {
+		if (!in_array('alphaDash', $registeredRulesRules, true)) {
 			ValitronValidator::addRule('alphaDash', function ($field, $value, array $params, array $fields) {
 				return is_string($value) && preg_match('/^[\w\-]+$/', $value);
 			});
-			$registeredRules[] = 'alphaDash';
+			$registeredRulesRules[] = 'alphaDash';
+		}
+		
+		// alphaNum: 字母和数字
+		if (!in_array('alphaNum', $registeredRulesRules, true)) {
+			ValitronValidator::addRule('alphaNum', function ($field, $value, $params, $fields) {
+				return is_string($value) && ctype_alnum($value);
+			});
+			$registeredRulesRules[] = 'alphaNum';
 		}
 
 		// URL（Valitron 有内置 url，但可覆盖或增强）
 		// 注意：Valitron 默认已有 'url' 规则，无需重复注册
 
 		// JSON 格式
-		if (!in_array('json', $registeredRules, true)) {
+		if (!in_array('json', $registeredRulesRules, true)) {
 			ValitronValidator::addRule('json', function ($field, $value, array $params, array $fields) {
 				if (!is_string($value)) {
 					return false;
@@ -205,11 +236,11 @@ abstract class Validate
 				json_decode($value);
 				return json_last_error() === JSON_ERROR_NONE;
 			});
-			$registeredRules[] = 'json';
+			$registeredRulesRules[] = 'json';
 		}
 		
 		// 日期格式验证：date:Y-m-d
-		if (!in_array('date', $registeredRules, true)) {
+		if (!in_array('date', $registeredRulesRules, true)) {
 			ValitronValidator::addRule('date', function ($field, $value, array $params, array $fields) {
 				if (!isset($params[0]) || !is_string($value)) {
 					return false;
@@ -218,11 +249,24 @@ abstract class Validate
 				$dateTime = \DateTime::createFromFormat($format, $value);
 				return $dateTime && $dateTime->format($format) === $value;
 			});
-			$registeredRules[] = 'date';
+			$registeredRulesRules[] = 'date';
+		}
+		
+		// dateFormat:Y-m-d
+		if (!in_array('dateFormat', $registeredRulesRules, true)) {
+			ValitronValidator::addRule('dateFormat', function ($field, $value, $params, $fields) {
+				if (!isset($params[0]) || !is_string($value)) {
+					return false;
+				}
+				$format = $params[0];
+				$date = \DateTime::createFromFormat($format, $value);
+				return $date && $date->format($format) === $value;
+			});
+			$registeredRulesRules[] = 'dateFormat';
 		}
 
 		// 日期在某日期之后：after:2020-01-01 或 after:today
-		if (!in_array('after', $registeredRules, true)) {
+		if (!in_array('after', $registeredRulesRules, true)) {
 			ValitronValidator::addRule('after', function ($field, $value, array $params, array $fields) {
 				if (!is_string($value) || !isset($params[0])) {
 					return false;
@@ -251,16 +295,81 @@ abstract class Validate
 				$valueDate = new \DateTime($value);
 				return $valueDate > $targetDate;
 			});
-			$registeredRules[] = 'after';
+			$registeredRulesRules[] = 'after';
 		}
 
 		// 密码确认：confirmed（检查 field_confirmation 是否存在且相等）
-		if (!in_array('confirmed', $registeredRules, true)) {
-			ValitronValidator::addRule('confirmed', function ($field, $value, array $params, array $fields) {
-				$confirmationField = $field . '_confirmation';
-				return isset($fields[$confirmationField]) && $fields[$confirmationField] === $value;
+		// confirm: 等价于 confirmed
+		if (!in_array('confirm', $registeredRulesRules, true)) {
+			ValitronValidator::addRule('confirm', function ($field, $value, $params, $fields) {
+				$other = $params[0] ?? $field . '_confirm';
+				return isset($fields[$other]) && $fields[$other] === $value;
 			});
-			$registeredRules[] = 'confirmed';
+			$registeredRulesRules[] = 'confirm';
+		}
+
+		// confirmed: password_confirmation
+		if (!in_array('confirmed', $registeredRulesRules, true)) {
+			ValitronValidator::addRule('confirmed', function ($field, $value, $params, $fields) {
+				$confirmation = $field . '_confirmation';
+				return isset($fields[$confirmation]) && $fields[$confirmation] === $value;
+			});
+			$registeredRulesRules[] = 'confirmed';
+		}
+
+		// in:a,b,c
+		if (!in_array('in', $registeredRulesRules, true)) {
+			ValitronValidator::addRule('in', function ($field, $value, $params, $fields) {
+				if (empty($params)) return false;
+				$allowed = is_array($params[0]) ? $params[0] : explode(',', $params[0]);
+				return in_array($value, $allowed, true);
+			});
+			$registeredRulesRules[] = 'in';
+		}
+
+		// notIn:a,b,c
+		if (!in_array('notIn', $registeredRulesRules, true)) {
+			ValitronValidator::addRule('notIn', function ($field, $value, $params, $fields) {
+				if (empty($params)) return true;
+				$disallowed = is_array($params[0]) ? $params[0] : explode(',', $params[0]);
+				return !in_array($value, $disallowed, true);
+			});
+			$registeredRulesRules[] = 'notIn';
+		}
+
+		// different:field
+		if (!in_array('different', $registeredRulesRules, true)) {
+			ValitronValidator::addRule('different', function ($field, $value, $params, $fields) {
+				if (!isset($params[0]) || !isset($fields[$params[0]])) {
+					return false;
+				}
+				return $value !== $fields[$params[0]];
+			});
+			$registeredRulesRules[] = 'different';
+		}
+
+		// same:field
+		if (!in_array('same', $registeredRulesRules, true)) {
+			ValitronValidator::addRule('same', function ($field, $value, $params, $fields) {
+				if (!isset($params[0]) || !isset($fields[$params[0]])) {
+					return false;
+				}
+				return $value === $fields[$params[0]];
+			});
+			$registeredRulesRules[] = 'same';
+		}
+
+		// requireIf:field,value
+		if (!in_array('requireIf', $registeredRulesRules, true)) {
+			ValitronValidator::addRule('requireIf', function ($field, $value, $params, $fields) {
+				if (count($params) < 2) return true; // 不满足条件时不验证
+				[$conditionField, $expectedValue] = $params;
+				if (isset($fields[$conditionField]) && $fields[$conditionField] == $expectedValue) {
+					return $value !== null && $value !== ''; // 必须存在且非空
+				}
+				return true; // 条件不满足，跳过
+			});
+			$registeredRulesRules[] = 'requireIf';
 		}
 
 	}
