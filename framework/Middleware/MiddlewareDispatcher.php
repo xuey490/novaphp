@@ -32,7 +32,7 @@ class MiddlewareDispatcher
         // \Framework\Middleware\MiddlewareCircuitBreaker::class, //熔断中间件，正式环境使用，开发环境直接溢出错误堆栈
         MiddlewareIpBlock::class,
         MiddlewareXssFilter::class,
-        # \Framework\Middleware\MiddlewareCsrfProtection::class,
+        MiddlewareCsrfProtection::class,
         MiddlewareRefererCheck::class,
         // 添加日志、CORS、熔断器、限流器，xss、 ip block等全局中间件
     ];

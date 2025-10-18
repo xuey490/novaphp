@@ -18,7 +18,7 @@ namespace Framework\Core;
 
 use Framework\Middleware\MiddlewareDispatcher;
 use Framework\Middleware\MiddlewareMethodOverride;
-use Psr\Container\ContainerInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
@@ -74,6 +74,7 @@ class Router
         $path    = $request->getPathInfo();
         $context = new RequestContext();
         $context->fromRequest($request);
+		$context->setMethod("GET"); // ✅ 强制设置方法
 
         // 🔥 检查 版本彩蛋
         if (EasterEgg::isTriggeredVersion($request)) {

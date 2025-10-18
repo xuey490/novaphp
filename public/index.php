@@ -1,7 +1,6 @@
 <?php
 
 // 框架入口文件
-
 define('BASE_PATH', realpath(dirname(__DIR__)));
 define('APP_DEBUG', true);
 

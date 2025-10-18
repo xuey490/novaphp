@@ -133,15 +133,15 @@ class HomeController
 		
 		//$validate->check($data, 'create');
 		if (!$validate->check($PostData)) {
-			// print_r($validate->getError());
+			 print_r($validate->getError());
 		} else {
 			// echo "验证通过！";
 		}
 		
 		//Thinkphp验证
 		$data = [
-			'name'  => '',
-			'age'   => 20,
+			'name'  => '222',
+			'age'   => 5520,
 			'email' => 'thinkphp@qq.com',
 		];
 
