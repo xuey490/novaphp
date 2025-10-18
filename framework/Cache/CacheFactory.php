@@ -15,7 +15,7 @@ declare(strict_types=1);
  */
 
 /*
-专门兼容symfony/cache组件
+symfony/cache组件 工厂类
 */
 
 namespace Framework\Cache;

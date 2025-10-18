@@ -65,5 +65,7 @@
         "platform-check": false,
         "preferred-install": "dist",
         "sort-packages": true
-    }
+    },
+	"minimum-stability": "stable", 
+	"prefer-stable": true
 }

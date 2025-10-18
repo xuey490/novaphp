@@ -84,6 +84,7 @@ class Framework
         // 5. 加载所有路由（手动+注解）
         $allRoutes = $this->loadAllRoutes();
 
+
         // 6. 加载中间件调度器
         $this->middlewareDispatcher = new MiddlewareDispatcher($this->container);
 
@@ -104,9 +105,10 @@ class Framework
         $this->request = Request::createFromGlobals();
         $request       = $this->request;
 
-        try {
+        try {		
             // 1. 路由匹配
             $route = $this->router->match($request);
+
             if (! $route) {
                 $response = $this->handleNotFound();
                 $this->logger->logRequest($request, $response, microtime(true) - $start);

@@ -133,10 +133,12 @@ return function (ContainerConfigurator $configurator) {
 	// 定义缓存管理器服务（单例）
 	$cacheConfig = require __DIR__ . '/cache.php';
 	
+	/* remove thinkCache 保留代码
 	//thinkCache 注册服务
 	$services->set('cache', \Framework\Cache\CacheService::class)
 		->args([$cacheConfig])
 		->public();
+	*/
 	
 	// symfony/cache 注册服务		
     $services->set(\Framework\Cache\CacheFactory::class)
@@ -165,13 +167,6 @@ return function (ContainerConfigurator $configurator) {
             '%kernel.project_dir%/resource/translations',
         ])->public();
 
-	/*使用
-		Container::init(); // 加载服务配置
-		$this->container = Container::getInstance();
-		//$config = $this->container->get(\Framework\Config\ConfigService::class);
-		//$dbHost = $config->get('database.host');
-		//print_r($config->all());
-	*/	
 
 	//Override
 	$services->set(\Framework\Middleware\MiddlewareMethodOverride::class)
@@ -268,8 +263,6 @@ return function (ContainerConfigurator $configurator) {
     // TWIG配置加载
     // ------------------------------
 	$TempConfig = require dirname(__DIR__) . '/config/view.php';
-	
-
 	$viewConfig = $TempConfig['Twig'];
 	$services->set(\Twig\Loader\FilesystemLoader::class)->args([$viewConfig['paths']])->public();
 	
@@ -297,7 +290,7 @@ return function (ContainerConfigurator $configurator) {
 	->public();    // Environment 对象需要加载核心扩展才能工作
 
 	// 注册 MarkdownConverter 服务
-	//    它依赖于 上面 Environment 服务。
+	// 它依赖于上面 Environment 服务。
 	$services->set(\League\CommonMark\MarkdownConverter::class)
 		->args([
 			service(\League\CommonMark\Environment\Environment::class),
@@ -329,7 +322,6 @@ return function (ContainerConfigurator $configurator) {
 
 	// 别名
 	$services->alias('view', \Twig\Environment::class)->public();
-
 
 	$tpTemplateConfig = $TempConfig['Think'];
 
@@ -375,7 +367,7 @@ return function (ContainerConfigurator $configurator) {
     $services->set(\Framework\Utils\FileUploader::class)
              ->args([$uploadConfig, service(\Framework\Utils\MimeTypeChecker::class)])->public();	
 
-
+	// * remove Valitron\Validator 保留代码
     // 注册 ValidatorFactory（用于创建 Validator 实例）
     $services->set(\Framework\Validation\ValidatorFactory::class)
         ->public();

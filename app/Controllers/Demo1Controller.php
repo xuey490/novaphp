@@ -15,10 +15,10 @@ use Framework\Attributes\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-#[Route(prefix: '/api/v1/demo', group: 'api', middleware: [AuthMiddleware::class, LogMiddleware::class])]
+#[Route(prefix: '/api/v1/demo1', group: 'api', middleware: [AuthMiddleware::class, LogMiddleware::class])]
 class Demo1Controller
 {
-    # http://localhost:8000/api/v1/demo/
+
     #[Route(path: '/', methods: ['GET'], name: 'user.index')]
     public function index(Request $request): Response
     {
@@ -29,7 +29,7 @@ class Demo1Controller
         ]), 200, ['Content-Type' => 'application/json']);
     }
 
-    # http://localhost:8000/api/v1/demo/
+
     #[Route(path: '/', methods: ['POST'], name: 'user.create', middleware: [LogMiddleware::class])]
     public function create(Request $request): Response
     {
@@ -40,7 +40,7 @@ class Demo1Controller
         ]), 201, ['Content-Type' => 'application/json']);
     }
 
-    # http://localhost:8000/api/v1/demo/1234
+  
     #[Route(path: '/{id}', methods: ['DELETE'], name: 'user.delete')]
     public function delete(Request $request, $id): Response
     {
