@@ -2,7 +2,7 @@
 /storage/cache/*
 /storage/logs/*
 /storage/view/*
-/vendor/*
+vendor
 
 # 但不要忽略 .gitkeep 文件，
 
@@ -14,5 +14,4 @@
 app/Twig/ThinkTemplateFactory - 副本.php
 framework/Core/AttributeRouteLoader - 副本.php
 /framework/Annotations
-/vendor
-framework.rar
+
