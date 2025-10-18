@@ -95,10 +95,10 @@ class HomeController
 			'password' => 'required|lengthMin:6'
 		];
 
-		$errors = validate($data, $rules, 'zh-cn');
+		$errors = validator($data, $rules, 'zh-cn');
 
 		if (!empty($errors)) {
-			print_r($errors);
+			// print_r($errors);
 			// 输出：['email' => ['不是有效的电子邮件地址'], 'password' => ['长度必须大于等于6']]
 		}
 		
@@ -133,12 +133,24 @@ class HomeController
 		
 		//$validate->check($data, 'create');
 		if (!$validate->check($PostData)) {
-			print_r($validate->getError());
+			// print_r($validate->getError());
 		} else {
-			echo "验证通过！";
+			// echo "验证通过！";
 		}
 		
+		//Thinkphp验证
+		$data = [
+			'name'  => '',
+			'age'   => 20,
+			'email' => 'thinkphp@qq.com',
+		];
 
+		$validate = new \App\Validate\NewUser;
+		$result = $validate->check($data);
+
+		if(!$result){
+			echo $validate->getError();
+		}
 		
 
         // echo trans('hello'); // 自动输出对应语言

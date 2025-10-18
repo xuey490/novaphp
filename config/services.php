@@ -376,11 +376,11 @@ return function (ContainerConfigurator $configurator) {
              ->args([$uploadConfig, service(\Framework\Utils\MimeTypeChecker::class)])->public();	
 
 
-    // 🔹 1. 注册 ValidatorFactory（用于创建 Validator 实例）
+    // 注册 ValidatorFactory（用于创建 Validator 实例）
     $services->set(\Framework\Validation\ValidatorFactory::class)
         ->public();
 
-    // 🔹 2. （可选）注册一个别名服务，方便通过 'validator.factory' 获取
+    // （可选）注册一个别名服务，方便通过 'validator.factory' 获取
     $services->alias('validator.factory', \Framework\Validation\ValidatorFactory::class)->public();
 	
     $services->set('validator', \Valitron\Validator::class)
@@ -388,12 +388,21 @@ return function (ContainerConfigurator $configurator) {
 		->factory([service(\Framework\Validation\ValidatorFactory::class), 'create'])
 		->public(); // 允许从容器外部获取
 
+	// 注册validate 工厂类
+    $services->set(\Framework\Validation\ThinkValidatorFactory::class)
+        ->public();
+
+	// 注册thinkphp validate
+    $services->set('validate', \think\Validate::class)
+        // 使用 factory() 方法，并指向工厂类
+		->factory([service(\Framework\Validation\ThinkValidatorFactory::class), 'create'])
+		->public(); // 允许从容器外部获取
 	
+	//批量注册路由中间件
 	$services->load('App\\Middlewares\\', '../app/Middlewares/**/*Middleware.php')
 		->autowire()      // 支持中间件的依赖自动注入（如注入UserService）
 		->autoconfigure() // 支持中间件添加标签（如后续需要事件监听）
 		->public(); // 关键：标记为公开，因为中间件需要通过容器动态获取（如从注解解析后）
-
 
 	#$services->load('App\\', '../app/*/*')->exclude('../app/{Entity,Tests}/*') ->autowire()->autoconfigure();
 	
