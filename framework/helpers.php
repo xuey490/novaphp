@@ -257,8 +257,8 @@ function get_cache_instance(): TagAwareAdapter
 
 
 // 验证器
-if (!function_exists('validate')) {
-    function validate(array $data, array $rules, string $lang = 'en'): array
+if (!function_exists('validator')) {
+    function validator(array $data, array $rules, string $lang = 'en'): array
     {
         // 尝试从容器获取工厂
         if (function_exists('getService')) {
@@ -292,4 +292,26 @@ if (!function_exists('validate')) {
         $v->validate();
         return $v->errors();
     }
+}
+
+/**
+ * 数据验证助手函数
+ * @param array $data 待验证数据
+ * @param array $rule 验证规则
+ * @param array $message 自定义提示
+ * @return array|true 验证通过返回true，失败返回错误信息数组
+ */
+if (!function_exists('ThinkValidate')) {
+	function ThinkValidate(array $data, array $rule, array $message = [])
+	{
+		/** @var ContainerInterface $container */
+		$factory = getService(\Framework\Validation\ThinkValidatorFactory::class);
+		$validator = $factory->create($rule, $message);
+
+		if (!$validator->check($data)) {
+			print_r($validator->getError());
+			return $validator->getError(); // 返回错误信息
+		}
+		return true;
+	}
 }

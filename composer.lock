@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "19d168396ca3b16a7261d25d98e1f2bc",
+    "content-hash": "a59128e3b7ff8bde1de465501d1480a0",
     "packages": [
         {
             "name": "brick/math",
@@ -3039,6 +3039,52 @@
             "time": "2025-08-27T11:34:33+00:00"
         },
         {
+            "name": "topthink/think-container",
+            "version": "v3.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/top-think/think-container.git",
+                "reference": "b2df244be1e7399ad4c8be1ccc40ed57868f730a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/top-think/think-container/zipball/b2df244be1e7399ad4c8be1ccc40ed57868f730a",
+                "reference": "b2df244be1e7399ad4c8be1ccc40ed57868f730a",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.0",
+                "psr/container": "^2.0",
+                "topthink/think-helper": "^3.1"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9.5"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [],
+                "psr-4": {
+                    "think\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "liu21st",
+                    "email": "liu21st@gmail.com"
+                }
+            ],
+            "description": "PHP Container & Facade Manager",
+            "support": {
+                "issues": "https://github.com/top-think/think-container/issues",
+                "source": "https://github.com/top-think/think-container/tree/v3.0.2"
+            },
+            "time": "2025-04-07T03:21:51+00:00"
+        },
+        {
             "name": "topthink/think-helper",
             "version": "v3.1.11",
             "source": {
@@ -3182,6 +3228,50 @@
                 "source": "https://github.com/top-think/think-template/tree/v3.0.2"
             },
             "time": "2024-10-16T03:41:06+00:00"
+        },
+        {
+            "name": "topthink/think-validate",
+            "version": "v3.0.7",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/top-think/think-validate.git",
+                "reference": "85063f6d4ef8ed122f17a36179dc3e0949b30988"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/top-think/think-validate/zipball/85063f6d4ef8ed122f17a36179dc3e0949b30988",
+                "reference": "85063f6d4ef8ed122f17a36179dc3e0949b30988",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.0",
+                "topthink/think-container": ">=3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "src/helper.php"
+                ],
+                "psr-4": {
+                    "think\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "liu21st",
+                    "email": "liu21st@gmail.com"
+                }
+            ],
+            "description": "think validate",
+            "support": {
+                "issues": "https://github.com/top-think/think-validate/issues",
+                "source": "https://github.com/top-think/think-validate/tree/v3.0.7"
+            },
+            "time": "2025-06-11T05:51:40+00:00"
         },
         {
             "name": "twig/twig",
