@@ -1,3 +1,14 @@
+- 0.1.1
+
+	- 遗弃thinkcache
+	- 遗弃doctrine/annotations，改成Symfony 路由写法的 Attribute 路由定义类
+	- 在Symfony 注解路由上实现中间件加载
+	- 实现验证码,并完成控制器编写测试
+	- 改写了ThinkTemp的扩展
+	- app下的测试文件修改
+	- 增加命令行生成控制器，模型，中间件
+	- 生成控制器 #php novaphp make:controller User # 生成模型#php novaphp make:model User # 生成Auth中间件 #php novaphp make:middleware Auth
+	- 其它细节修改
 - 0.1.0
 	- 增加文件上传组件，并完成控制器编写测试，http://localhost:8000/upload/form
 
