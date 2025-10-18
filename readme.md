@@ -22,7 +22,7 @@ http://localhost:8000/user/add
 ## 版本里程: 更多见：https://github.com/xuey490/novaphp/blob/main/version.md
 
 - 0.1.2
-	- 增加验证器，规则和thinkphp非常类似
+	- 增加topthink/think-validate验证器，轻量级vlucas/valitron
     - 引入phpCSfixer对全部代码进行修订，100%兼容psr-12
     - 其它细节修改
 
