@@ -19,7 +19,7 @@ use Symfony\Component\HttpFoundation\Response;
 class Demo1Controller
 {
 
-    #[Route(path: '/', methods: ['GET'], name: 'user.index')]
+    #[Route(path: '/', methods: ['GET'], name: 'demo1.index')]
     public function index(Request $request): Response
     {
         return new Response(json_encode([
@@ -30,7 +30,7 @@ class Demo1Controller
     }
 
 
-    #[Route(path: '/', methods: ['POST'], name: 'user.create', middleware: [LogMiddleware::class])]
+    #[Route(path: '/create', methods: ['POST'], name: 'demo1.create', middleware: [LogMiddleware::class])]
     public function create(Request $request): Response
     {
         return new Response(json_encode([
@@ -41,7 +41,7 @@ class Demo1Controller
     }
 
   
-    #[Route(path: '/{id}', methods: ['DELETE'], name: 'user.delete')]
+    #[Route(path: '/{id}', methods: ['DELETE'], name: 'demo1.delete')]
     public function delete(Request $request, $id): Response
     {
         return new Response(json_encode([

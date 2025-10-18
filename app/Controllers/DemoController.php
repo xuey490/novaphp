@@ -6,12 +6,12 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 
-#[Route(prefix: '/api/v1', middleware: [\App\Middlewares\AuthMiddleware::class , \App\Middlewares\LogMiddleware::class ])]
+#[Route(prefix: '/v2', middleware: [\App\Middlewares\AuthMiddleware::class , \App\Middlewares\LogMiddleware::class ])]
 class DemoController
 {
-    #[Route(path: '/demo', methods: ['GET'], name: 'user.list' , middleware: [\App\Middlewares\AuthMiddleware::class] )]
+    #[Route(path: '/demo/index', methods: ['GET'],  middleware: [\App\Middlewares\AuthMiddleware::class] )]
     public function list() { 
-		echo 'get list';
+		echo 'demo list';
 	}
 
     #[Route(path: '/demo', methods: ['POST'], middleware: [\App\Middlewares\LogMiddleware::class])]
@@ -21,7 +21,7 @@ class DemoController
 	
 	 #[Route(path: '/demo/show', methods: ['GET'], middleware: [\App\Middlewares\AuthMiddleware::class])]
     public function show() { 
-		echo 'show';
+		echo 'demo show';
 	}	
 	
 	
