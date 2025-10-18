@@ -22,10 +22,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
+use Symfony\Component\Routing\Exception\MethodNotAllowedException;
 use Symfony\Component\Routing\Matcher\UrlMatcher;
 // 引入你的静态容器
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouteCollection;
+
+
 
 // 推荐使用 PSR-11 标准接口
 
@@ -74,7 +77,7 @@ class Router
         $path    = $request->getPathInfo();
         $context = new RequestContext();
         $context->fromRequest($request);
-		$context->setMethod("GET"); // ✅ 强制设置方法
+
 
         // 🔥 检查 版本彩蛋
         if (EasterEgg::isTriggeredVersion($request)) {
@@ -89,9 +92,12 @@ class Router
         // 2. 策略1：匹配手动路由 + 注解路由（共用Symfony UrlMatcher）
         $manualOrAnnotationRoute = $this->matchManualAndAnnotationRoutes($path, $context);
         if ($manualOrAnnotationRoute) {
+			//$context->setMethod('GET');	//✅ 强制设置方法
             return $manualOrAnnotationRoute;
         }
-
+		
+		// 再尝试自动路由（GET 默认）
+		
         // 3. 策略2：匹配自动解析路由（最低优先级）
         $autoRoute = $this->matchAutoRoute($path, $request);
         if ($autoRoute) {
@@ -105,7 +111,40 @@ class Router
     /**
      * 匹配路由.
      */
-    private function matchManualAndAnnotationRoutes(string $path, RequestContext $context): ?array
+	private function matchManualAndAnnotationRoutes(string $path, RequestContext $context): ?array
+	{
+		try {
+			$matcher    = new UrlMatcher($this->allRoutes, $context);
+			$parameters = $matcher->match($path);
+
+			$routeName      = $parameters['_route'];
+			$routeObject    = $this->allRoutes->get($routeName);
+			$middlewareList = $routeObject ? $routeObject->getDefault('_middleware', []) : [];
+
+			if (!isset($parameters['_controller'])) {
+				return null;
+			}
+
+			[$controllerClass, $actionMethod] = explode('::', $parameters['_controller'], 2);
+
+			unset($parameters['_controller'], $parameters['_route']);
+
+			return [
+				'controller' => $controllerClass,
+				'method'     => $actionMethod,
+				'params'     => $parameters,
+				'middleware' => $middlewareList,
+			];
+		} catch (ResourceNotFoundException | MethodNotAllowedException $e) {
+			// ✅ 捕获两种异常，让 POST / PUT / DELETE 自动回退到自动路由逻辑
+			return null;
+		}
+	}
+
+	 	 
+	 
+	 
+    private function matchManualAndAnnotationRoutes1(string $path, RequestContext $context): ?array
     {
         try {
             $matcher    = new UrlMatcher($this->allRoutes, $context);
