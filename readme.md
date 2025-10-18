@@ -4,11 +4,30 @@
 ## 简介:
 这是一款基于symfony的底层代码开发的轻量级，强大，快速，简单，安全的php框架。
 
+## 核心特性
+🚀 性能与安全
+- 	Symfony 组件集成：利用 Symfony 7.x 组件实现 HTTP 基础、路由、依赖注入和缓存
+- 	轻量级设计：最小开销，快速请求处理
+- 	内置安全：CSRF保护、XSS过滤、速率限制和 IP阻断等中间件
+- 	路由缓存：基于文件的缓存系统优化路由加载
+- 	日志检查：基于Monolog的强大的日志功能
+🔧 开发体验
+- 	多种路由选项：支持手动路由配置和基于属性的路由
+- 	依赖注入：完整的 Symfony DI 容器集成用于服务管理
+- 	模板灵活性：双重模板引擎支持（Twig 和 ThinkTemplate）
+- 	ORM 集成：ThinkORM 集成用于数据库操作
+- 	数据验证：ThinkValidate 的强大数据集验证
+🛠️ 现代 PHP 特性
+- 	PHP 8.3+ 支持：利用现代 PHP 特性，包括属性和联合类型
+- 	PSR 标准：遵循 PSR-4 自动加载和其他相关标准
+- 	Composer 就绪：基于 Composer 的标准依赖管理
+
 ## 下载安装:
 - 本地环境:php8.1及以上，Redis，MySQL5.7, composer 2.x及以上
--  从GitHub下载main版本，解压到本地目录，在根目录下运行composer install ,
--  等组件包下载完毕后，运行php -S localhost:8000 -t public
+- 从GitHub下载main版本，解压到本地目录，在根目录下运行composer install ,
+- 等组件包下载完毕后，运行php -S localhost:8000 -t public
 - 打开浏览器，输入地址http://localhost:8000
+- 也可以部署到任何可以运行php的Apache或Nginx服务器上。
 
 ## 应用文档
 强烈推荐Zread.Ai，感谢他们提供项目文档分析生成。https://zread.ai/xuey490/novaphp
