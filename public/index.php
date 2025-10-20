@@ -22,7 +22,7 @@ if (file_exists($helpersFile)) {
 }
 
 // 检查并引入应用函数
-$appFunctionsFile = BASE_PATH . '/App/function.php';
+$appFunctionsFile = BASE_PATH . '/app/function.php';
 if (file_exists($appFunctionsFile)) {
     require_once $appFunctionsFile;
 } else {
