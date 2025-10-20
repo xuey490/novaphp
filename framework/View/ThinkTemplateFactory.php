@@ -11,7 +11,7 @@ declare(strict_types=1);
 改成符合psr-4规则
 */
 
-namespace App\Twig;
+namespace Framework\View;
 
 use think\Template;
 
