@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  */
 
-namespace App\Twig;
+namespace Framework\View;
 
 use League\CommonMark\Environment\Environment;
 use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;

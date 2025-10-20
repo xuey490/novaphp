@@ -56,6 +56,26 @@ class Framework
 
     public function __construct()
     {
+		
+		if (!defined('BASE_PATH')) {
+			define('BASE_PATH', realpath(dirname(__DIR__.'/../../../')));
+		}
+
+		// 需要检测的目录列表
+		$dirs = [
+			BASE_PATH . '/storage/cache',
+			BASE_PATH . '/storage/logs',
+			BASE_PATH . '/storage/view'
+		];
+
+		// 循环检测并创建目录
+		foreach ($dirs as $dir) {
+			// 目录不存在且创建失败时抛出错误（可选，根据需求调整）
+			if (!is_dir($dir) && !mkdir($dir, 0755, true) && !is_dir($dir)) {
+				throw new RuntimeException(sprintf('无法创建目录: %s', $dir));
+			}
+		}
+		
         // 0. 加载配置
         $configLoader = new ConfigLoader(BASE_PATH . '/config');
         $globalConfig = $configLoader->loadAll();
@@ -68,10 +88,6 @@ class Framework
         // $loggers = $this->container->get(\Framework\Log\LoggerService::class);
         // $loggers->info('Container loaded successfully!');
 
-        // ✅ 2. 自动创建并启动 Kernel（注册服务）
-        // $env = $_ENV['APP_ENV'] ?? 'prod';
-        // $debug = filter_var($_ENV['DEBUG'] ?? false, FILTER_VALIDATE_BOOLEAN);
-        // $this->kernel = new Kernel($env, $debug);
         $this->kernel = new Kernel($this->container);
         $this->kernel->boot(); // <-- 容器在此时初始化，App::setContainer() 被调用
 

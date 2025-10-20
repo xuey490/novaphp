@@ -5,8 +5,9 @@ return [
 	'driver' => 'Think', //Twig or Think
 	'Twig' =>[
 		'paths' => [
-		 dirname(__DIR__) . '/resource/view',
-			 dirname(__DIR__) . '/resource/acme/blog', // 第三方模块模板
+			dirname(__DIR__) . '/resource/view',
+			dirname(__DIR__) . '/resource/acme/blog', 		// 第三方模块模板
+			//dirname(__DIR__) . '/framework/View/templates', 	// 第三方模块模板
 			// 可添加更多
 		],
 		'cache_path' =>  dirname(__DIR__) . '/storage/view', //false 不缓存

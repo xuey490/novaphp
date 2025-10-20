@@ -267,7 +267,7 @@ return function (ContainerConfigurator $configurator) {
 	$services->set(\Twig\Loader\FilesystemLoader::class)->args([$viewConfig['paths']])->public();
 	
 	//注册 AppTwigExtension 扩展
-	$services->set(\App\Twig\AppTwigExtension::class)
+	$services->set(\Framework\View\AppTwigExtension::class)
 		->args([
 			service(\Framework\Security\CsrfTokenManager::class),
 			'_token' // 👈 显式传入字段名
@@ -299,7 +299,7 @@ return function (ContainerConfigurator $configurator) {
 	
 	// 注册自定义 Markdown Twig 扩展
 	// 注意：这个扩展现在依赖于 MarkdownConverter 服务
-	$services->set(\App\Twig\MarkdownExtension::class)
+	$services->set(\Framework\View\MarkdownExtension::class)
 		->args([
 			service(\League\CommonMark\MarkdownConverter::class), // 注入 MarkdownConverter
 		])
@@ -316,8 +316,8 @@ return function (ContainerConfigurator $configurator) {
 				'strict_variables' => $viewConfig['strict_variables'],
 			],
 		])
-		->call('addExtension', [service(\App\Twig\AppTwigExtension::class) ])
-		->call('addExtension', [service(\App\Twig\MarkdownExtension::class)]) // ✅ 添加新的 Markdown 扩展
+		->call('addExtension', [service(\Framework\View\AppTwigExtension::class) ])
+		->call('addExtension', [service(\Framework\View\MarkdownExtension::class)]) // ✅ 添加新的 Markdown 扩展
 		->public();
 
 	// 别名
@@ -336,7 +336,7 @@ return function (ContainerConfigurator $configurator) {
     $parameters = $configurator->parameters();
 	
 	// 0.注册模板工厂类
-	$services->set(\App\twig\ThinkTemplateFactory::class)
+	$services->set(\Framework\View\ThinkTemplateFactory::class)
 		->args([$tpTemplateConfig])
 		->public();	;
 
@@ -347,8 +347,8 @@ return function (ContainerConfigurator $configurator) {
     // 2. 注册 'thinkTemp' 服务
     $services->set('thinkTemp', \think\Template::class)
         // 使用 factory() 方法，并指向我们的工厂类
-		//->factory(service(\App\twig\ThinkTemplateFactory::class))
-		->factory([service(\App\twig\ThinkTemplateFactory::class), 'create'])
+		//->factory(service(\Framework\View\ThinkTemplateFactory::class))
+		->factory([service(\Framework\View\ThinkTemplateFactory::class), 'create'])
         // 为工厂方法注入配置参数
         ->args([
             // 使用 param() 来引用上面定义的参数

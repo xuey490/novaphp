@@ -7,9 +7,9 @@ declare(strict_types=1);
  *
  */
 
-namespace App\Twig;
+namespace Framework\View;
 
-# use Symfony\Component\HttpFoundation\Session\Session;
+
 use Framework\Security\CsrfTokenManager;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
@@ -29,7 +29,7 @@ class AppTwigExtension extends AbstractExtension
         $this->tokenManager = $tokenManager;
         $this->tokenName    = $tokenName;
         $this->session      = app('session');
-        $this->siteConfig   = require __DIR__ . '/../../config/site.php';
+        $this->siteConfig   = require BASE_PATH .'/config/site.php';
 
         // ⚠️ 移除下面这行，除非你真的想每次覆盖用户！
         // $this->session->set('user', 'zhangSan');
