@@ -2,7 +2,7 @@
   
 
 ## 简介:
-NovaPHP is a lightweight Powerful Fast, Simple, secure PHP framework with Symfony components, This is the best practical project using NovaPHP framework.
+NovaPHP is a lightweight Powerful Fast, Simple, secure PHP framework。 This is the best practical project using NovaPHP framework.
 
 NovaPHP 是一款轻量级强大，快速，简单，安全的php框架，这是novaphp框架的最佳实践使用项目。
 
