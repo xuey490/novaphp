@@ -1,3 +1,16 @@
-<h1>用户信息</h1>
-<p>姓名：{$user.name}</p>
-<p>年龄：{$user.age}</p>
+<!-- templates/user/show.html -->
+<div class="profile-main">
+    <h1>👤 {$user.name}</h1>
+    <p>这是一位优秀的用户，今年 {$user.age} 岁。</p>
+    
+    <section class="stats">
+        <div class="stat-item">
+            <strong>发帖数</strong>
+            <span>128</span>
+        </div>
+        <div class="stat-item">
+            <strong>粉丝数</strong>
+            <span>56</span>
+        </div>
+    </section>
+</div>

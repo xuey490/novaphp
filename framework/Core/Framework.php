@@ -31,7 +31,8 @@ use think\facade\Db;
 class Framework
 {
     // 控制器基础配置（可从配置文件读取，此处简化为常量）
-    private const CONTROLLER_DIR = __DIR__ . '/../../app/Controllers';
+    //private const CONTROLLER_DIR = __DIR__ . '/../../app/Controllers';
+    private const CONTROLLER_DIR = BASE_PATH . '/app/Controllers';
 
     private const CONTROLLER_NAMESPACE = 'App\Controllers';
 
@@ -60,7 +61,7 @@ class Framework
 		if (!defined('BASE_PATH')) {
 			define('BASE_PATH', realpath(dirname(__DIR__.'/../../../')));
 		}
-
+		
 		// 需要检测的目录列表
 		$dirs = [
 			BASE_PATH . '/storage/cache',
