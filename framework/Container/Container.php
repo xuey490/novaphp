@@ -39,54 +39,6 @@ class Container implements SymfonyContainerInterface
      * - 在生产环境：尝试加载缓存。如果缓存不存在，则构建、编译并缓存。
      * - 在开发环境：总是重新构建，以保证配置实时生效。
      */
-    public static function init1(array $parameters = []): void
-    {
-        if (self::$container !== null) {
-            return;
-        }
-
-        // 👇 在这里加载 .env 文件
-        $dotenv = new Dotenv();
-        $dotenv->load(__DIR__ . '/../../.env'); // 路径根据你的项目结构调整
-
-        $projectRoot = dirname(__DIR__, 2);
-        $configDir   = $projectRoot . '/config';
-
-        if (! is_dir($configDir)) {
-            throw new \RuntimeException("配置目录不存在: {$configDir}");
-        }
-
-        $servicesFile = $configDir . '/services.php';
-        if (! file_exists($servicesFile)) {
-            throw new \RuntimeException("服务配置文件不存在: {$servicesFile}");
-        }
-
-        $container = new ContainerBuilder();
-        $container->setParameter('kernel.project_dir', $projectRoot);
-        $container->setParameter('kernel.debug', APP_DEBUG);
-
-        // 注入全局配置作为参数
-        if (! empty($parameters)) {
-            $container->setParameter('config', $parameters);
-        }
-
-        $loader = new PhpFileLoader($container, new FileLocator($configDir));
-        $loader->load('services.php');
-
-        // ⚠️ 如果你希望支持运行时 set()，就不要 compile()
-        // 或者提供一个“开发模式”开关
-        $container->compile(true); // 编译后 set() 将失效！
-
-        // var_dump(($container->getServiceIds()));
-
-        self::$container = $container;
-    }
-
-    /**
-     * 初始化容器。
-     * - 在生产环境：尝试加载缓存。如果缓存不存在，则构建、编译并缓存。
-     * - 在开发环境：总是重新构建，以保证配置实时生效。
-     */
     public static function init(array $parameters = []): void
     {
         if (self::$container !== null) {
@@ -101,7 +53,7 @@ class Container implements SymfonyContainerInterface
         $isProd = $env === 'prod';
 
         // --- 开发环境或缓存不存在：构建新容器 ---
-        $projectRoot = dirname(__DIR__, 2);
+        $projectRoot = BASE_PATH ; //dirname(__DIR__, 2);
         $configDir   = $projectRoot . '/config';
 
         if (! is_dir($configDir)) {
