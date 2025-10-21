@@ -1,52 +1,58 @@
-{% extends 'base.html.twig' %}
-
-
-
-
-{% block content %}
-
-
-{# blog/list.html.twig #}
-{% embed 'components/card.html.twig' with {
-    'title': '公告',
-    'createdAt': 'now'
-} %}
-    {% block header %}
-        <h3 style="color:red;">紧急通知</h3>
-    {% endblock %}
-    {% block body %}
-        <p>系统将于今晚 2:00 维护。</p>
-    {% endblock %}
-{% endembed %}
-
-    <h1>{{ page_title }}</h1>
-
-    {% if current_user %}
-        <p>欢迎回来，{{ current_user.name }}！</p>
+{# user/list.html.twig #}
+{% if pagination.total_pages > 1 %}
+<nav aria-label="pagination">
+  <ul class="pagination">
+    {% if pagination.has_previous %}
+      <li><a href="{{ pagination.previous_url }}">&laquo;</a></li>
     {% else %}
-        <p><a href="{{ url('/login') }}">登录</a> 发表评论</p>
+      <li class="disabled"><span>&laquo;</span></li>
     {% endif %}
 
-    <ul>
-        {% for post in posts %}
-            <li>
-                <h3><a href="{{ url('/post/' ~ post.id) }}">{{ post.title }}</a></h3>
-                <p>{{ post.excerpt|striptags }}</p>
-                <small>发布于 {{ post.createdAt|date('Y-m-d') }}</small>
-            </li>
+    {% for item in pagination.pages %}
+      {% if item.type == 'ellipsis' %}
+        <li class="disabled"><span>&hellip;</span></li>
+      {% elseif item.type == 'page' %}
+        {% if item.is_current %}
+          <li class="active"><span>{{ item.number }}</span></li>
         {% else %}
-            <li>暂无文章</li>
-        {% endfor %}
-    </ul>
+          <li><a href="{{ item.url }}">{{ item.number }}</a></li>
+        {% endif %}
+      {% endif %}
+    {% endfor %}
 
-
-    {# 动态加载侧边栏，传递数据 #}
-    {{ include('blog/_sidebar.html.twig', {
-        'popularPosts': popularPosts|default([])
-    }) }}
-
-{{ mdContent | markdown_to_html }}
-
-
-{% endblock %}
-
+    {% if pagination.has_next %}
+      <li><a href="{{ pagination.next_url }}">&raquo;</a></li>
+    {% else %}
+      <li class="disabled"><span>&raquo;</span></li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+<style>
+.pagination {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+}
+.pagination li {
+    margin: 0 4px;
+}
+.pagination a,
+.pagination span {
+    display: block;
+    padding: 6px 12px;
+    text-decoration: none;
+    border: 1px solid #ddd;
+    color: #007bff;
+}
+.pagination .active span {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+.pagination .disabled span {
+    color: #ccc;
+    border-color: #eee;
+}
+</style>
