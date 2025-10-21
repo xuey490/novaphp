@@ -12,6 +12,7 @@ namespace App\Controllers;
 use App\Services\BlogService;
 use App\Twig\AppTwigExtension;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
 use Twig\Environment;
 
  // 假设你有文章服务
@@ -27,6 +28,22 @@ class BlogController
         $this->twig        = $twig;
         $this->blogService = $blogService;
     }
+	
+	public function list(Request $request)
+	{
+		$total = 150;
+		
+		$pagination = new \Framework\Utils\Pagination($total, $request, 10);
+		
+		$pageData =$pagination->getData(2);
+		
+
+		
+		return $this->twig->render('blog/list.html.twig', [
+			'pagination' => $pageData,
+		]);
+		
+	}
 
     public function index(): Response
     {
@@ -52,7 +69,7 @@ class BlogController
         // 热门文章数据
         $popularPosts = $this->blogService->getpopularPosts();
 
-        $html = $this->twig->render('blog/list.html.twig', [
+        $html = $this->twig->render('blog/index.html.twig', [
             'posts'        => $posts,
             'current_user' => app('session')->get('user'),
             'page_title'   => '最新文章',

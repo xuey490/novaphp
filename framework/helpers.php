@@ -369,3 +369,62 @@ if (!function_exists('ThinkValidate')) {
 		return true;
 	}
 }
+
+/*
+	*模板助手函数
+	$username = 'guest';
+	$name = 'ThinkPHP Template Engine';
+	$version = '3.2.x';
+	$features = ['Fast', 'Simple', 'Powerful'];
+	$currentTime = time();
+	*return ThinkView('think/thinktemp', compact('username', 'name', 'version', 'features', 'currentTime'));
+*/
+
+function ThinkView($templateName, $data = []) 
+{
+    $template = app('thinkTemp');
+    $vars = array_merge(get_defined_vars()['data'] ?? [], $data);
+    $template->assign($vars);
+    return $template->fetch($templateName);
+}
+
+
+
+if (!function_exists('renders')) {
+    /**
+     * 渲染模板并自动分配当前作用域变量
+     *
+     * @param string $template 模板名，如 'user/profile'
+     * @param array $data      额外要 assign 的变量（会合并并覆盖）
+     * @param array $exclude   要排除的变量名（默认排除常见内部变量）
+     * @return string           渲染后的 HTML 内容
+     */
+    function renders(string $template, array $data = [], array $exclude = null)
+    {
+        // 获取当前作用域所有变量
+        $scopeVars = get_defined_vars();
+		
+				//print_r($scopeVars);
+
+        // 默认排除列表
+        $defaultExclude = ['scopeVars', 'template', 'data', 'exclude', 'args'];
+        $exclude = $exclude ?? $defaultExclude;
+
+        // 合并排除项，去重
+        $exclude = array_unique(array_merge($defaultExclude, $exclude));
+
+        // 过滤掉不需要的变量
+        $filtered = array_diff_key($scopeVars, array_flip($exclude));
+
+        // 合并作用域变量 + 手动传入的变量（后者优先级更高）
+        $assignData = array_merge($filtered, $data);
+
+        // 获取 ThinkPHP 模板引擎实例
+        $tpl = app('thinkTemp'); // 确保服务名为 'thinkTemp'，根据你的绑定调整
+
+        // 分配变量并渲染
+        $tpl->assign($assignData);
+
+        return $tpl->fetch($template);
+    }
+}

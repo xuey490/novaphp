@@ -14,9 +14,13 @@ use Twig\Environment;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
+use Framework\View\ViewRender;
+use function render;
 
 class ViewController
 {
+		use ViewRender; //模板引擎 trait
+		
     private Environment $twig;
 
     public function __construct(Environment $twig)
@@ -82,11 +86,23 @@ class ViewController
     // 更多用法：https://doc.thinkphp.cn/@think-template/default.html
     public function think()
     {
-        // 1. 从服务容器中获取 ThinkPHP 模板引擎服务
+				
+        // 0. 从服务容器中获取 ThinkPHP 模板引擎服务
         $template = app('thinkTemp');
 
-        $username ='guest';
 
+				// 当前作用域中定义的所有变量都会被提取
+				$username = 'guest';
+				$name = 'ThinkPHP Template Engine';
+				$version = '3.2.x';
+				$features = ['Fast', 'Simple', 'Powerful'];
+				$currentTime = time();
+		
+				//return ThinkView('think/thinktemp', compact('username', 'name', 'version', 'features', 'currentTime'));  //助手函数渲染 正常工作
+				
+return $this->render('think/thinktemp', compact('username', 'name', 'version' , 'features' ));
+				
+				
         // 2. 像原生 TP 一样，给模板分配变量
         $template->assign([
             'name'        => 'ThinkPHP Template Engine',
