@@ -3,6 +3,7 @@
 /storage/logs/*
 /storage/view/*
 vendor
+/storage/vendor/*
 
 # 但不要忽略 .gitkeep 文件，
 
