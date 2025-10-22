@@ -155,6 +155,12 @@ function database_path($path = '')
     return base_path('database') . ($path ? '/' . $path : '');
 }
 
+function app_path($path = '')
+{
+    return base_path('app') . ($path ? '/' . $path : '');
+}
+
+
 function env($key, $default = null)
 {
     $value = $_ENV[$key] ?? $_SERVER[$key] ?? getenv($key);

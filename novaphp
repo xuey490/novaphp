@@ -7,11 +7,15 @@ use Symfony\Component\Console\Application;
 use Framework\Console\Commands\MakeControllerCommand;
 use Framework\Console\Commands\MakeModelCommand;
 use Framework\Console\Commands\MakeMiddlewareCommand; // 新增Middleware
+use Framework\Console\Commands\MakeEventCommand; 
+use Framework\Console\Commands\MakeListenerCommand; 
 
-$application = new Application('Novaphp Framework', '0.1.1');
+$application = new Application('Novaphp Framework', '0.2');
 $application->add(new MakeControllerCommand());
 $application->add(new MakeModelCommand());
 $application->add(new MakeMiddlewareCommand()); // 新增Middleware
+$application->add(new MakeEventCommand()); // 新增MakeEventCommand
+$application->add(new MakeListenerCommand()); // MakeListenerCommand
 $application->run();
     
 
@@ -23,3 +27,6 @@ $application->run();
 
 # 生成Auth中间件
 #php novaphp make:middleware Auth
+
+#生成事件
+#php novaphp make:event UserRegistered

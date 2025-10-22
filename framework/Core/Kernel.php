@@ -53,9 +53,18 @@ class Kernel
         App::setContainer($this->container);
 
         // $debug = app('config')->get('app.debug', false);
-        // dump(app()->getServiceIds()); // 查看所有服务 ID
+        # dump(app()->getServiceIds()); // 查看所有服务 ID
 
         // 设置全局异常处理器
+		
+		//事件触发
+		$dispatcher = $this->container->get(\Framework\Event\Dispatcher::class);
+		$scanner = new \Framework\Event\ListenerScanner($this->container->get(\Framework\Cache\CacheFactory::class));
+
+		foreach ($scanner->getSubscribers() as $subscriberClass) {
+			$dispatcher->addSubscriber($this->container->get($subscriberClass));
+		}
+
 
         set_exception_handler(function (\Throwable $e) {
             $handler = app('exception');
