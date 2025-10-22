@@ -6,7 +6,7 @@
 
 
 ## 简介:
-NovaFrame is a lightweight Powerful Fast, Simple, secure PHP framework。 This is the best practical project using NovaPHP framework.
+NovaFrame is a lightweight Powerful Fast, Simple, secure PHP framework。 This is the best practical project using NovaFrame framework.
 
 NovaFrame 是一款轻量级强大，快速，简单，安全的php框架，这是NovaFrame框架的最佳实践使用项目。
 
