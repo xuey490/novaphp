@@ -434,3 +434,9 @@ if (!function_exists('renders')) {
         return $tpl->fetch($template);
     }
 }
+
+// 事件分发函数
+function EventDispatch(object $event): object
+{
+    return app(\Framework\Event\Dispatcher::class)->dispatch($event);
+}

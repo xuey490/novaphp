@@ -8,6 +8,7 @@ use Framework\Event\ListenerInterface;
 
 class LogUserLogin implements ListenerInterface
 {
+	//监听器subscribedEvents
     public function subscribedEvents(): array
     {
         return [
