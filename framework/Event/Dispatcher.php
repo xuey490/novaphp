@@ -4,7 +4,6 @@ namespace Framework\Event;
 
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\EventDispatcher\StoppableEventInterface;
-#use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 
@@ -30,7 +29,7 @@ class Dispatcher implements EventDispatcherInterface
     }
 
     /**
-     * 批量注册实现了 ListenerInterface 的类
+     * 批量注册实现了 ListenerInterface 的类 & subscribedEvents监听器
      */
     public function addSubscriber(ListenerInterface $subscriber): void
     {
@@ -48,6 +47,18 @@ class Dispatcher implements EventDispatcherInterface
     public function dispatch(object $event): object
     {
         $eventClass = get_class($event);
+		
+		
+
+		//echo "🔍 Dispatching event: $eventClass\n";
+
+		$registeredEvents = array_keys($this->listeners);
+		//echo "📦 Registered event types: " . implode(', ', $registeredEvents) . "\n";
+
+		if (!isset($this->listeners[$eventClass])) {
+		//	echo "⚠️ No listeners found for this event!\n";
+		}
+
 
         // 收集所有匹配的监听器
         $allListeners = $this->getListenersForEvent($event);
