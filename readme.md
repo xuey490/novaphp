@@ -2,17 +2,16 @@
 
 
 
-  [![logo](https://raw.githubusercontent.com/xuey490/novaphp/refs/heads/main/mmexport1761113888445.png"logo")](https://github.com/xuey490/framework "logo")
-
+[![](https://raw.githubusercontent.com/xuey490/novaphp/refs/heads/main/mmexport1761113888445.png)](https://github.com/xuey490/project)
 
 
 ## 简介:
-NovaPHP is a lightweight Powerful Fast, Simple, secure PHP framework。 This is the best practical project using NovaPHP framework.
+NovaFrame is a lightweight Powerful Fast, Simple, secure PHP framework。 This is the best practical project using NovaPHP framework.
 
-NovaPHP 是一款轻量级强大，快速，简单，安全的php框架，这是novaphp框架的最佳实践使用项目。
+NovaFrame 是一款轻量级强大，快速，简单，安全的php框架，这是novaphp框架的最佳实践使用项目。
 
 ## 使用文档
-强烈推荐Zread.Ai，感谢他们提供项目文档分析生成。https://zread.ai/xuey490/novaphp
+强烈推荐Zread.Ai，感谢他们提供项目文档分析生成。https://zread.ai/xuey490/project
 
 ## 核心特性
 🚀 性能与安全
