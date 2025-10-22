@@ -48,6 +48,18 @@ class Dispatcher implements EventDispatcherInterface
     public function dispatch(object $event): object
     {
         $eventClass = get_class($event);
+		
+		
+
+		//echo "🔍 Dispatching event: $eventClass\n";
+
+		$registeredEvents = array_keys($this->listeners);
+		//echo "📦 Registered event types: " . implode(', ', $registeredEvents) . "\n";
+
+		if (!isset($this->listeners[$eventClass])) {
+		//	echo "⚠️ No listeners found for this event!\n";
+		}
+
 
         // 收集所有匹配的监听器
         $allListeners = $this->getListenersForEvent($event);
