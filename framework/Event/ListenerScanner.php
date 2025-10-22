@@ -113,9 +113,9 @@ class ListenerScanner
 			}
 
 			// 可选：如果你仍然想用接口过滤，可以加上（但目前你没用，所以可选）
-			// if (!$ref->implementsInterface(\Framework\Event\ListenerInterface::class)) {
-			//     continue;
-			// }
+			if (!$ref->implementsInterface(\Framework\Event\ListenerInterface::class)) {
+			     continue;
+			}
 
 			$subscribers[] = $className;
 		}
