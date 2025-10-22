@@ -20,6 +20,8 @@ use Valitron\Validator;
 return function (ContainerConfigurator $configurator) {
     $services = $configurator->services();
 
+
+
     // 默认配置
     $services
         ->defaults()
@@ -383,6 +385,24 @@ return function (ContainerConfigurator $configurator) {
 	// 注册validate 工厂类
     $services->set(\Framework\Validation\ThinkValidatorFactory::class)
         ->public();
+
+
+	//注册事件分发
+    // 注册 Dispatcher
+    $services->set(\Framework\Event\Dispatcher::class)
+        ->public()
+        ->arg('$container', service('service_container')); // ✅ 显式注入容器自身
+
+
+	//批量注册事件
+	$services->load('App\\Listeners\\', '../app/Listeners/**/*.php')
+		->autowire()      
+		->autoconfigure() 
+		->public(); 
+
+
+
+
 
 	// 注册thinkphp validate
     $services->set('validate', \think\Validate::class)
