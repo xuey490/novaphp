@@ -3,7 +3,9 @@
 
 namespace App\Events;
 
-class UserLoginEvent
+use Framework\Event\EventInterface;
+
+class UserLoginEvent implements EventInterface
 {
     public function __construct(
         public object $user,      // 例如用户模型
