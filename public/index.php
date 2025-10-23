@@ -12,6 +12,7 @@ if (file_exists(BASE_PATH . '/vendor/autoload.php')) {
 } else {
     die('Composer autoload file not found. Please run "composer install".');
 }
+use Framework\Core\Framework;
 
 // 检查并引入框架辅助函数
 $helpersFile = BASE_PATH . '/framework/helpers.php';
@@ -29,13 +30,11 @@ if (file_exists($appFunctionsFile)) {
     die("App functions file not found: $appFunctionsFile");
 }
 
-// 启动框架
-if (class_exists('\Framework\Core\Framework')) {
-    $framework = new \Framework\Core\Framework();
-    $framework->run();
-} else {
-    die('Framework core class not found.');
-}
+// 启动框架 （通过单例方法获取实例）
+$app = Framework::getInstance();
+$app->run();
+
+
 
 // 假设这是您加载路由的代码
 /*
