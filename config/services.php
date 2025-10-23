@@ -393,7 +393,7 @@ return function (ContainerConfigurator $configurator) {
         ->public()
         ->arg('$container', service('service_container')); // ✅ 显式注入容器自身
 
-
+	 
 	//批量注册事件
 	$services->load('App\\Listeners\\', '../app/Listeners/**/*.php')
 		->autowire()      
