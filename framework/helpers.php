@@ -347,43 +347,7 @@ function get_cache_instance(): TagAwareAdapter
 }
 
 
-// 验证器
-if (!function_exists('validator')) {
-    function validator(array $data, array $rules, string $lang = 'en'): array
-    {
-        // 尝试从容器获取工厂
-        if (function_exists('getService')) {
-            /** @var ValidatorFactory $factory */
-            $factory = getService(\Framework\Validation\ValidatorFactory::class);
-            $v = $factory->create($data, array_keys($rules), $lang);
-        } else {
-            // 回退：直接实例化（适用于测试或非容器环境）
-            Validator::lang($lang);
-            $v = new Validator($data, array_keys($rules));
-        }
 
-        // 解析规则（支持字符串或数组）
-        foreach ($rules as $field => $ruleList) {
-            if (is_string($ruleList)) {
-                $ruleList = explode('|', $ruleList);
-            }
-
-            foreach ($ruleList as $rule) {
-                if (is_string($rule)) {
-                    if (strpos($rule, ':') !== false) {
-                        [$method, $param] = explode(':', $rule, 2);
-                        $v->rule($method, $field, $param);
-                    } else {
-                        $v->rule($rule, $field);
-                    }
-                }
-            }
-        }
-
-        $v->validate();
-        return $v->errors();
-    }
-}
 
 /**
  * 数据验证助手函数
