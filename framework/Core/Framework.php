@@ -173,10 +173,12 @@ class Framework
 
         // 4. 从容器获取日志服务
         $this->logger = $this->container->get('log');
+		/*
         $this->logger->info('Framework initialized successfully', [
             'base_path' => BASE_PATH,
             'env' => config('app.env'),
         ]);
+		*/
     }
 
     /**
