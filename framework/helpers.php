@@ -192,6 +192,7 @@ function env($key, $default = null)
 }
 
 if (! function_exists('config')) {
+
     function config(?string $key = null, $default = null)
     {
         static $config = null;
@@ -220,6 +221,9 @@ if (! function_exists('config')) {
     }
 }
 
+	
+
+
 function generateUuid(): string
 {
     // 使用 ramsey/uuid
@@ -244,14 +248,41 @@ function current_locale(): string
     return app('translator')->getLocale();
 }
 
-if (! function_exists('view')) {
+
+if (!function_exists('view')) {
+    /**
+     * 渲染 Twig 模板（简化版，兼容现有逻辑）
+     * @param string $template 模板路径（支持不带后缀，自动补充 .html.twig）
+     * @param array $data 模板变量
+     * @return string 渲染后的 HTML
+     * @throws \RuntimeException 模板渲染失败时抛出异常
+     */
     function view(string $template, array $data = []): string
     {
-        $twig     = app('view');
-        $template = str_ends_with($template, '.html.twig') ? $template : $template . '.html.twig';
-        return $twig->render($template, $data);
+        try {
+            // 1. 从容器获取 Twig 实例（确保容器中已注册 'view' 服务为 Twig\Environment）
+            $twig = app('view');
+            
+            // 2. 自动补充模板后缀（兼容传入 'errors/debug' 或 'errors/debug.html.twig'）
+            if (!str_ends_with($template, '.html.twig')) {
+                $template .= '.html.twig';
+            }
+            
+            // 3. 渲染模板（传递变量，Twig 会自动解析 {{ 变量名 }}）
+            return $twig->render($template, $data);
+        } catch (\Twig\Error\LoaderError $e) {
+            throw new \RuntimeException("模板文件未找到：{$template}（错误：{$e->getMessage()}）", 0, $e);
+        } catch (\Twig\Error\RuntimeError $e) {
+            throw new \RuntimeException("模板渲染运行时错误：{$e->getMessage()}", 0, $e);
+        } catch (\Twig\Error\SyntaxError $e) {
+            throw new \RuntimeException("模板语法错误（行 {$e->getLine()}）：{$e->getMessage()}", 0, $e);
+        } catch (\Exception $e) {
+            throw new \RuntimeException("模板渲染失败：{$e->getMessage()}", 0, $e);
+        }
     }
 }
+
+
 
 // 缓存助手函数
 if (! function_exists('cache_get')) {
