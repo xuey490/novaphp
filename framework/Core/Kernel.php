@@ -47,33 +47,23 @@ class Kernel
             return; // 防止重复启动
         }
 
-        // 1. 编译容器（确保服务定义生效）
-        //$this->container->compile();
-
-        // 2. 设置全局容器入口（供助手函数使用）
+        // 1. 设置全局容器入口（供助手函数使用）
         App::setContainer($this->container);
 		
         // $debug = app('config')->get('app.debug', false);
         //dump(app()->getServiceIds()); // 查看所有服务 ID
 		
-		// 3. 初始化时区（从配置获取）
+		// 2. 初始化时区（从配置获取）
         $timezone = app('config')->get('app.time_zone', 'UTC');
         date_default_timezone_set($timezone);
 
-        // 4. 初始化Cookie配置（强制检查安全密钥）
+        // 3. 初始化Cookie配置（强制检查安全密钥）
         $this->initCookie();
 
-        // 5. 注册事件监听器
-        //$this->registerEventListeners();
-		
-		$dispatcher = $this->container->get(\Framework\Event\Dispatcher::class);
-		$scanner = new \Framework\Event\ListenerScanner($this->container->get(\Framework\Cache\CacheFactory::class));
+        // 4. 注册事件监听器
+        $this->registerEventListeners();
 
-		foreach ($scanner->getSubscribers() as $subscriberClass) {
-			$dispatcher->addSubscriber($this->container->get($subscriberClass));
-		}
-
-        // 6. 设置异常处理机制
+        // 5. 设置异常处理机制
         $this->setupExceptionHandling();
 
         $this->booted = true;
