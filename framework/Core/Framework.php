@@ -430,7 +430,6 @@ class Framework
         $statusCode = $e instanceof \Framework\Core\Exception\Handler 
             ? $e->getStatusCode() 
             : Response::HTTP_INTERNAL_SERVER_ERROR;
-			
 
         // 开发环境显示详细错误，生产环境显示友好提示
 		// 准备模板所需的所有变量（直接传递具体值，不依赖模板函数）
@@ -459,13 +458,12 @@ class Framework
 		
 		// 开发环境渲染调试模板
 		if (config('app.debug')) {
-
 			$content = view('errors/debug.html.twig', $templateVars);
 		} else {
 			$content = view('errors/500.html.twig', [
 				'status_code' => $statusCode,
 				'status_text' => Response::$statusTexts[$statusCode] ?? 'Server Error',
-				'message' => 'An unexpected error occurred. Please try again later.',
+				'message' => 'An unexpected error occurred. Please try again later. 程序发生错误，请稍后再试！',
 			]);
 		}
 
