@@ -28,7 +28,8 @@ class LogUserLogin implements ListenerInterface
 
     public function handleLoggedIn(UserLoggedIn $event): void
     {
-		echo "✅ handleLoggedIn triggered User: {$event->userId}\r\n<br>";
+				//print_r($event);
+				echo "✅ handleLoggedIn triggered User: {$event->userId}\r\n<br>";
         app('log')->info("用户登录: ID={$event->userId}, IP={$event->ip} ");
     }
 	

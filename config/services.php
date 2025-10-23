@@ -130,6 +130,10 @@ return function (ContainerConfigurator $configurator) {
 	$services->set('exception', \Framework\Core\Exception\Handler::class)
 		->autowire()
 		->public();	
+	$services->set(\Framework\Core\Exception\Handler::class)
+		->autowire()
+		->public();		
+			
 			
 		
 	// 定义缓存管理器服务（单例）

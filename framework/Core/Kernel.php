@@ -8,7 +8,7 @@ declare(strict_types=1);
  * @link     https://github.com/xuey490/novaphp
  * @license  https://github.com/xuey490/novaphp/blob/main/LICENSE
  *
- * @Filename: %filename%
+ * @Filename: Kernel.php
  * @Date: 2025-10-16
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
@@ -16,94 +16,151 @@ declare(strict_types=1);
 
 namespace Framework\Core;
 
+use Framework\Config\Config;
+use Framework\Event\Dispatcher;
+use Framework\Event\ListenerScanner;
+use Framework\Core\Exception\Handler as ExceptionHandler;
+use Framework\Utils\Cookie;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-
-// 异常处理
 
 class Kernel
 {
-    protected ?ContainerInterface $container = null;
-    // protected $container;
+    private ContainerInterface $container;
+    private bool $booted = false;
 
     public function __construct(ContainerInterface $container)
     {
+        // 确保容器是可编译的（Symfony ContainerBuilder）
+        if (!$container instanceof ContainerInterface) {
+            throw new \InvalidArgumentException('容器必须是 ContainerInterface 实例');
+        }
         $this->container = $container;
     }
 
     /**
-     * 启动内核：构建并编译容器，载入异常类，并设置全局 App 容器.
+     * 启动内核：初始化核心服务、注册事件、设置异常处理
      */
     public function boot(): void
     {
-        date_default_timezone_set(config('app.time_zone'));
-        /* 在容器编译前 注册,要在调用前进行编译 $containerBuilder->compile() */
-        // 在容器构建阶段（使用 Symfony ContainerBuilder）
-        /*
-                // 或者用定义方式（推荐）
-                $this->container->register(\Framework\Config\ConfigService::class)
-                    ->setPublic(true);
+        if ($this->booted) {
+            return; // 防止重复启动
+        }
 
-                $this->container->register('exception', \Framework\Core\Exception\Handler::class)
-                    ->setArguments([$this->debug])
-                    ->setPublic(true)
-                    ->setShared(true); // 默认就是 singleton
-                */
-
-        // ✅ 设置全局 App 容器（你的助手函数依赖它）
+        // 1. 设置全局容器入口（供助手函数使用）
         App::setContainer($this->container);
-
-        // $debug = app('config')->get('app.debug', false);
-        # dump(app()->getServiceIds()); // 查看所有服务 ID
-
-        // 设置全局异常处理器
 		
-		//事件触发
-		$dispatcher = $this->container->get(\Framework\Event\Dispatcher::class);
-		$scanner = new \Framework\Event\ListenerScanner($this->container->get(\Framework\Cache\CacheFactory::class));
+        // $debug = app('config')->get('app.debug', false);
+        //dump(app()->getServiceIds()); // 查看所有服务 ID
+		
+		// 2. 初始化时区（从配置获取）
+        $timezone = app('config')->get('app.time_zone', 'UTC');
+        date_default_timezone_set($timezone);
 
-		foreach ($scanner->getSubscribers() as $subscriberClass) {
-			$dispatcher->addSubscriber($this->container->get($subscriberClass));
-		}
+        // 3. 初始化Cookie配置（强制检查安全密钥）
+        $this->initCookie();
 
+        // 4. 注册事件监听器
+        $this->registerEventListeners();
 
-        set_exception_handler(function (\Throwable $e) {
-            $handler = app('exception');
-            $handler->report($e);
-            $handler->render($e);
+        // 5. 设置异常处理机制
+        $this->setupExceptionHandling();
+
+        $this->booted = true;
+    }
+
+    /**
+     * 初始化Cookie配置（强化安全校验）
+     */
+    private function initCookie(): void
+    {
+        $config = [
+            'domain' => app('config')->get('cookie.domain', ''),
+            'secure' => app('config')->get('app.env') === 'production', // 生产环境强制HTTPS
+            'httponly' => true,
+            'samesite' => app('config')->get('cookie.samesite', 'lax'),
+            'secret' => app('config')->get('cookie.secret'),
+            'encrypt' => app('config')->get('cookie.encrypt', true),
+        ];
+
+        // 强制检查Cookie密钥（安全红线）
+        if (empty($config['secret'])) {
+            throw new \RuntimeException('请在配置文件中设置 cookie.secret（安全密钥）');
+        }
+
+        Cookie::setup($config);
+    }
+
+    /**
+     * 注册事件监听器（基于扫描的方式）
+     */
+    private function registerEventListeners(): void
+    {
+        $dispatcher = $this->container->get(Dispatcher::class);
+        $cache = $this->container->get(\Framework\Cache\CacheFactory::class); // 从容器获取缓存服务
+
+        // 扫描并注册所有事件订阅者
+        $scanner = new ListenerScanner($cache);
+        foreach ($scanner->getSubscribers() as $subscriberClass) {
+            // 从容器获取订阅者实例（支持依赖注入）
+            $subscriber = $this->container->get($subscriberClass);
+            $dispatcher->addSubscriber($subscriber);
+        }
+    }
+
+    /**
+     * 设置异常处理机制（统一接管错误与异常）
+     */
+    private function setupExceptionHandling(): void
+    {
+        // 1. 注册异常处理器
+        $exceptionHandler = app('exception');// $this->container->get(ExceptionHandler::class);
+        set_exception_handler(function (\Throwable $e) use ($exceptionHandler) {
+            $exceptionHandler->report($e);
+            $exceptionHandler->render($e);//->send();
+            //exit(1); // 异常后终止程序
         });
 
-        // 捕获 PHP 错误（如 notice, warning）
+        // 2. 注册错误处理器（将错误转为异常）
         set_error_handler(function ($severity, $message, $file, $line) {
+            // 忽略非用户级错误（如E_STRICT）
+            if (!(error_reporting() & $severity)) {
+                return false;
+            }
             throw new \ErrorException($message, 0, $severity, $file, $line);
         });
 
-        // 捕获致命错误（PHP 7+）
-        register_shutdown_function(function () {
+        // 3. 注册致命错误处理器
+        register_shutdown_function(function () use ($exceptionHandler) {
             $error = error_get_last();
             if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
                 $e = new \ErrorException(
-                    $error['message'] ?? 'Fatal error',
+                    $error['message'] ?? '致命错误',
                     0,
                     $error['type'] ?? E_ERROR,
-                    $error['file'] ?? 'unknown',
+                    $error['file'] ?? '未知文件',
                     $error['line'] ?? 0
                 );
-                $handler = app('exception');
-                $handler->report($e);
-                $handler->render($e);
+                $exceptionHandler->report($e);
+                $exceptionHandler->render($e)->send();
+                exit(1);
             }
         });
     }
 
     /**
-     * 获取服务容器.
+     * 获取容器（修正返回类型）
      */
-    public function getContainer(): ContainerBuilder
+    public function getContainer(): ContainerInterface
     {
-        if ($this->container === null) {
-            $this->boot();
-        }
-
         return $this->container;
+    }
+
+    /**
+     * 检查内核是否已启动
+     */
+    public function isBooted(): bool
+    {
+        return $this->booted;
     }
 }

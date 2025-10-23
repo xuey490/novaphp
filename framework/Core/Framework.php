@@ -8,7 +8,7 @@ declare(strict_types=1);
  * @link     https://github.com/xuey490/novaphp
  * @license  https://github.com/xuey490/novaphp/blob/main/LICENSE
  *
- * @Filename: %filename%
+ * @Filename: Framework.php
  * @Date: 2025-10-16
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
@@ -19,156 +19,45 @@ namespace Framework\Core;
 use Framework\Config\ConfigLoader;
 use Framework\Container\Container;
 use Framework\Middleware\MiddlewareDispatcher;
+use Framework\Core\AttributeRouteLoader;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\Request; // 中间件调度器
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Controller\ArgumentResolver;
 use Symfony\Component\Routing\RouteCollection;
 use think\facade\Db;
 
-# use Framework\Annotations\AnnotationRouteLoader
-
 class Framework
 {
-    // 控制器基础配置（可从配置文件读取，此处简化为常量）
-    //private const CONTROLLER_DIR = __DIR__ . '/../../app/Controllers';
+    // 核心路径常量（可通过配置覆盖）
     private const CONTROLLER_DIR = BASE_PATH . '/app/Controllers';
-
     private const CONTROLLER_NAMESPACE = 'App\Controllers';
-
     private const ROUTE_CACHE_FILE = BASE_PATH . '/storage/cache/routes.php';
-
-    // 添加数据库配置文件常量
     private const DATABASE_CONFIG_FILE = BASE_PATH . '/config/database.php';
-
-    protected Kernel $kernel;
+    private const DIR_PERMISSION = 0755; // 目录默认权限
 
     private static ?Framework $instance = null;
-
-    private Request $request; // ← 新增
-
-    private Container $container;
-
+    private Request $request;
+    private ContainerInterface $container;
     private Router $router;
-
-    private $logger;
-
     private MiddlewareDispatcher $middlewareDispatcher;
+    private Kernel $kernel;
+    private mixed $logger;
 
-    public function __construct()
+    /**
+     * 单例模式：禁止外部实例化
+     */
+    private function __construct()
     {
-		
-		if (!defined('BASE_PATH')) {
-			define('BASE_PATH', realpath(dirname(__DIR__.'/../../../')));
-		}
-		
-		// 需要检测的目录列表
-		$dirs = [
-			BASE_PATH . '/storage/cache',
-			BASE_PATH . '/storage/logs',
-			BASE_PATH . '/storage/view'
-		];
-
-		// 循环检测并创建目录
-		foreach ($dirs as $dir) {
-			// 目录不存在且创建失败时抛出错误（可选，根据需求调整）
-			if (!is_dir($dir) && !mkdir($dir, 0755, true) && !is_dir($dir)) {
-				throw new RuntimeException(sprintf('无法创建目录: %s', $dir));
-			}
-		}
-		
-        // 0. 加载配置
-        $configLoader = new ConfigLoader(BASE_PATH . '/config');
-        $globalConfig = $configLoader->loadAll();
-
-        // 1. 初始化DI容器（核心：后续所有依赖从这里获取）
-        Container::init(); // 加载服务配置
-        $this->container = Container::getInstance();
-
-        // 示例
-        // $loggers = $this->container->get(\Framework\Log\LoggerService::class);
-        // $loggers->info('Container loaded successfully!');
-
-        $this->kernel = new Kernel($this->container);
-        $this->kernel->boot(); // <-- 容器在此时初始化，App::setContainer() 被调用
-
-        // 3. 初始化数据库ORM
-        $this->initORM();
-
-        // 4. 初始化日志服务
-        $this->logger = app('log');
-
-        // 5. 加载所有路由（手动+注解）
-        $allRoutes = $this->loadAllRoutes();
-
-
-        // 6. 加载中间件调度器
-        $this->middlewareDispatcher = new MiddlewareDispatcher($this->container);
-
-        // 7. 初始化路由和中间件调度器
-        $this->router = new Router(
-            $allRoutes,
-            $this->container,	// 或者new Container()
-            self::CONTROLLER_NAMESPACE
-        );
+        $this->initializeBasePath();
+        $this->createRequiredDirs();
+        $this->initializeConfigAndContainer();
+        $this->initializeDependencies();
     }
 
     /**
-     * 框架入口：完整调度流程.
+     * 单例模式：获取实例
      */
-    public function run()
-    {
-        $start         = microtime(true);
-        $this->request = Request::createFromGlobals();
-        $request       = $this->request;
-
-        try {		
-            // 1. 路由匹配
-            $route = $this->router->match($request);
-
-            if (! $route) {
-                $response = $this->handleNotFound();
-                $this->logger->logRequest($request, $response, microtime(true) - $start);
-                $response->send();
-                return;
-            }
-
-            // 彩蛋处理
-            if ($route['controller'] === '__FrameworkVersionController__' && $route['method'] === '__showVersion__') {
-                $response = EasterEgg::getResponse();
-                $response->send();
-                exit;
-            }
-            if ($route['controller'] === '__FrameworkTeamController__' && $route['method'] === '__showTeam__') {
-                $response = EasterEgg::getTeamResponse();
-                $response->send();
-                exit;
-            }
-
-            // 绑定路由
-            $request->attributes->set('_route', $route);
-
-            // 执行中间件 + 控制器
-            $response = $this->middlewareDispatcher->dispatch($request, function ($req) use ($route) {
-                return $this->callController($route);
-            });
-        } catch (\Throwable $e) {
-            // 🔥 记录异常（使用 Symfony Request）
-            $this->logger->logException($e, $request);
-
-            // 返回友好错误响应
-            $response = $this->handleException($e);
-        }
-
-        // 统一日志记录（包括异常情况）
-        $this->logger->logRequest($request, $response, microtime(true) - $start);
-
-        $response->send();
-    }
-
-    /*
-    单例模式，实例化
-    */
     public static function getInstance(): Framework
     {
         if (self::$instance === null) {
@@ -177,154 +66,164 @@ class Framework
         return self::$instance;
     }
 
-    // ✅ 对外提供容器
+    /**
+     * 框架入口：完整调度流程
+     */
+    public function run(): void
+    {
+        $start = microtime(true);
+        $this->request = Request::createFromGlobals();
+
+        try {
+            // 1. 路由匹配
+            $route = $this->router->match($this->request);
+            if (!$route) {
+                $response = $this->handleNotFound();
+                $this->logRequestAndResponse($this->request, $response, $start);
+                $response->send();
+                return;
+            }
+
+            // 2. 彩蛋处理
+            if ($this->isEasterEggRoute($route)) {
+                $response = $this->handleEasterEgg($route);
+                $this->logRequestAndResponse($this->request, $response, $start);
+                $response->send();
+                return;
+            }
+
+            // 3. 绑定路由到请求
+            $this->request->attributes->set('_route', $route);
+			
+			// 4. 加载中间件调度器
+			//$this->middlewareDispatcher = new MiddlewareDispatcher($this->container);
+
+            // 5. 执行中间件 + 控制器
+            $response = $this->middlewareDispatcher->dispatch(
+                $this->request,
+                fn(Request $req) => $this->callController($route)
+            );
+        } catch (\Throwable $e) {
+            // 记录异常并返回错误响应
+            $this->logger->logException($e, $this->request);
+            $response = $this->handleException($e);
+        }
+
+        // 统一日志记录
+        $this->logRequestAndResponse($this->request, $response, $start);
+        $response->send();
+    }
+
+    /**
+     * 获取容器（对外提供接口）
+     */
     public function getContainer(): ContainerInterface
     {
         return $this->container;
     }
 
-    // 可选：提供访问容器或内核的接口
-    public function getKernel(): Kernel
-    {
-        return $this->kernel;
-    }
-
-    // 可选： 实现Kernel的getContainer，使用别名
-    public function get_Container()
-    {
-        return $this->kernel->getContainer();
-    }
-
     /**
-     * 初始化 ThinkORM 数据库配置.
+     * 初始化 BASE_PATH
      */
-    private function initORM()
+    private function initializeBasePath(): void
     {
-        // 检查数据库配置文件是否存在
-        if (! file_exists(self::DATABASE_CONFIG_FILE)) {
-            throw new \Exception('Database configuration file not found: ' . self::DATABASE_CONFIG_FILE);
-        }
-        // 加载数据库配置
-        $config = require self::DATABASE_CONFIG_FILE;
-        // 验证配置格式
-        if (! isset($config['connections']) || ! is_array($config['connections'])) {
-            throw new \Exception('Invalid database configuration format');
-        }
-
-        // 初始化 ThinkORM
-        Db::setConfig($config);
-        // 可选：在开发环境下开启 SQL 监听（用于调试）
-        if (defined('APP_DEBUG') && APP_DEBUG) {
-            Db::listen(function ($sql, $time, $explain) {
-                // 可以记录到日志或输出到控制台
-                $this->logger->info("SQL: {$sql} [Time: {$time}s]");
-            });
+        if (!defined('BASE_PATH')) {
+            // 简化路径计算：基于当前文件位置定位项目根目录
+            define('BASE_PATH', realpath(dirname(__DIR__, 3)));
         }
     }
 
+    /**
+     * 创建必需目录（支持权限配置）
+     */
+    private function createRequiredDirs(): void
+    {
+        $dirs = [
+            BASE_PATH . '/storage/cache',
+            BASE_PATH . '/storage/logs',
+            BASE_PATH . '/storage/view',
+        ];
 
-	private function callController(array $route): Response
-	{
-		$controllerClass = $route['controller'];
-		$method          = $route['method'];
-		$routeParams     = $route['params'] ?? [];
+        // 从配置获取目录权限（默认 0755）
+        $permission = config('app.dir_permission', self::DIR_PERMISSION);
 
-		// 1. 从容器获取控制器实例
-		$controller = $this->container->get($controllerClass);
-
-		// 2. 使用反射分析方法参数
-		$reflection = new \ReflectionMethod($controllerClass, $method);
-		$parameters = $reflection->getParameters();
-
-		// 3. 处理参数并进行类型转换
-		foreach ($parameters as $param) {
-			$type = $param->getType();
-			$paramName = $param->getName();
-			$value = null;
-
-			// 检查参数是否有值（路径参数优先于查询参数）
-			if (isset($routeParams[$paramName])) {
-				$value = $routeParams[$paramName];
-			} elseif ($this->request->query->has($paramName)) {
-				$value = $this->request->query->get($paramName);
-			}
-
-			// 如果有值且需要类型转换
-			if ($value !== null && $type && $type->isBuiltin()) {
-				$typeName = $type->getName();
-				
-				// 根据目标类型进行转换
-				switch ($typeName) {
-					case 'int':
-						$value = (int)$value;
-						break;
-					case 'float':
-						$value = (float)$value;
-						break;
-					case 'bool':
-						// 特殊处理布尔值，确保 '0' 和 'false' 被正确转换
-						$value = filter_var($value, FILTER_VALIDATE_BOOLEAN);
-						break;
-					// 字符串类型不需要转换，保持原样
-					case 'string':
-					default:
-						break;
-				}
-			}
-
-			// 如果是对象类型（非内置类型），交给 ArgumentResolver 自动注入，跳过
-			if ($type && !$type->isBuiltin()) {
-				continue;
-			}
-
-			// 将处理后的值存入请求属性
-			if ($value !== null) {
-				$this->request->attributes->set($paramName, $value);
-			}
-		}
-
-		// 4. 使用 Symfony 的 ArgumentResolver 解析所有参数（包括 Request 等）
-		$argumentResolver = new ArgumentResolver();
-		$arguments        = $argumentResolver->getArguments($this->request, [$controller, $method]);
-
-		// 5. 调用控制器方法
-		$response = $controller->{$method}(...$arguments);
-
-		// 6. 确保返回 Response 对象
-		if (!$response instanceof Response) {
-			if (is_array($response) || is_object($response)) {
-				$response = new Response(
-					json_encode($response, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-					200,
-					['Content-Type' => 'application/json']
-				);
-			} else {
-				$response = new Response((string)$response);
-			}
-		}
-
-		return $response;
-	}
+        foreach ($dirs as $dir) {
+            if (!is_dir($dir) && !mkdir($dir, $permission, true) && !is_dir($dir)) {
+                throw new \RuntimeException(sprintf('无法创建目录: %s', $dir));
+            }
+        }
+    }
 
     /**
-     * 加载所有路由（手动路由 + 注解路由），支持缓存.
+     * 初始化配置和容器（核心流程）
+     */
+    private function initializeConfigAndContainer(): void
+    {
+        // 1. 加载配置
+        $configLoader = new ConfigLoader(BASE_PATH . '/config');
+        $globalConfig = $configLoader->loadAll();
+
+        // 2. 初始化容器并注入配置
+        Container::init();
+        $this->container = Container::getInstance();
+
+        // 3. 启动内核
+        $this->kernel = new Kernel($this->container);
+        $this->kernel->boot();
+
+        // 4. 从容器获取日志服务
+        $this->logger = $this->container->get('log');
+        $this->logger->info('Framework initialized successfully', [
+            'base_path' => BASE_PATH,
+            'env' => config('app.env'),
+        ]);
+    }
+
+    /**
+     * 初始化所有依赖组件
+     */
+    private function initializeDependencies(): void
+    {
+        // 1. 初始化数据库ORM
+        $this->initORM();
+
+        // 2. 加载路由（支持缓存）
+        $allRoutes = $this->loadAllRoutes();
+
+        // 3. 初始化中间件调度器
+        //$this->middlewareDispatcher = $this->container->get(MiddlewareDispatcher::class);
+		$this->middlewareDispatcher = new MiddlewareDispatcher($this->container);
+
+        // 4. 初始化路由
+        $this->router = new Router(
+            $allRoutes,
+            $this->container,
+            self::CONTROLLER_NAMESPACE
+        );
+    }
+
+    /**
+     * 加载所有路由（手动+注解，支持环境区分的缓存）
      */
     private function loadAllRoutes(): RouteCollection
     {
-        // 检查路由缓存
-        if (file_exists(self::ROUTE_CACHE_FILE)) {
+        $isProduction = config('app.env') === 'prod';
+
+        // 生产环境且缓存存在时，直接加载缓存
+        if ($isProduction && file_exists(self::ROUTE_CACHE_FILE)) {
             $serializedRoutes = file_get_contents(self::ROUTE_CACHE_FILE);
-            $routes           = unserialize($serializedRoutes);
+            $routes = unserialize($serializedRoutes);
             if ($routes instanceof RouteCollection) {
+                $this->logger->info('Loaded routes from cache');
                 return $routes;
             }
-            // 缓存损坏，删除旧缓存
+            $this->logger->warning('Route cache is invalid, regenerating');
             unlink(self::ROUTE_CACHE_FILE);
         }
 
-        // 1. 加载手动路由（从 config/routes.php 读取）
+        // 1. 加载手动路由
         $manualRoutes = require BASE_PATH . '/config/routes.php';
-        $allRoutes    = new RouteCollection();
+        $allRoutes = new RouteCollection();
         if ($manualRoutes instanceof RouteCollection) {
             $allRoutes->addCollection($manualRoutes);
         }
@@ -336,47 +235,177 @@ class Framework
         );
         $annotatedRoutes = $attrLoader->loadRoutes();
         $allRoutes->addCollection($annotatedRoutes);
+		
 
-        /*
-        * doctrine/annotations 注解路由，遗弃 https://packagist.org/packages/doctrine/annotations
-        * composer remove doctrine/annotations
-        * 移除Framework\Annotations\下面的包文件
-        * 移除Framework\Annotations\AnnotationRouteLoader
-        * 具体测试：TestController.php
-        */
 
-        // 2. 加载注解路由（通过 AnnotationRouterLoader）
-        // $annotationLoader = new AnnotationRouteLoader(
-        //    self::CONTROLLER_DIR,
-        //    self::CONTROLLER_NAMESPACE
-        // );
-        // $annotatedRoutes = $annotationLoader->loadRoutes(); // 调用正确的方法名
-        // $allRoutes->addCollection($annotatedRoutes);
+        // 生产环境缓存路由
+        if ($isProduction) {
+            $this->cacheRoutes($allRoutes);
+        }
 
-        // 缓存合并后的路由
-        //$this->cacheRoutes($allRoutes, self::ROUTE_CACHE_FILE);
+        $this->logger->info(sprintf('Loaded %d routes (manual: %d, annotated: %d)',
+            $allRoutes->count(),
+            $manualRoutes->count() ?? 0,
+            $annotatedRoutes->count()
+        ));
 
         return $allRoutes;
     }
 
-    /*
-    404 not found
-    */
-    private function handleNotFound()
+    /**
+     * 缓存路由集合（添加序列化错误处理）
+     */
+    private function cacheRoutes(RouteCollection $routes): void
     {
-        $responseContent = view('errors/404.html.twig', [
-            'status_code' => Response::HTTP_NOT_FOUND, // 404
-            'status_text' => 'Not Found',
-            'message'     => '404 Page Not Found. Please refresh the page and try again.',
-        ]);
+        $serialized = serialize($routes);
+        if ($serialized === false) {
+            throw new \RuntimeException('Failed to serialize route collection');
+        }
 
-        return new Response($responseContent, Response::HTTP_NOT_FOUND);
+        file_put_contents(self::ROUTE_CACHE_FILE, $serialized);
+        chmod(self::ROUTE_CACHE_FILE, 0644); // 缓存文件权限只读
     }
 
-    /*
+    /**
+     * 初始化 ThinkORM
+     */
+    private function initORM(): void
+    {
+        if (!file_exists(self::DATABASE_CONFIG_FILE)) {
+            throw new \RuntimeException('Database configuration file not found: ' . self::DATABASE_CONFIG_FILE);
+        }
+
+        $config = require self::DATABASE_CONFIG_FILE;
+        if (!isset($config['connections']) || !is_array($config['connections'])) {
+            throw new \RuntimeException('Invalid database configuration format');
+        }
+
+        Db::setConfig($config);
+
+        // 开发环境开启 SQL 日志
+        if (app('config')->get('app.debug')) {
+            Db::listen(function ($sql, $time, $explain) {
+                $this->logger->info("SQL Execution", [
+                    'sql' => $sql,
+                    'time' => $time . 's',
+                    'explain' => $explain ?? [],
+                ]);
+            });
+        }
+    }
+
+    /**
+     * 调用控制器方法（优化参数解析和返回值处理）
+     */
+    private function callController(array $route): Response
+    {
+        $controllerClass = $route['controller'];
+        $method = $route['method'];
+        $routeParams = $route['params'] ?? [];
+
+        // 从容器获取控制器实例（支持依赖注入）
+        $controller = $this->container->get($controllerClass);
+
+        // 处理路径参数和查询参数的类型转换
+        $this->processRequestParameters($controllerClass, $method, $routeParams);
+
+        // 解析控制器方法参数（Symfony ArgumentResolver）
+        $argumentResolver = new ArgumentResolver();
+        $arguments = $argumentResolver->getArguments($this->request, [$controller, $method]);
+
+        // 调用控制器方法
+        $response = $controller->{$method}(...$arguments);
+
+        // 统一处理返回值
+        return $this->normalizeResponse($response);
+    }
+
+    /**
+     * 处理请求参数类型转换
+     */
+    private function processRequestParameters(string $controllerClass, string $method, array $routeParams): void
+    {
+        $reflection = new \ReflectionMethod($controllerClass, $method);
+        foreach ($reflection->getParameters() as $param) {
+            $paramName = $param->getName();
+            $type = $param->getType();
+
+            // 优先获取路径参数，其次查询参数
+            if (isset($routeParams[$paramName])) {
+                $value = $routeParams[$paramName];
+            } elseif ($this->request->query->has($paramName)) {
+                $value = $this->request->query->get($paramName);
+            } else {
+                continue; // 无参数值，跳过
+            }
+
+            // 内置类型转换
+            if ($value !== null && $type && $type->isBuiltin()) {
+                $value = $this->castValueToType($value, $type->getName());
+                $this->request->attributes->set($paramName, $value);
+            }
+        }
+    }
+
+    /**
+     * 类型转换工具方法
+     */
+    private function castValueToType(mixed $value, string $type): mixed
+    {
+        return match ($type) {
+            'int' => (int)$value,
+            'float' => (float)$value,
+            'bool' => filter_var($value, FILTER_VALIDATE_BOOLEAN),
+            'string' => (string)$value,
+            'array' => is_array($value) ? $value : explode(',', (string)$value),
+            default => $value,
+        };
+    }
+
+    /**
+     * 标准化响应格式
+     */
+    private function normalizeResponse(mixed $response): Response
+    {
+        if ($response instanceof Response) {
+            return $response;
+        }
+
+        if ($response === null) {
+            return new Response('', Response::HTTP_NO_CONTENT);
+        }
+
+        if (is_array($response) || is_object($response)) {
+            return new Response(
+                json_encode($response, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                Response::HTTP_OK,
+                ['Content-Type' => 'application/json']
+            );
+        }
+
+        return new Response((string)$response, Response::HTTP_OK);
+    }
+
+    /**
+     * 处理 404 错误
+     */
+    private function handleNotFound(): Response
+    {
+        $content = view('errors/404.html.twig', [
+            'status_code' => Response::HTTP_NOT_FOUND,
+            'status_text' => 'Not Found',
+            'message' => 'The requested page could not be found.',
+            'path' => $this->request->getPathInfo(),
+        ]);
+
+        return new Response($content, Response::HTTP_NOT_FOUND);
+    }
+
+
+    /* 遗弃
     500 错误的友好页面
     */
-    private function handleException(\Throwable $e)
+    private function handleException1(\Throwable $e): Response
     {
         // 设置HTTP响应头为500
         http_response_code(500);
@@ -392,14 +421,104 @@ class Framework
     }
 
     /**
-     * 缓存路由集合.
-     */
-    private function cacheRoutes(RouteCollection $routes, string $file)
+     * 处理异常
+     */ 
+    private function handleException(\Throwable $e): Response
     {
-        $dir = dirname($file);
-        if (! is_dir($dir)) {
-            mkdir($dir, 0777, true);
+        $statusCode = $e instanceof \Framework\Core\Exception\Handler 
+            ? $e->getStatusCode() 
+            : Response::HTTP_INTERNAL_SERVER_ERROR;
+			
+
+        // 开发环境显示详细错误，生产环境显示友好提示
+		// 准备模板所需的所有变量（直接传递具体值，不依赖模板函数）
+		$templateVars = [
+			// 异常信息
+			'exception_class' => get_class($e),
+			'exception_code' => $e->getCode(),
+			'exception_message' => $e->getMessage(),
+			'exception_file' => $e->getFile(),
+			'exception_line' => $e->getLine(),
+			'trace' => $e->getTraceAsString(),
+			'stack_frames' => count($e->getTrace()), // 堆栈帧数
+
+			// 请求信息（从当前 request 对象获取）
+			'request_method' => $this->request->getMethod(),
+			'request_uri' => $this->request->getUri(),
+			'client_ip' => $this->request->getClientIp() ?: 'unknown',
+			'request_time' => date('Y-m-d H:i:s'),
+			'user_agent' => $this->request->headers->get('User-Agent') ?: 'unknown',
+
+			// 环境信息（从容器或配置获取）
+			'php_version' => PHP_VERSION,
+			'app_env' => config('app.env'), 
+			'app_debug' => config('app.debug'), 
+		];
+		
+		// 开发环境渲染调试模板
+		if (config('app.debug')) {
+
+			$content = view('errors/debug.html.twig', $templateVars);
+		} else {
+			$content = view('errors/500.html.twig', [
+				'status_code' => $statusCode,
+				'status_text' => Response::$statusTexts[$statusCode] ?? 'Server Error',
+				'message' => 'An unexpected error occurred. Please try again later.',
+			]);
+		}
+
+        return new Response($content, $statusCode);
+    }
+
+    /**
+     * 彩蛋路由判断
+     */
+    private function isEasterEggRoute(array $route): bool
+    {
+        return (
+            ($route['controller'] === '__FrameworkVersionController__' && $route['method'] === '__showVersion__') ||
+            ($route['controller'] === '__FrameworkTeamController__' && $route['method'] === '__showTeam__')
+        );
+    }
+
+    /**
+     * 处理彩蛋响应
+     */
+    private function handleEasterEgg(array $route): Response
+    {
+        if ($route['controller'] === '__FrameworkVersionController__') {
+            return EasterEgg::getResponse();
         }
-        file_put_contents($file, serialize($routes));
+        return EasterEgg::getTeamResponse();
+    }
+
+    /**
+     * 记录请求和响应日志
+     */
+    private function logRequestAndResponse(Request $request, Response $response, float $startTime): void
+    {
+        $duration = microtime(true) - $startTime;
+        $this->logger->info('Request processed', [
+            'method' => $request->getMethod(),
+            'path' => $request->getPathInfo(),
+            'status' => $response->getStatusCode(),
+            'duration' => round($duration * 1000, 2) . 'ms', // 转换为毫秒
+            'ip' => $request->getClientIp(),
+        ]);
+    }
+
+    /**
+     * 防止克隆单例实例
+     */
+    private function __clone() {}
+
+
+    /**
+     * 防止反序列化单例实例（修正为 public 可见性）
+     */
+    public function __wakeup() 
+    {
+        // 反序列化时抛出异常，彻底禁止重建实例
+        throw new \RuntimeException('Cannot unserialize singleton');
     }
 }

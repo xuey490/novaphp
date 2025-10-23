@@ -313,7 +313,7 @@ body {
                 <div class="error-message-box">
                     <h2 class="error-message-title">Error Message</h2>
                     <p class="error-message-content">
-                        {{ exception.message }}
+                        {{ message }}
                     </p>
                 </div>
 
@@ -321,18 +321,18 @@ body {
                 <div class="error-location">
                     <div class="location-item file">
                         <h2 class="location-title">
-                            <span class="icon icon-file"></span> File
+                            <span class="icon icon-file"></span> Text
                         </h2>
                         <p class="location-content">
-                            {{ exception.file }}
+                            {{ status_text }}
                         </p>
                     </div>
                     <div class="location-item line">
                         <h2 class="location-title">
-                            <span class="icon icon-line"></span> Line
+                            <span class="icon icon-line"></span> Error Code
                         </h2>
                         <p class="location-content line-number">
-                            {{ exception.line }}
+                            {{ status_code }}
                         </p>
                     </div>
                 </div>

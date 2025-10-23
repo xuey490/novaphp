@@ -30,7 +30,7 @@ class ViewController
 
     public function welcome(): Response
     {
-        $html = $this->twig->render('home/welcome.html.twig', [
+        $html = view('home/welcome.html.twig', [
             'name'      => '访客',
             'site_name' => 'NovaPHP',
 

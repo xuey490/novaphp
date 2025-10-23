@@ -44,6 +44,15 @@ class BlogController
 		]);
 		
 	}
+	
+	
+	public function auth(Request $request): Response
+	{
+		return new Response('aaa');
+	}
+	
+	
+	
 
     public function index(): Response
     {
