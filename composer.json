@@ -40,8 +40,7 @@
         "topthink/think-orm": "^3.0",
         "topthink/think-template": "^3.0",
         "topthink/think-validate": "^3.0",
-        "twig/twig": "^3.14",
-        "vlucas/valitron": "^1.4"
+        "twig/twig": "^3.14"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.88",

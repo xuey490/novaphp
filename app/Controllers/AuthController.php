@@ -7,7 +7,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AuthController
 {
-    public function login(Request $request): Response
+    public function login(Request $request)
     {
 		
 		
@@ -41,7 +41,7 @@ class AuthController
         $dispatcher->dispatch( $event );
 		
 		
-		return new Response('');
+		return 'Login successfully';
 
 		
 		

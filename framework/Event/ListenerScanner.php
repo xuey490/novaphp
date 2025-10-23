@@ -23,121 +23,134 @@ class ListenerScanner
 {
     private string $listenerDir;
     private CacheFactory $cache;
+    private int $cacheTtl = 3600; // 1小时
+    private string $cacheKey = 'event.subscribers_with_fingerprint';
 
     public function __construct(CacheFactory $cache, string $listenerDir = null)
     {
         $this->cache = $cache;
-        $this->listenerDir = BASE_PATH.'/app/Listeners';
+        $this->listenerDir = $listenerDir ?? BASE_PATH . '/app/Listeners';
     }
 
     /**
-     * 获取所有监听器类名
+     * 获取监听器（自动缓存 + 自动刷新）
      */
-    public function getSubscribers1(): array
+    public function getSubscribers(): array
     {
-        $cacheKey = 'event_subscribers_v2';
+        // 开发环境建议禁用缓存（可选）
+        // if (APP_ENV === 'dev') {
+        //     return $this->scanAndBuild();
+        // }
 
-        //return $this->cache->set($cacheKey, 3600, function () {
-            $files = glob($this->listenerDir . '/*.php');
-            $subscribers = [];
+        if (!function_exists('cache_get') || !function_exists('cache_set')) {
+            return $this->scanAndBuild();
+        }
 
-            foreach ($files as $file) {
-                $className = '\\App\\Listeners\\' . pathinfo($file, PATHINFO_FILENAME);
-				
-                if (!class_exists($className)) {
-					echo $file; //输出也是空
-                    require_once $file;
-                }
+        // 1. 尝试从缓存读取
+        $cached = cache_get($this->cacheKey);
+        $currentFingerprint = $this->generateFingerprint();
 
-                $ref = new ReflectionClass($className);
+        // 2. 缓存命中且指纹一致 → 直接返回
+        if ($cached && is_array($cached) && ($cached['fingerprint'] ?? null) === $currentFingerprint) {
+            app('log')->info("[Event] Subscribers loaded from cache (fingerprint match).");
+            return $cached['subscribers'] ?? [];
+        }
 
-                if (!$ref->isInstantiable()) continue;
-                if (!$ref->implementsInterface(ListenerInterface::class)) continue;
+        // 3. 缓存未命中 或 指纹不一致 → 重新扫描
+        app('log')->info("[Event] Listener files changed or cache expired. Rescanning...");
+        $result = $this->scanAndBuild();
 
-                $subscribers[] = $className;
-            }
-			
-			print_r($subscribers); //数组是空的
-			
-            return $subscribers;
-        //});
+        // 4. 更新缓存
+        cache_set($this->cacheKey, [
+            'fingerprint' => $currentFingerprint,
+            'subscribers' => $result,
+        ], $this->cacheTtl);
+
+        return $result;
     }
-	
-	/**
-	 * 获取所有监听器类名
-	 */
-	public function getSubscribers(): array
-	{
-		$listenerDir = $this->listenerDir;
 
-		if (!is_dir($listenerDir)) {
-			app('log')->info("[Event] Listeners directory not found: {$listenerDir}");
-			return [];
-		}
+    /**
+     * 扫描并构建监听器列表
+     */
+    private function scanAndBuild(): array
+    {
+        $listenerDir = $this->listenerDir;
 
-		$files = glob($listenerDir . '/*.php');
-		if (!$files || !is_array($files)) {
-			app('log')->info("[Event] No PHP files found in: {$listenerDir}");
-			return [];
-		}
+        if (!is_dir($listenerDir)) {
+            app('log')->info("[Event] Listeners directory not found: {$listenerDir}");
+            return [];
+        }
 
-		$subscribers = [];
+        $files = glob($listenerDir . '/*.php');
+        if (!$files || !is_array($files)) {
+            app('log')->info("[Event] No PHP files found in: {$listenerDir}");
+            return [];
+        }
 
-		foreach ($files as $file) {
-			// ✅ 修复点：去掉开头的反斜杠！
-			$className = 'App\\Listeners\\' . pathinfo($file, PATHINFO_FILENAME);
+        $subscribers = [];
 
-			if (!class_exists($className, false)) {
-				try {
-					require_once $file;
-				} catch (\Throwable $e) {
-					app('log')->info("[Event] Failed to load listener file: {$file} - " . $e->getMessage());
-					continue;
-				}
-			}
+        foreach ($files as $file) {
+            $className = 'App\\Listeners\\' . pathinfo($file, PATHINFO_FILENAME);
 
-			if (!class_exists($className)) {
-				app('log')->info("[Event] Class not found after loading: {$className} (file: {$file})");
-				continue;
-			}
+            if (!class_exists($className, false)) {
+                try {
+                    require_once $file;
+                } catch (\Throwable $e) {
+                    app('log')->info("[Event] Failed to load listener file: {$file} - " . $e->getMessage());
+                    continue;
+                }
+            }
 
-			try {
-				$ref = new \ReflectionClass($className);
-			} catch (\ReflectionException $e) {
-				app('log')->info("[Event] Reflection failed for: {$className} - " . $e->getMessage());
-				continue;
-			}
+            if (!class_exists($className)) {
+                app('log')->info("[Event] Class not found after loading: {$className} (file: {$file})");
+                continue;
+            }
 
-			if (!$ref->isInstantiable()) {
-				continue;
-			}
+            try {
+                $ref = new \ReflectionClass($className);
+            } catch (\ReflectionException $e) {
+                app('log')->info("[Event] Reflection failed for: {$className} - " . $e->getMessage());
+                continue;
+            }
 
-			// 可选：如果你仍然想用接口过滤，可以加上（但目前你没用，所以可选）
-			if (!$ref->implementsInterface(\Framework\Event\ListenerInterface::class)) {
-			     continue;
-			}
+            if (!$ref->isInstantiable()) {
+                continue;
+            }
 
-			$subscribers[] = $className;
-		}
+            if (!$ref->implementsInterface(\Framework\Event\ListenerInterface::class)) {
+                continue;
+            }
 
-		#app('log')->info("[Event] Found subscribers: " . print_r($subscribers, true));
+            $subscribers[] = $className;
+        }
 
-		return $subscribers;
-	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+        app('log')->info("[Event] Scanned and found " . count($subscribers) . " subscribers.");
+        return $subscribers;
+    }
+
+    /**
+     * 生成监听器目录的指纹（基于文件修改时间）
+     */
+    private function generateFingerprint(): string
+    {
+        $listenerDir = $this->listenerDir;
+        if (!is_dir($listenerDir)) {
+            return md5('no_dir');
+        }
+
+        $files = glob($listenerDir . '/*.php');
+        if (!$files) {
+            return md5('no_files');
+        }
+
+        // 按文件名排序，确保顺序一致
+        sort($files);
+
+        $hashParts = [];
+        foreach ($files as $file) {
+            $hashParts[] = filemtime($file) . ':' . filesize($file); // 更健壮：mtime + size
+        }
+
+        return md5(implode('|', $hashParts));
+    }
 }

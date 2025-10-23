@@ -46,9 +46,9 @@ class HomeController
         */
 
         // Symfony缓存
-        // cache_set('user_1', ['name' => 'Alice'], 3600);
-        // $user = cache_get('user_1');
-        # print_r( $user );
+        cache_set('user_1', ['name' => 'Alice'], 3600);
+        $user = cache_get('user_1');
+        //print_r( $user );
 
         // $post = ['name' => 'Alice'];
         // cache_set('post_1', $post, 3600, ['posts', 'user_123']);
@@ -83,60 +83,26 @@ class HomeController
             count($loadedClasses)
         );
 
-        //echo $debugInfo;
+
 		
-		$data = [
-			'email' => 'invalid-email',
-			'password' => '123'
-		];
-
-		$rules = [
-			'email'    => 'required|email|lengthMin:10',
-			'password' => 'required|lengthMin:6'
-		];
-
-		$errors = validator($data, $rules, 'zh-cn');
-
-		if (!empty($errors)) {
-			// print_r($errors);
-			// 输出：['email' => ['不是有效的电子邮件地址'], 'password' => ['长度必须大于等于6']]
-		}
-		
+		// 设置 Cookie（自动签名）
 		/*
-		$data1 = [
-			'name' => '',
-			'age'  => 50,
-			'email' => 'bad-email',
-		];
+		Cookie::make('theme', 'dark', 60); // 60 分钟
 
-		$validate = new \App\Validate\User();
-		if (!$validate->check($data1)) {
-			print_r($validate->getError());
-		}
-		*/		
-		
-		
-		$PostData = [
-			'name'               => 'user_++123',
-			'email'              => 'test@example.com',
-			'age'				 => 20,
-			'password'           => '12345678',
-			'password_confirmation' => '12345679',
-			'birthday'           => '1990-05-20',
-			'start_at'           => '2025-10-18', // 今天之后
-			'phone'              => '13800138000',
-			'id_card'            => '110101199003072316',
-			'config'             => '{"debug":true}',
-		];
+		// 获取
+		$theme = Cookie::get('theme', 'light');
 
-		$validate = new \App\Validate\User();
+		// 删除
+		Cookie::forget('theme');
+
+		// 判断是否存在
+		if (Cookie::has('cookie_consent')) {
+			// ...
+		}		
+		*/
 		
-		//$validate->check($data, 'create');
-		if (!$validate->check($PostData)) {
-			 print_r($validate->getError());
-		} else {
-			// echo "验证通过！";
-		}
+
+
 		
 		//Thinkphp验证
 		$data = [
@@ -264,26 +230,28 @@ class HomeController
     }
 
     // 列举自己需要的参数
-    public function show($id)
+    public function show(int $id):Response
     {
         // 获取所有用户 => 返回数组数据或 json 响应
         $users = Admin::select()->toArray();
-        print_r($users); // 因为你框架会处理 array => json
+        //print_r($users); // 因为你框架会处理 array => json
 
-        // $id = $request->get('id');
-        // return new Response("<h1>User ID: $id</h1>");
+        $id = $request->get('id');
+        return new Response("<h1>User ID: $id</h1>");
     }
 
     // 只获取需要的参数
     public function search1(Request $request, $roleid, $name, $status) {}
 
     // 或者只获取Request对象
-    public function search2(Request $request)
+    public function search2(Request $request):Response
     {
         $roleid = $request->get('roleid');
         $name   = $request->get('name');
         $status = $request->get('status');
         // ...
+		
+		return new Response("<h1>User ID: $name</h1>");
     }
 
     // 混合使用
