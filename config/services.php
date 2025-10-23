@@ -211,9 +211,7 @@ return function (ContainerConfigurator $configurator) {
     // 加载中间件配置
     $middlewareConfig = require __DIR__ . '/../config/middleware.php';
 
-    // -----------------------------
     // 动态注册：Rate_Limit 中间件
-    // -----------------------------
 	if ($middlewareConfig['rate_limit']['enabled']) {
 
 		//限流器
@@ -227,9 +225,7 @@ return function (ContainerConfigurator $configurator) {
 			
 	}
 
-    // -----------------------------
     // 动态注册：CSRF 保护中间件 use Framework\Security\CsrfTokenManager;
-    // -----------------------------
 	// Session 必须已注册（确保你的框架已启动 session）
 	$services->set(\Framework\Security\CsrfTokenManager::class)
 		->args([
@@ -249,9 +245,7 @@ return function (ContainerConfigurator $configurator) {
             ->public(); // 如果要在 Kernel 中使用，需 public
     }
 
-    // -----------------------------
     // 动态注册：Referer 检查中间件
-    // -----------------------------
     if ($middlewareConfig['referer_check']['enabled']) {
         $services->set(\Framework\Middleware\MiddlewareRefererCheck::class)
             ->args([
@@ -265,14 +259,12 @@ return function (ContainerConfigurator $configurator) {
     }
 	
 
-    // ------------------------------
     // TWIG配置加载
-    // ------------------------------
 	$TempConfig = require dirname(__DIR__) . '/config/view.php';
 	$viewConfig = $TempConfig['Twig'];
 	$services->set(\Twig\Loader\FilesystemLoader::class)->args([$viewConfig['paths']])->public();
 	
-	//注册 AppTwigExtension 扩展
+	// 注册 AppTwigExtension 扩展
 	$services->set(\Framework\View\AppTwigExtension::class)
 		->args([
 			service(\Framework\Security\CsrfTokenManager::class),
@@ -280,7 +272,7 @@ return function (ContainerConfigurator $configurator) {
 		])
 		->public();
 	
-	//注册 markdown 服务开始
+	// 注册 markdown 服务开始
 	$services->set(\League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension::class)
 		->public(); 
 	
@@ -304,7 +296,7 @@ return function (ContainerConfigurator $configurator) {
 		->public();
 	
 	// 注册自定义 Markdown Twig 扩展
-	// 注意：这个扩展现在依赖于 MarkdownConverter 服务
+	// 它依赖于上面 MarkdownConverter 服务
 	$services->set(\Framework\View\MarkdownExtension::class)
 		->args([
 			service(\League\CommonMark\MarkdownConverter::class), // 注入 MarkdownConverter
@@ -331,14 +323,14 @@ return function (ContainerConfigurator $configurator) {
 
 	$tpTemplateConfig = $TempConfig['Think'];
 
-	// 注册 'thinkTemp' 服务，用下面的方法，更简单
+	// 1.注册 'thinkTemp' 服务，用下面的方法，更简单
 	/*
 	$services->set('thinkTemp', \think\Template::class)
 		->args([$tpTemplateConfig])
 		->public();	
 	*/
 	
-	// 第二种方法 注册thinkTemp
+	// 2.注册thinkTemp
     $parameters = $configurator->parameters();
 	
 	// 0.注册模板工厂类
@@ -373,29 +365,21 @@ return function (ContainerConfigurator $configurator) {
     $services->set(\Framework\Utils\FileUploader::class)
              ->args([$uploadConfig, service(\Framework\Utils\MimeTypeChecker::class)])->public();	
 
-	// * remove Valitron\Validator 保留代码
-    // 注册 ValidatorFactory（用于创建 Validator 实例）
-    $services->set(\Framework\Validation\ValidatorFactory::class)
-        ->public();
 
-    // （可选）注册一个别名服务，方便通过 'validator.factory' 获取
-    $services->alias('validator.factory', \Framework\Validation\ValidatorFactory::class)->public();
-	
-    $services->set('validator', \Valitron\Validator::class)
-        // 使用 factory() 方法，并指向我们的工厂类
-		->factory([service(\Framework\Validation\ValidatorFactory::class), 'create'])
-		->public(); // 允许从容器外部获取
-
-	// 注册validate 工厂类
+	// 注册ThinkValidator工厂类
     $services->set(\Framework\Validation\ThinkValidatorFactory::class)
         ->public();
+		
+	// 注册thinkphp validate
+    $services->set('validate', \think\Validate::class)
+        // 使用 factory() 方法，并指向工厂类
+		->factory([service(\Framework\Validation\ThinkValidatorFactory::class), 'create'])
+		->public(); // 允许从容器外部获取
+		
 
-
-	//注册事件分发
-    // 注册 Dispatcher
+	// 注册事件分发
     $services->set(\Framework\Event\Dispatcher::class)
-        ->public()
-        ->arg('$container', service('service_container')); // ✅ 显式注入容器自身
+        ->arg('$container', service('service_container'))->public(); // ✅ 显式注入容器自身
 
 	 
 	//批量注册事件
@@ -404,15 +388,6 @@ return function (ContainerConfigurator $configurator) {
 		->autoconfigure() 
 		->public(); 
 
-
-
-
-
-	// 注册thinkphp validate
-    $services->set('validate', \think\Validate::class)
-        // 使用 factory() 方法，并指向工厂类
-		->factory([service(\Framework\Validation\ThinkValidatorFactory::class), 'create'])
-		->public(); // 允许从容器外部获取
 	
 	//批量注册路由中间件
 	$services->load('App\\Middlewares\\', '../app/Middlewares/**/*Middleware.php')
