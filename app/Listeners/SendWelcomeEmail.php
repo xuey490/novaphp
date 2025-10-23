@@ -11,10 +11,9 @@ class SendWelcomeEmail  implements ListenerInterface
 
     public function subscribedEvents(): array
     {
-		return [
-			UserLoggedIn::class => ['onUserRegistered' , 159],
-			UserLoggedIn::class => ['handleUserLogin' , 300],
-		];
+        return [
+            UserLoggedIn::class => ['onUserRegistered'],
+        ];
     }
 
     public function onUserRegistered(UserLoggedIn $event): void
@@ -61,7 +60,7 @@ public function subscribedEvents(): array
     ];
 }
 
-简化写法
+简化 混合写法
 public function subscribedEvents(): array
 {
     return [

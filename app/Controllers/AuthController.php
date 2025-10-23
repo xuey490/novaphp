@@ -2,19 +2,20 @@
 namespace App\Controllers;
 
 use App\Events\UserLoginEvent;
-use Framework\Container\Container;
-use Framework\Event\Dispatcher;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class AuthController
 {
-    public function login(Request $request)
+    public function login(Request $request): Response
     {
+		
+		
         // 假设用户已验证成功
         $user = (object)['id' => 1, 'name' => 'Alice'];
 
         // 1. 获取事件分发器（从容器）
-        $dispatcher = app(Dispatcher::class);
+        $dispatcher = app(\Framework\Event\Dispatcher::class);
 
         // 2. 创建事件对象
         $event = new UserLoginEvent($user, $request->getClientIp() ?? '');
@@ -38,6 +39,9 @@ class AuthController
 
 
         $dispatcher->dispatch( $event );
+		
+		
+		return new Response('');
 
 		
 		

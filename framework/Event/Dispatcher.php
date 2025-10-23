@@ -48,6 +48,8 @@ class Dispatcher implements EventDispatcherInterface
 
             // 包装成统一的二维数组格式
             $subscriptions = $this->normalizeSubscriptions($config);
+			
+						//print_r($subscriptions);
 
             foreach ($subscriptions as $subscription) {
                 $method   = $subscription['method'];
@@ -64,12 +66,15 @@ class Dispatcher implements EventDispatcherInterface
      * @param array $config 原始配置
      * @return array<int, array{method: string, priority: int}>
      */
-    private function normalizeSubscriptions1(array $config): array
+    private function normalizeSubscriptions(array $config): array
     {
         $result = [];
+				
+				
 
-        // 判断是否是 "['method'=>'xxx', 'priority'=>100]" 风格
+        // 判断是否是 "['method'=>'xxx', 'priority'=>100]" 风格  
         if (isset($config['method'])) {
+						 
             $result[] = [
                 'method'   => $config['method'],
                 'priority' => $config['priority'] ?? 0,
@@ -78,15 +83,28 @@ class Dispatcher implements EventDispatcherInterface
         // 判断是否是 [['handle', 100], ...] 风格
         elseif (!empty($config) && is_array($config[0])) {
             foreach ($config as $item) {
+								 //print_r($item);
+								 if(is_string($item)){
+									  //echo $item .'+++';
+										$result[] = [
+											'method'   => (string)$item ?? 'handle',
+											'priority' => 0,
+										];
+										//continue;
+								 }
                 if (!is_array($item)) continue;
-                $result[] = [
-                    'method'   => $item[0] ?? 'handle',
-                    'priority' => $item[1] ?? 0,
-                ];
+								 if(is_array($item)){
+										$result[] = [
+											'method'   => $item['method'] ?? ($item[0] ?? 'handle'),  //$item['method'] ?? 'handle',
+											'priority' => $item['priority'] ?? ($item[1] ?? 0),
+										];
+								 }
             }
+						 //print_r($result);
         }
         // 简写形式：['handleLogin', 100]
         elseif (isset($config[0]) && is_string($config[0])) {
+						//print_r($config);
             $result[] = [
                 'method'   => $config[0] ?? 'handle',
                 'priority' => $config[1] ?? 0,
@@ -97,7 +115,7 @@ class Dispatcher implements EventDispatcherInterface
     }
 
 
-private function normalizeSubscriptions(array $config): array
+private function normalizeSubscriptions1(array $config): array
 {
     $result = [];
 
@@ -175,6 +193,9 @@ private function normalizeSubscriptions(array $config): array
         if (is_callable($listener)) {
             return $listener;
         }
+				
+				
+				
 
         if (is_string($listener)) {
             if (str_contains($listener, '::')) {
