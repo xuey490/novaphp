@@ -15,6 +15,7 @@ NovaFrame 是一款轻量级强大，快速，简单，安全的php框架，这�
 
 ## 核心特性
 🚀 性能与安全
+- 	Workerman启动器： 使用workerman和FPM双启动，一样的写法，超传统FPM 10倍以上的性能
 - 	Symfony 组件集成：利用 Symfony 7.x 组件实现 HTTP 基础、路由、依赖注入和缓存
 - 	轻量级设计：最小开销，快速请求处理
 - 	内置安全：CSRF保护、XSS过滤、速率限制和 IP阻断等中间件
@@ -34,9 +35,33 @@ NovaFrame 是一款轻量级强大，快速，简单，安全的php框架，这�
 - 	Composer 就绪：基于 Composer 的标准依赖管理
 
 ## 下载安装:
+### 1.传统启动模式
 - 本地环境:php8.1及以上，Redis，MySQL5.7, composer 2.x及以上
-- 从GitHub下载main版本，解压到本地目录，在根目录下运行composer install ,
-- 等组件包下载完毕后，运行php -S localhost:8000 -t public
+- 从GitHub下载main版本，解压到本地目录，在根目录下运行
+
+`composer install `
+
+- 等组件包下载完毕后，打开cmd命令行窗口，输入:
+
+`php -S localhost:8000 -t public`
+
 - 打开浏览器，输入地址http://localhost:8000
 - 也可以部署到任何可以运行php的Apache或Nginx服务器上。
+### 2.workerman启动
+- 本地环境:php8.1及以上，Redis，MySQL5.7, composer 2.x及以上
+- 从GitHub下载main版本，解压到本地目录，在根目录下运行
+
+`composer install `
+
+- 等组件包下载完毕后，打开cmd命令行窗口，输入:
+
+`php watch.php start `
+
+- 打开浏览器，输入地址http://localhost:8000
+- 也可以部署到任何可以运行php的Apache或Nginx服务器上。
+
+## 鸣谢（站在巨人的肩膀上能看得更远）
+- Workerman: https://www.workerman.net/ (开源高性能PHP应用容器)
+- Symfony: https://www.symfony.com/ (PHP界的Spring，基石)
+- Thinkphp: https://thinkphp.cn/ (中文互联网PHP框架顶流)
 
