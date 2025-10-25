@@ -1,9 +1,10 @@
 {
-    "name": "blue2004/novaphp",
-    "description": "A lightweight Powerful Fast, Simple, Safty PHP framework with Symfony components",
+    "name": "xuey490/project",
+    "description": "A lightweight Powerful Fast, Simple, Safty PHP framework",
     "type": "project",
 	 "keywords": [
-		"novaphp",
+		"NovaFrame",
+        "WorkerMan",
 		"Symfony",
 		"Thinkphp",
 		"ThinkORM",
