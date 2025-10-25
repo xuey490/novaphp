@@ -21,19 +21,19 @@ class MiddlewareCookieConsent implements MiddlewareInterface
         }
 
         $response = $next($request);
-
+		
         // 只对 HTML 响应检查 cookie 同意
         if (!$response instanceof Response || str_starts_with($response->headers->get('Content-Type', 'text/html'), 'text/html')) {
             return $response;
         }
-
+		
         // 检查用户是否已同意
-        $hasConsented = $request->cookies->get('cookie_consent') === 'accepted';
+        //$hasConsented = $request->cookies->get('cookie_consent') === 'accepted';
+        $hasConsented = Cookie::get('cookie_consent') === 'accepted';
 
         if (!$hasConsented) {
             // 注入前端同意横幅（可替换为模板片段）
             $bannerHtml = $this->renderConsentBanner();
-
             $content = $response->getContent();
             $content = preg_replace(
                 '/<\/body>/i',
@@ -44,6 +44,7 @@ class MiddlewareCookieConsent implements MiddlewareInterface
 
             $response->setContent($content);
         }
+					
 
         return $response;
     }
