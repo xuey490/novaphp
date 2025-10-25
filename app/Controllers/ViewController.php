@@ -17,9 +17,10 @@ use Twig\Error\SyntaxError;
 use Framework\View\ViewRender;
 use function render;
 
+##
 class ViewController
 {
-		use ViewRender; //模板引擎 trait
+		use ViewRender; //模板引擎 trait##
 		
     private Environment $twig;
 
@@ -31,8 +32,8 @@ class ViewController
     public function welcome(): Response
     {
         $html = view('home/welcome.html.twig', [
-            'name'      => '访客',
-            'site_name' => 'NovaPHP',
+            'name'      => 'Guest##',
+            'site_name' => 'NovaFrame',
 
             'app_debug' => $_ENV['APP_DEBUG'] ?? true,
         ]);
@@ -42,7 +43,7 @@ class ViewController
         ]);
     }
 
-    // http://localhost:8000/view/test
+    // http://localhost:8000/view/test###
     // 更多用法：https://doc.thinkphp.cn/@think-template/default.html
     public function test()
     {
@@ -66,20 +67,9 @@ class ViewController
             'lists'   => $lists, // 注意：模板中用的是 "lists"
         ]);
 
-        // 4. 使用 Nowdoc (<<<'HTML') 来定义模板内容，防止PHP解析
-        $content = <<<'HTML'
-		<h1>使用ThinkPHP Template Engine</h1>
-		<h2>{$name}</h2>
-
-		<p>版本: {$version}</p>
-		<ul>
-		{volist name="lists" id="f"}
-			<li>{$f}</li>
-		{/volist}
-		</ul>
-		HTML;
-
-        return $template->display($content);
+        return $this->render('think/test');
+		
+				//return $content;
     }
 
     // http://localhost:8000/view/think
@@ -87,7 +77,7 @@ class ViewController
     public function think()
     {
 				
-        // 0. 从服务容器中获取 ThinkPHP 模板引擎服务
+        // 0. 从服务容器中获取 ThinkPHP 模板引擎服务aaaaa
         $template = app('thinkTemp');
 
 
@@ -100,7 +90,7 @@ class ViewController
 		
 				//return ThinkView('think/thinktemp', compact('username', 'name', 'version', 'features', 'currentTime'));  //助手函数渲染 正常工作
 				
-return $this->render('think/thinktemp', compact('username', 'name', 'version' , 'features' ));
+return $this->render('think/thinktemp', compact('username', 'name', 'version' , 'features' , 'currentTime' ));
 				
 				
         // 2. 像原生 TP 一样，给模板分配变量

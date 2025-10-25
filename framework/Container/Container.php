@@ -92,6 +92,7 @@ class Container implements SymfonyContainerInterface
             $cacheContent = $dumper->dump(['class' => 'ProjectServiceContainer']);
 
             // ✅ 关键修复：使用 flags 参数确保以无BOM的UTF-8编码写入文件
+
             file_put_contents(self::CACHE_FILE, $cacheContent);
 
             // 重新 require 刚刚生成的缓存文件
