@@ -34,7 +34,7 @@ class Framework
     private const CONTROLLER_NAMESPACE = 'App\Controllers';
     private const ROUTE_CACHE_FILE = BASE_PATH . '/storage/cache/routes.php';
     private const DATABASE_CONFIG_FILE = BASE_PATH . '/config/database.php';
-    private const DIR_PERMISSION = 0755; // 目录默认权限
+    private const DIR_PERMISSION = 0777; // 目录默认权限
 
     private static ?Framework $instance = null;
     private Request $request;
@@ -113,6 +113,69 @@ class Framework
         $this->logRequestAndResponse($this->request, $response, $start);
         $response->send();
     }
+
+	/*
+	* 由workerman调度 ##
+	* 传入的是symfony 的request
+	*/
+	public function handleRequest(Request $request): Response
+	{
+		$start = microtime(true);
+		$this->request = $request;
+		try {
+			$route = $this->router->match($this->request);
+			
+			// 未匹配路由
+			if (!$route) {
+				$response = $this->handleNotFound();
+				$this->logRequestAndResponse($this->request, $response, $start);
+				//$response->send();
+				//return $;
+				return $response;
+			}
+
+			// 特殊 EasterEgg 路由（如果你有）
+			if ($this->isEasterEggRoute($route)) {
+				return $this->handleEasterEgg($route);
+			}
+
+			// 通过中间件分发执行控制器
+			$response = $this->middlewareDispatcher->dispatch(
+				$this->request,
+				function ($req) use ($route) {
+					return $this->callController($route);
+				}
+			);
+
+			// 若结果不是 Response，转换一下
+			if (!$response instanceof Response) {
+				$response = $this->normalizeResponse($response);
+			}
+
+			// 记录日志
+			$this->logRequestAndResponse($this->request, $response, $start);
+
+			return $response;
+		} catch (\Throwable $e) {
+			// 捕获异常，交给 handleException
+			$this->logger->logException($e, $this->request);
+			return $this->handleException($e);
+		}
+	}
+
+	protected function logError(string $message): void
+	{
+		$logDir = BASE_PATH . '/storage/logs';
+		if (!is_dir($logDir)) {
+			@mkdir($logDir, 0777, true);
+		}
+
+		$file = $logDir . '/error.log';
+		$time = date('Y-m-d H:i:s');
+		@file_put_contents($file, "[$time] $message\n", FILE_APPEND);
+	}
+
+
 
     /**
      * 获取容器（对外提供接口）
