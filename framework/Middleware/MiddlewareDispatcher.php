@@ -34,6 +34,7 @@ class MiddlewareDispatcher
         MiddlewareXssFilter::class,
         MiddlewareCsrfProtection::class,
         MiddlewareRefererCheck::class,
+        MiddlewareCookieConsent::class,
         // 添加日志、CORS、熔断器、限流器，xss、 ip block等全局中间件
     ];
 
@@ -52,9 +53,22 @@ class MiddlewareDispatcher
         $route = $request->attributes->get('_route', []);
 
         // 假设路由定义中的 middleware 可能是多维或混合的，我们先获取它
-        $rawRouteMiddleware = $route['middleware'] ? $route['params']['_middleware'] : [];
+        //$rawRouteMiddleware = $route['middleware'] ? $route['params']['_middleware'] : [];
         // $rawRouteMiddleware = $route['middleware'] ?? [];
-        # print_r($route);
+
+				// 1️⃣ 安全解析路由中间件字段
+				$rawRouteMiddleware = [];
+
+				if (is_array($route)) {
+					// 支持两种结构：
+					// A. ['middleware' => [...]]
+					// B. ['params' => ['_middleware' => [...]]]
+					if (isset($route['middleware'])) {
+						$rawRouteMiddleware = $route['middleware'];
+					} elseif (isset($route['params']['_middleware'])) {
+						$rawRouteMiddleware = $route['params']['_middleware'];
+					}
+				}
 
         // 2. 【核心步骤】规范化路由中间件数组
         // 将可能嵌套的多维数组合并成一维数组
