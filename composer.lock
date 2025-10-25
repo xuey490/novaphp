@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bafeea8abbf21f6e4f659a80d569e3b5",
+    "content-hash": "f15b8827c389474bc79ddb16491d45e7",
     "packages": [
         {
             "name": "brick/math",
@@ -3351,6 +3351,121 @@
                 }
             ],
             "time": "2025-05-03T07:21:55+00:00"
+        },
+        {
+            "name": "workerman/coroutine",
+            "version": "v1.1.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/workerman-php/coroutine.git",
+                "reference": "b0bebfa9d41b992ad0a835ddf2ee8fa5d58eca44"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/workerman-php/coroutine/zipball/b0bebfa9d41b992ad0a835ddf2ee8fa5d58eca44",
+                "reference": "b0bebfa9d41b992ad0a835ddf2ee8fa5d58eca44",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.1"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^11.0",
+                "psr/log": "*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Workerman\\": "src",
+                    "Workerman\\Coroutine\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Workerman coroutine",
+            "support": {
+                "issues": "https://github.com/workerman-php/coroutine/issues",
+                "source": "https://github.com/workerman-php/coroutine/tree/v1.1.4"
+            },
+            "time": "2025-10-11T15:09:08+00:00"
+        },
+        {
+            "name": "workerman/workerman",
+            "version": "v5.1.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/walkor/workerman.git",
+                "reference": "ff4e17babdc92b16b3252060233c88f6c2e9a61a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/walkor/workerman/zipball/ff4e17babdc92b16b3252060233c88f6c2e9a61a",
+                "reference": "ff4e17babdc92b16b3252060233c88f6c2e9a61a",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "php": ">=8.1",
+                "workerman/coroutine": "^1.1 || dev-main"
+            },
+            "conflict": {
+                "ext-swow": "<v1.0.0"
+            },
+            "require-dev": {
+                "guzzlehttp/guzzle": "^7.0",
+                "mockery/mockery": "^1.6",
+                "pestphp/pest": "2.x-dev",
+                "phpstan/phpstan": "1.11.x-dev"
+            },
+            "suggest": {
+                "ext-event": "For better performance. "
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Workerman\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "walkor",
+                    "email": "walkor@workerman.net",
+                    "homepage": "https://www.workerman.net",
+                    "role": "Developer"
+                }
+            ],
+            "description": "An asynchronous event driven PHP framework for easily building fast, scalable network applications.",
+            "homepage": "https://www.workerman.net",
+            "keywords": [
+                "asynchronous",
+                "event-loop",
+                "framework",
+                "http"
+            ],
+            "support": {
+                "email": "walkor@workerman.net",
+                "forum": "https://www.workerman.net/questions",
+                "issues": "https://github.com/walkor/workerman/issues",
+                "source": "https://github.com/walkor/workerman",
+                "wiki": "https://www.workerman.net/doc/workerman/"
+            },
+            "funding": [
+                {
+                    "url": "https://opencollective.com/workerman",
+                    "type": "open_collective"
+                },
+                {
+                    "url": "https://www.patreon.com/walkor",
+                    "type": "patreon"
+                }
+            ],
+            "time": "2025-10-12T07:54:18+00:00"
         }
     ],
     "packages-dev": [
@@ -3867,16 +3982,16 @@
         },
         {
             "name": "friendsofphp/php-cs-fixer",
-            "version": "v3.89.0",
+            "version": "v3.89.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer.git",
-                "reference": "4dd6768cb7558440d27d18f54909eee417317ce9"
+                "reference": "f34967da2866ace090a2b447de1f357356474573"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHP-CS-Fixer/PHP-CS-Fixer/zipball/4dd6768cb7558440d27d18f54909eee417317ce9",
-                "reference": "4dd6768cb7558440d27d18f54909eee417317ce9",
+                "url": "https://api.github.com/repos/PHP-CS-Fixer/PHP-CS-Fixer/zipball/f34967da2866ace090a2b447de1f357356474573",
+                "reference": "f34967da2866ace090a2b447de1f357356474573",
                 "shasum": ""
             },
             "require": {
@@ -3958,7 +4073,7 @@
             ],
             "support": {
                 "issues": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/issues",
-                "source": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/tree/v3.89.0"
+                "source": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/tree/v3.89.1"
             },
             "funding": [
                 {
@@ -3966,7 +4081,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-10-18T19:30:16+00:00"
+            "time": "2025-10-24T12:05:10+00:00"
         },
         {
             "name": "icanhazstring/composer-unused",
