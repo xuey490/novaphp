@@ -185,6 +185,10 @@ return function (ContainerConfigurator $configurator) {
 		->autowire()
 		->autoconfigure()->public();
 		
+	//Cookie提示
+	$services->set(\Framework\Middleware\MiddlewareCookieConsent::class)
+		->autowire()
+		->autoconfigure()->public();
 
 	//熔断器
 	$services->set(\Framework\Middleware\MiddlewareCircuitBreaker::class)

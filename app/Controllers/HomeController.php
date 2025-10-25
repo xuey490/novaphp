@@ -20,6 +20,34 @@ class HomeController
     public function __construct(
         private CsrfTokenManager $csrf
     ) {}
+	
+	public function html():Response
+	{
+		/*
+		// 创建响应实例
+		$response = new Response();
+
+		// 设置响应内容（HTML 代码）
+		$response->setContent('<h1>Hello, Symfony!</h1><p>这是 HTML 内容</p>');
+
+		// 设置 Content-Type 为 text/html
+		$response->headers->set('Content-Type', 'text/html');
+
+		// 返回响应
+		return $response;
+		*/
+
+	
+		// 直接在构造函数中设置 HTML 内容和类型
+		$response = new Response(
+			'<html><body><h1>Hello, Symfony!</h1><p>这是 HTML 内容</p></body>',
+			Response::HTTP_OK, // 状态码（200）
+			['Content-Type' => 'text/html'] // 响应头
+		);	
+		
+		return $response;
+		
+	}
 
     public function index(): Response
     {
