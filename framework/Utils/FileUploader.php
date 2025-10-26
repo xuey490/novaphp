@@ -50,6 +50,7 @@ class FileUploader
 
         $uploadDir       = $uploadConfig['upload_dir'] ?? throw new \InvalidArgumentException('Missing upload_dir');
         $this->uploadDir = str_replace('%kernel.project_dir%', $this->getProjectDir(), $uploadDir);
+		
 
         if (! is_dir($this->uploadDir) && ! mkdir($this->uploadDir, 0755, true)) {
             throw new \RuntimeException("Failed to create upload directory: {$this->uploadDir}");
@@ -145,14 +146,28 @@ class FileUploader
         // 8. 生成安全文件名并构建目标路径
         $safeFilename = $this->generateSafeFilename($file->getClientOriginalName(), $extension);
         $targetPath   = $targetSubDir . '/' . $safeFilename;
-
+		
+		
         $size =$file->getSize();
+		
 
         // 9. 移动文件（必须在 getRealPath() 之后、文件消失前完成所有读取）
         try {
-            $file->move($targetSubDir, $safeFilename);
+			if (defined('WORKERMAN_VERSION')) {
+				// Workerman 模式：手动移动文件
+				$realPath = $file->getRealPath();
+				if (!@rename($realPath, $targetPath)) {
+					if (!@copy($realPath, $targetPath)) {
+						throw new \RuntimeException("Failed to move uploaded file manually (Workerman mode).");
+					}
+					@unlink($realPath);
+				}
+			} else {
+				// PHP-FPM 模式：使用 Symfony 内置方法
+				$file->move($targetSubDir, $safeFilename);
+			}
         } catch (\Exception $e) {
-            throw new \RuntimeException('Failed to move uploaded file: ' . $e->getMessage());
+            throw new \RuntimeException('Error: Failed to move uploaded file: ' . $e->getMessage());
         }
 
         // 10. 计算 MD5 哈希（操作已保存的文件）
