@@ -49,7 +49,7 @@ class Container implements SymfonyContainerInterface
         $dotenv = new Dotenv();
         $dotenv->load(BASE_PATH . '/.env');
 
-        $env    = env('APP_ENV') ?: 'dev';
+        $env    = env('APP_ENV') ?: 'local';
         $isProd = $env === 'prod';
 
         // --- 开发环境或缓存不存在：构建新容器 ---

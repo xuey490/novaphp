@@ -207,7 +207,7 @@ class Framework
             BASE_PATH . '/storage/view',
         ];
 
-        // 从配置获取目录权限（默认 0755）
+        // 从配置获取目录权限（默认 0777）
         $permission = config('app.dir_permission', self::DIR_PERMISSION);
 
         foreach ($dirs as $dir) {
@@ -223,8 +223,8 @@ class Framework
     private function initializeConfigAndContainer(): void
     {
         // 1. 加载配置
-        $configLoader = new ConfigLoader(BASE_PATH . '/config');
-        $globalConfig = $configLoader->loadAll();
+        //$configLoader = new ConfigLoader(BASE_PATH . '/config');
+        //$globalConfig = $configLoader->loadAll();
 
         // 2. 初始化容器并注入配置
         Container::init();

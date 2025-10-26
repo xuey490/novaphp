@@ -57,7 +57,7 @@ class Kernel
         date_default_timezone_set($timezone);
 
         // 3. 初始化Cookie配置（强制检查安全密钥）
-        //$this->initCookie();
+        $this->initCookie();
 
         // 4. 注册事件监听器
         $this->registerEventListeners();
