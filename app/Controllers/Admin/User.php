@@ -12,7 +12,7 @@ namespace App\Controllers\Admin;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class UserController
+class User
 {
     public function index()
     {

@@ -19,7 +19,7 @@ use Symfony\Component\HttpFoundation\Response;
  * 管理员用户控制器（路径前缀：/admin/role）.
  * @Route(path="/admin/role", name="admin.role_prefix")
  */
-class RoleController
+class Role
 {
     /**
      * 用户列表（匹配 GET /admin/role）

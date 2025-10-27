@@ -9,17 +9,19 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use Framework\Utils\Captcha;
+use Framework\Utils\Captcha as CCaptcha;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class CaptchaController
+class Captcha
 {
     public function captchaImage(Request $request): Response
     {
         $config  = require __DIR__ . '/../../config/captcha.php';
-        $captcha = new Captcha($config);
-        return $captcha->outputImage();
+        $captcha = new CCaptcha($config);
+        $output = $captcha->outputImage();
+		
+		return $output;
     }
 
     public function checkCaptcha(Request $request): Response

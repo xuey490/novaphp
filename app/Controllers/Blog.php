@@ -17,7 +17,7 @@ use Twig\Environment;
 
  // 假设你有文章服务
 
-class BlogController
+class Blog
 {
     private Environment $twig;
 

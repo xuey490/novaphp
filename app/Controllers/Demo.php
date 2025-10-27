@@ -7,7 +7,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 
 #[Route(prefix: '/v2', middleware: [\App\Middlewares\AuthMiddleware::class , \App\Middlewares\LogMiddleware::class ])]
-class DemoController
+class Demo
 {
     #[Route(path: '/demo/index', methods: ['GET'],  middleware: [\App\Middlewares\AuthMiddleware::class] )]
     public function list() { 

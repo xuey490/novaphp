@@ -232,7 +232,7 @@ class Router
 
         // 根路径特殊处理：映射到 HomeController@index
         if (empty($pathSegments)) {
-            $homeController = "{$this->controllerNamespace}\\HomeController";
+            $homeController = "{$this->controllerNamespace}\\Home";
             if (class_exists($homeController) && method_exists($homeController, 'index')) {
                 return [
                     'controller' => $homeController,
@@ -276,21 +276,32 @@ class Router
      * 构建控制器完整类名（支持多级命名空间）
      * 例：[api, v2, user] → App\Controllers\Api\V2\UserController.
      */
-    private function buildControllerClassName(array $segments): string
-    {
-        if (empty($segments)) {
-            return "{$this->controllerNamespace}\\HomeController";
-        }
+	private function buildControllerClassName(array $segments): string
+	{
+		if (empty($segments)) {
+			// 先尝试 Home，再尝试 HomeController
+			$homeClass = "{$this->controllerNamespace}\\Home";
+			if (class_exists($homeClass)) {
+				return $homeClass;
+			}
+			return "{$this->controllerNamespace}\\HomeController";
+		}
 
-        // 最后一段添加 "Controller" 后缀，前面的段作为命名空间层级
-        $lastSegment = array_pop($segments);
-        $lastSegment .= 'Controller';
-        $segments[] = $lastSegment;
+		// 尝试不加后缀的类名
+		$namespaceSegments = array_map('ucfirst', $segments);
+		$classNameWithoutSuffix = $this->controllerNamespace . '\\' . implode('\\', $namespaceSegments);
 
-        // 命名空间段首字母大写（规范命名）
-        $namespaceSegments = array_map('ucfirst', $segments);
-        return $this->controllerNamespace . '\\' . implode('\\', $namespaceSegments);
-    }
+		if (class_exists($classNameWithoutSuffix)) {
+			return $classNameWithoutSuffix;
+		}
+
+		// 回退：加 Controller 后缀（兼容旧命名）
+		$lastSegment = array_pop($namespaceSegments);
+		$lastSegment .= 'Controller';
+		$namespaceSegments[] = $lastSegment;
+
+		return $this->controllerNamespace . '\\' . implode('\\', $namespaceSegments);
+	}
 
     /**
      * 匹配动作名和参数（自动路由核心）.

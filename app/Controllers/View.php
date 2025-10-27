@@ -18,7 +18,7 @@ use Framework\View\ViewRender;
 use function render;
 
 ##
-class ViewController
+class View
 {
 		use ViewRender; //模板引擎 trait##
 		
@@ -32,7 +32,7 @@ class ViewController
     public function welcome(): Response
     {
         $html = view('home/welcome.html.twig', [
-            'name'      => 'Guest##',
+            'name'      => 'Guest',
             'site_name' => 'NovaFrame',
 
             'app_debug' => $_ENV['APP_DEBUG'] ?? true,
@@ -47,7 +47,7 @@ class ViewController
     // 更多用法：https://doc.thinkphp.cn/@think-template/default.html
     public function test()
     {
-        // 1. 调用模板服务
+        // 1. 调用模板服务##
         $template = app('thinkTemp');
 
         // 完整模板文件渲染 (使用绝对路径)
@@ -114,7 +114,7 @@ return $this->render('think/thinktemp', compact('username', 'name', 'version' , 
         return view('home/index', ['name' => 'Alice']);
     }
 
-    // 错误测试
+    // 错误测试####
     public function errortest()
     {
         try {

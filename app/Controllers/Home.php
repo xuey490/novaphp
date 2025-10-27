@@ -14,11 +14,13 @@ use Framework\Middleware\MiddlewareXssFilter;
 use Framework\Security\CsrfTokenManager;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\RequestStack;
 
-class HomeController
+
+class Home
 {
     public function __construct(
-        private CsrfTokenManager $csrf
+        private CsrfTokenManager $csrf,private RequestStack $requestStack,
     ) {}
 	
 	public function html():Response
@@ -44,7 +46,7 @@ class HomeController
 			Response::HTTP_OK, // 状态码（200）
 			['Content-Type' => 'text/html'] // 响应头
 		);	
-		
+		##33#
 		return $response;
 		
 	}
@@ -129,10 +131,10 @@ class HomeController
 		}		
 		*/
 		
+######
 
-
-		
-		//Thinkphp验证
+		##
+		//Thinkphp验证##
 		$data = [
 			'name'  => '222',
 			'age'   => 5520,
@@ -143,10 +145,10 @@ class HomeController
 		$result = $validate->check($data);
 
 		if(!$result){
-			echo $validate->getError();
+		#echo $validate->getError();
 		}
 		
-
+###
         // echo trans('hello'); // 自动输出对应语言
         // echo '<br />当前语言包：' . current_locale();
         return new Response('<h1>Welcome to My Framework!</h1>');
@@ -205,7 +207,8 @@ class HomeController
 
     public function getsession(Request $request): Response
     {
-        $session = $request->getSession(); // Symfony 自动绑定 session 到 Request
+        //$session = $request->getSession(); // Symfony 自动绑定 session 到 Request
+		$session = $this->requestStack->getSession();
         $session->set('test', 'hello');
         return new Response($session->get('test'));
     }
@@ -258,10 +261,10 @@ class HomeController
     }
 
     // 列举自己需要的参数
-    public function show(int $id):Response
+    public function show(Request $request , int $id):Response
     {
         // 获取所有用户 => 返回数组数据或 json 响应
-        $users = Admin::select()->toArray();
+        //$users = Admin::select()->toArray();
         //print_r($users); // 因为你框架会处理 array => json
 
         $id = $request->get('id');
