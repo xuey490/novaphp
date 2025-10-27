@@ -9,12 +9,10 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-// src/Controller/HelloController.php
-
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-class HelloController
+class Hello
 {
     #[Route('/hello')]
     public function index(): Response

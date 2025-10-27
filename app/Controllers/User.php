@@ -20,7 +20,7 @@ use Symfony\Component\HttpFoundation\Response;
     group: 'api',
     middleware: [AuthMiddleware::class, LogMiddleware::class]
 )]
-class UserController
+class User
 {
     // GET /api/v1/users
     #[Route(

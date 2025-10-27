@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Twig\Environment;
 
-class UploadController
+class Upload
 {
     private Environment $twig;
 
@@ -36,8 +36,6 @@ class UploadController
 
 	public function process(Request $request)
 	{
-		// 必须返回 Response
-		//return new Response('test');
 
         try {
             $result = $this->uploader->upload($request , 'file');

@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Framework\View\ViewRender; // ✅ 正确命名空间
 
-class ThinkController
+class Think
 {
     use ViewRender;
 

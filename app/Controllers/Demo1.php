@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 #[Route(prefix: '/api/v1/demo1', group: 'api', middleware: [AuthMiddleware::class, LogMiddleware::class])]
-class Demo1Controller
+class Demo1
 {
 
     #[Route(path: '/', methods: ['GET'], name: 'demo1.index')]

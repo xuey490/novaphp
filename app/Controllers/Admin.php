@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 /**
  * This file is part of Navaphp.
- *
+ *#
  */
 
 namespace App\Controllers;
@@ -18,7 +18,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 
 
-class AdminController
+class Admin
 {
     private UserService $userService;
 

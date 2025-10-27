@@ -15,7 +15,7 @@ use Framework\Attributes\Route;
 use Symfony\Component\HttpFoundation\Request;
 
 #[Route(prefix: '/lists', middleware: [AuthMiddleware::class, LogMiddleware::class])]
-class ListController
+class Lists
 {
     #[Route(path: '/', methods: ['GET'])]
     public function index(Request $request)

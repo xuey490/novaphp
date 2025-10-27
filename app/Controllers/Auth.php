@@ -5,7 +5,7 @@ use App\Events\UserLoginEvent;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class AuthController
+class Auth
 {
     public function login(Request $request)
     {

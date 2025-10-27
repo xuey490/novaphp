@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
  * 控制器级别的路由注解（可选，用于添加路径前缀）.
  * @Route("/test")
  */
-class TestController
+class Test
 {
     // 测试熔断器
     public function circuitAction(): Response

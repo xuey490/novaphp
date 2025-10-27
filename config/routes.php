@@ -11,7 +11,7 @@ $routes = new RouteCollection();
 $routes->add('admin_home', new Route(
     '/index', // 路由路径（注意：若已开启.html后缀处理，这里无需加.html）
     [
-        '_controller' => 'App\Controllers\HomeController::index' // 标准格式：类名::方法名
+        '_controller' => 'App\Controllers\Home::index' // 标准格式：类名::方法名
     ],
     [], // 路由参数约束（可选）
     [], // 路由选项（可选）
@@ -24,7 +24,7 @@ $routes->add('admin_home', new Route(
 $routes->add('api_user', new Route(
     '/apis/user/{id}', // 带参数的路径
     [
-        '_controller' => 'App\Controllers\Api\UserController::show',
+        '_controller' => 'App\Controllers\Api\User::show',
         'id' => 1 // 参数默认值（可选）
     ],
     [
@@ -40,7 +40,7 @@ $routes->add('api_user', new Route(
 
 $routes->add('admin.dashboard', new Route(
     '/admin/dashboard',
-    ['_controller' => 'App\Controllers\Admin\DashboardController::index'],
+    ['_controller' => 'App\Controllers\Admin\Dashboard::index'],
     [],
     ['_middleware' => ['App\Middleware\AdminAuthMiddleware']]
 ));
@@ -49,11 +49,11 @@ $routes->add('admin.dashboard', new Route(
 
 //测试熔断器
 $routes->add('test_circuit', new Route('/test/circuit', [
-    '_controller' => 'App\Controllers\TestController::circuitAction'
+    '_controller' => 'App\Controllers\Test::circuitAction'
 ]));
 
 $routes->add('test_healthy', new Route('/test/healthy', [
-    '_controller' => 'App\Controllers\TestController::healthyAction'
+    '_controller' => 'App\Controllers\Test::healthyAction'
 ]));
 
 

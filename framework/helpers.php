@@ -135,6 +135,8 @@ if (! function_exists('getService')) {
     }
 }
 
+
+// 下面五个函数是关于系统路径
 function base_path($path = '')
 {
     return dirname(__DIR__) . ($path ? '/' . $path : '');

@@ -11,7 +11,7 @@ namespace App\Controllers;
 
 use Symfony\Component\HttpFoundation\Response;
 
-class UrlController
+class Url
 {
     public function edit(int $id): Response
     {

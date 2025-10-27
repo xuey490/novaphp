@@ -19,6 +19,8 @@ namespace Framework\Core;
 use Framework\Attributes\Route;
 use Symfony\Component\Routing\Route as SymfonyRoute;
 use Symfony\Component\Routing\RouteCollection;
+use Symfony\Component\Finder\Finder;
+
 
 /**
  * AttributeRouteLoader：
@@ -37,6 +39,7 @@ class AttributeRouteLoader
         $this->controllerDir       = rtrim($controllerDir, '/');
         $this->controllerNamespace = rtrim($controllerNamespace, '\\');
     }
+
 
     /**
      * 扫描控制器目录并加载所有注解路由.
@@ -61,6 +64,7 @@ class AttributeRouteLoader
             // === 类级注解 ===
             $classAttrs      = $refClass->getAttributes(Route::class);
             $classPrefix     = '';
+			$classHost 		 = '';
             $classGroup      = null;
             $classMiddleware = [];
 
