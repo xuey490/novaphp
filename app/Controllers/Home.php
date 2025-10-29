@@ -56,8 +56,8 @@ class Home
     public function index(Request $request): Response
     {
 		
-	$session = $request->getSession();
-$session->set('test', 'workerman');	
+		//$session = $request->getSession();
+		//$session->set('test', 'workerman');	
 		
         // getService(\Framework\Log\LoggerService::class)->info('App started');
 
@@ -65,7 +65,7 @@ $session->set('test', 'workerman');
         # print_r( $userService->getUsers(111) );
         // ✅ 此时 app() 已可用！
 
-        dump(app()->getServiceIds()); // 查看所有服务 ID
+        #dump(app()->getServiceIds()); // 查看所有服务 ID
 
         // 日志测试
         // $logger = app('log');
