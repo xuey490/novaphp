@@ -14,7 +14,8 @@ use Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorage;
 use Symfony\Component\HttpFoundation\Session\Storage\Handler\StrictSessionHandler;
 use Symfony\Component\HttpFoundation\Session\Storage\Handler\RedisSessionHandler;
 
-use Valitron\Validator;
+
+#use Valitron\Validator;
 
 
 return function (ContainerConfigurator $configurator) {
@@ -57,7 +58,7 @@ return function (ContainerConfigurator $configurator) {
     $services->set('test', \stdClass::class)->public();
 	
 
-	
+	/*
     // 1. 配置 Redis 连接（与 Workerman 共用）
 	$services->set('redis.connection', \Redis::class)
         ->call('connect', ['127.0.0.1', 6379]) // Redis 主机和端口
@@ -72,7 +73,7 @@ return function (ContainerConfigurator $configurator) {
         ->args([
             service('redis.connection'), // 依赖注入 Redis 连接
             [
-                'prefix' => 'sf_s', // 键前缀
+                'prefix' => 'redis_session_', // sf默认键前缀sf_s
                 'ttl' => 3600,         // 有效期（秒）	
             ]
         ]);
@@ -97,17 +98,18 @@ return function (ContainerConfigurator $configurator) {
     $services->set('session', Session::class)
         ->args([service(NativeSessionStorage::class)])
         ->public(); // 允许控制器直接获取
+	*/
 	
 	
 	
-	
-	/*
+
     // 加载session redis配置
     $redisConfig = require __DIR__ . '/redis.php';
     $sessionConfig = require __DIR__ . '/session.php';
 
     $storageType = $sessionConfig['storage_type'];
     $sessionOptions = $sessionConfig['options'];
+	$fileSavePath = $sessionConfig['file_save_path'] ?? sys_get_temp_dir();
 
     // === 1. 注册 Redis 客户端（仅当需要时）===
     $services->set('redis.client', \Redis::class)
@@ -120,17 +122,48 @@ return function (ContainerConfigurator $configurator) {
         // 使用 Redis 作为 handler
         $services->set('session.handler', RedisSessionHandler::class)
             //->args([new Reference('redis.client')]);
-            ->args([service('redis.client')])->public();
+            ->args([
+				service('redis.client'),
+				[
+					'prefix' => 'redis_session_', // 键前缀
+					'ttl' => 3600,         // 有效期（秒）	
+				]
+			])->public();
 
         $services->set('session.storage', NativeSessionStorage::class)
             //->args([$sessionOptions, new Reference('session.handler')])
             ->args([$sessionOptions, service('session.handler')])
             ->public();
     } else {
+
+		// 1. 定义底层自定义 handler，并调用 setSavePath
+		$services->set('session.handler.custom_file', \Framework\Utils\CustomFileSessionHandler::class)
+			->call('setSavePath', ['%kernel.project_dir%/storage/sessions'])
+			->call('setPrefix', [$sessionOptions['name']])
+			->public();
+
+		// 2. 用 StrictSessionHandler 包装它（不调用任何方法）
+		$services->set('session.handler', StrictSessionHandler::class)
+			->args([service('session.handler.custom_file')])
+			->public();
+
+		// 3. ✅ session.storage 必须是 NativeSessionStorage（实现了 SessionStorageInterface）
+		$services->set('session.storage', NativeSessionStorage::class)
+			->args([
+				$sessionOptions, // session options，如 ['name' => 'MYSESSID', 'cookie_lifetime' => 3600]
+				service('session.handler') // 传入 handler
+			])
+			->public();
+
+
+
+        // file 存储：不传 handler，使用原生文件存储
         // 默认：使用原生文件存储（PHP 默认）
+		/*
         $services->set('session.storage', NativeSessionStorage::class)
             ->args([$sessionOptions])
             ->public();
+		*/
     }
 
     // === 3. 注册 Session 服务 ===
@@ -138,7 +171,7 @@ return function (ContainerConfigurator $configurator) {
         ->args([service('session.storage')])
         #->args([new Reference('session.storage')])
         ->public();
-	*/
+
 	
 	
 	// 注册 ConfigLoader 为服务
@@ -241,7 +274,7 @@ return function (ContainerConfigurator $configurator) {
 
 	//熔断器
 	$services->set(\Framework\Middleware\MiddlewareCircuitBreaker::class)
-		->args(['%kernel.project_dir%/storage/cache/'])
+		->args(['%kernel.project_dir%/storage/cache'])
 		->autoconfigure()
 		->public(); 
 	
