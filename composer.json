@@ -44,7 +44,6 @@
         "topthink/think-template": "^3.0",
         "topthink/think-validate": "^3.0",
         "twig/twig": "^3.14",
-        "workerman/redis": "^2.0",
         "workerman/workerman": "^5.1"
     },
     "require-dev": {
