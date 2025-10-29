@@ -56,6 +56,52 @@ return function (ContainerConfigurator $configurator) {
     // 示例：注册一个服务 如果你有 test.service 且要手动 get() 必须加public这一行
     $services->set('test', \stdClass::class)->public();
 	
+
+	
+    // 1. 配置 Redis 连接（与 Workerman 共用）
+	$services->set('redis.connection', \Redis::class)
+        ->call('connect', ['127.0.0.1', 6379]) // Redis 主机和端口
+        // 若有密码，添加以下行
+        // ->call('auth', ['your_redis_password'])
+        ->public(); // 允许外部访问
+	
+		
+
+    // 2. 配置 Redis Session 处理器
+    $services->set(RedisSessionHandler::class)
+        ->args([
+            service('redis.connection'), // 依赖注入 Redis 连接
+            [
+                'prefix' => 'sf_s', // 键前缀
+                'ttl' => 3600,         // 有效期（秒）	
+            ]
+        ]);
+	
+    // 4. 配置 Session 存储引擎
+    $services->set(NativeSessionStorage::class)
+        ->args([
+            [
+                // Session 基础配置（与 Cookie 相关）
+                'name' => 'PHPSESSID',                  // Session ID 的 Cookie 名称
+                'cookie_lifetime' => 3600,             // Cookie 有效期（秒）
+                'cookie_secure' => 'auto',              // 生产环境建议设为 true（仅 HTTPS 传输）
+                'cookie_samesite' => 'lax',             // 防止 CSRF 攻击
+                'cookie_path' => '/',                   // Cookie 生效路径
+                // 'cookie_domain' => '.yourdomain.com', // 多子域共享 Session 时配置
+                'gc_maxlifetime' => 3600,              // PHP 垃圾回收的过期时间（需与 ttl 一致）
+            ],
+            service(RedisSessionHandler::class) // 绑定 Redis 处理器
+        ])->public();
+
+    // 5. 注册 Session 服务
+    $services->set('session', Session::class)
+        ->args([service(NativeSessionStorage::class)])
+        ->public(); // 允许控制器直接获取
+	
+	
+	
+	
+	/*
     // 加载session redis配置
     $redisConfig = require __DIR__ . '/redis.php';
     $sessionConfig = require __DIR__ . '/session.php';
@@ -74,7 +120,7 @@ return function (ContainerConfigurator $configurator) {
         // 使用 Redis 作为 handler
         $services->set('session.handler', RedisSessionHandler::class)
             //->args([new Reference('redis.client')]);
-            ->args([service('redis.client')]);
+            ->args([service('redis.client')])->public();
 
         $services->set('session.storage', NativeSessionStorage::class)
             //->args([$sessionOptions, new Reference('session.handler')])
@@ -89,9 +135,12 @@ return function (ContainerConfigurator $configurator) {
 
     // === 3. 注册 Session 服务 ===
     $services->set('session', Session::class)
-        ->args([new Reference('session.storage')])
+        ->args([service('session.storage')])
+        #->args([new Reference('session.storage')])
         ->public();
-
+	*/
+	
+	
 	// 注册 ConfigLoader 为服务
 	$services->set('config' , \Framework\Config\ConfigLoader::class)	//$globalConfig = $this->container->get('config')->loadAll();
 		->args(['%kernel.project_dir%/config'])
