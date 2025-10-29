@@ -27,7 +27,7 @@ class Captcha
     public function checkCaptcha(Request $request): Response
     {
         $config    = require __DIR__ . '/../../config/captcha.php';
-        $captcha   = new Captcha($config);
+        $captcha   = new CCaptcha($config);
         $userInput = $request->request->get('captcha');
 
         if ($captcha->validate($userInput)) {

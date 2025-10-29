@@ -24,7 +24,7 @@ class ListenerScanner
     private string $listenerDir;
     private CacheFactory $cache;
     private int $cacheTtl = 3600; // 1小时
-    private string $cacheKey = 'event.subscribers_with_fingerprint';
+    private string $cacheKey = 'event.subscribers';
 
     public function __construct(CacheFactory $cache, string $listenerDir = null)
     {
