@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "777938eb4e2693ae272e01fa683a2f88",
+    "content-hash": "95469ab8e96b194130785268f5fae685",
     "packages": [
         {
             "name": "brick/math",
@@ -3534,41 +3534,6 @@
                 "source": "https://github.com/workerman-php/coroutine/tree/v1.1.4"
             },
             "time": "2025-10-11T15:09:08+00:00"
-        },
-        {
-            "name": "workerman/redis",
-            "version": "v2.0.5",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/walkor/redis.git",
-                "reference": "49627c1809eff1ef7175eb8ee7549234a1d67ec5"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/walkor/redis/zipball/49627c1809eff1ef7175eb8ee7549234a1d67ec5",
-                "reference": "49627c1809eff1ef7175eb8ee7549234a1d67ec5",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=7",
-                "workerman/workerman": "^4.1.0||^5.0.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Workerman\\Redis\\": "./src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "homepage": "http://www.workerman.net",
-            "support": {
-                "issues": "https://github.com/walkor/redis/issues",
-                "source": "https://github.com/walkor/redis/tree/v2.0.5"
-            },
-            "time": "2025-04-07T01:58:58+00:00"
         },
         {
             "name": "workerman/workerman",
