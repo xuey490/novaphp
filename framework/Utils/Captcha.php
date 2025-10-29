@@ -8,7 +8,7 @@ declare(strict_types=1);
  * @link     https://github.com/xuey490/novaphp
  * @license  https://github.com/xuey490/novaphp/blob/main/LICENSE
  *
- * @Filename: %filename%
+ * @Filename: Captcha.php
  * @Date: 2025-10-16
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Framework\Utils;
 
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
 
 class Captcha
 {
@@ -25,9 +26,12 @@ class Captcha
     protected $code;
 
     private string $mathExpr;
+	
+	#private $request;
 
     public function __construct(array $config)
     {
+		
         if (! isset($_SESSION)) {
             //    session_start();
         }
@@ -66,10 +70,11 @@ class Captcha
                 $this->code = $this->generateAlnum();
                 break;
         }
-
+		$session = app('session');
+		$session->set($this->config['session_key'], $this->code);
         // $_SESSION[$this->config['session_key']] = $this->code;
-        app('session')->set($this->config['session_key'], $this->code);
-        // print_r(app('session')->get($this->config['session_key']));
+        //app('session')->set($this->config['session_key'], $this->code);
+        //print_r(app('session')->get($this->config['session_key']));
         return $this->code;
     }
 
@@ -160,16 +165,17 @@ class Captcha
 
     public function validate(string $input): bool
     {
-        if (app('session')->get($this->config['session_key']) =='') {
+		$session = app('session');
+        if ($session->get($this->config['session_key']) =='') {
             return false;
         }
 
-        $expected = app('session')->get($this->config['session_key']);
-        app('session')->set($this->config['session_key'], null);
+        $expected = $session->get($this->config['session_key']);
 
         if ($this->config['type'] === 'math') {
             return trim($input) === $expected;
         }
+		$session->set($this->config['session_key'], null);
         return strtolower(trim($input)) === strtolower($expected);
     }
 

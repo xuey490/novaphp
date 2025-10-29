@@ -5,8 +5,8 @@
 return [
     'enabled' => true,
     'length' => 4,
-    'type' => 'chinese', // alnum | chinese | math
-    'width' => 100,
+    'type' => 'alnum', // alnum | chinese | math
+    'width' => 150,
     'height' => 40,
     'font_size' => 16,
     'font_path' => __DIR__ . '/fonts/arial.ttf', // 请确保字体文件存在

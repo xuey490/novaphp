@@ -15,7 +15,7 @@ use Framework\Security\CsrfTokenManager;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RequestStack;
-
+use Framework\Utils\Captcha as CCaptcha;
 
 class Home
 {
@@ -25,6 +25,8 @@ class Home
 	
 	public function html():Response
 	{
+		
+
 		/*
 		// 创建响应实例
 		$response = new Response();
@@ -51,15 +53,19 @@ class Home
 		
 	}
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
+		
+	$session = $request->getSession();
+$session->set('test', 'workerman');	
+		
         // getService(\Framework\Log\LoggerService::class)->info('App started');
 
         # $userService = getService('App\Service\UserService'); // ✅ 只要容器已 set，就可以
         # print_r( $userService->getUsers(111) );
         // ✅ 此时 app() 已可用！
 
-        # dump(app()->getServiceIds()); // 查看所有服务 ID
+        dump(app()->getServiceIds()); // 查看所有服务 ID
 
         // 日志测试
         // $logger = app('log');
@@ -76,8 +82,8 @@ class Home
         */
 
         // Symfony缓存
-        cache_set('user_1', ['name' => 'Alice'], 3600);
-        $user = cache_get('user_1');
+        #cache_set('user_1', ['name' => 'Alice'], 3600);
+        #$user = cache_get('user_1');
         //print_r( $user );
 
         // $post = ['name' => 'Alice'];
@@ -89,12 +95,12 @@ class Home
         // print_r( cache_get('post_1') );
 
         // session测试
-        // $session = app('session');
+         $session = app('session');
         // 设置一个 session 属性
-        // $session->set('user_id', 1283);
+         $session->set('user_id', 'tom_11');
         // 获取一个 session 属性
-        // $userId = $session->get('user_id');
-        // echo $userId;
+        $userId = $session->get('user_id');
+        #echo 'userId：'. $userId;
 
         // 配置获取测试
         // print_r(config('database'));
@@ -151,7 +157,7 @@ class Home
 ###
         // echo trans('hello'); // 自动输出对应语言
         // echo '<br />当前语言包：' . current_locale();
-        return new Response('<h1>Welcome to My Framework!</h1>');
+        return new Response("<h1>Welcome to My Framework!___{$userId}</h1>");
     }
 
     // http://localhost:8000/home/xss?name=mike<script>alert('ok');</script>
@@ -176,14 +182,34 @@ class Home
 
     public function showForm(Request $request): Response
     {
+		$session = app('session');
+		$userid = $session->get('user_id');
+		
         $token = $this->csrf->getToken('default');
         // 传递给模板
-        return new Response("<form method='POST' action='/home/getForm'>
+        return new Response("<form method='POST' action='/home/checkCaptcha'>
             <input type='hidden' name='_token' value='{$token}'>
+			<input type='text' name='code'>
+			<input type='text' name='userid' value={$userid}>
+			<img src='/captcha/captchaImage'>
             <input name='title'>
             <button type='submit'>Submit</button>
         </form>");
     }
+
+
+    public function checkCaptcha(Request $request): Response
+    {
+        $config    = require __DIR__ . '/../../config/captcha.php';
+        $captcha   = new CCaptcha($config);
+        $userInput = $request->request->get('code');
+		
+        if (!$captcha->validate($userInput)) {
+            return new Response('验证码错误'.$userInput);
+        }
+        return new Response('验证码正确', 200);
+    }
+
 
     // CSRF token测试。
     public function getForm(Request $request)
