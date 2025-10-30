@@ -17,29 +17,26 @@ declare(strict_types=1);
 namespace Framework\Utils;
 
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Request;
+use RuntimeException;
 
+/**
+ * Captcha Utility for NovaPHP Framework.
+ *
+ * Provides alnum / chinese / math captcha types with encryption-based session storage.
+ */
 class Captcha
 {
-    protected $config;
-
-    protected $code;
-
-    private string $mathExpr;
-	
-	#private $request;
+    protected array $config;
+    protected string $code;
+    private string $mathExpr = '';
+    private string $secretKey;
 
     public function __construct(array $config)
     {
-		
-        if (! isset($_SESSION)) {
-            //    session_start();
-        }
-
         $this->config = array_merge([
             'enabled'           => true,
             'length'            => 4,
-            'type'              => 'alnum',
+            'type'              => 'alnum', // alnum | chinese | math
             'width'             => 120,
             'height'            => 40,
             'font_size'         => 20,
@@ -49,13 +46,19 @@ class Captcha
             'lines'             => true,
             'distortion'        => true,
             'session_key'       => 'captcha_code',
+            'secret_key'        => 'nova-captcha-key', // default; can be overridden
         ], $config);
 
         if (! $this->config['enabled']) {
-            throw new \RuntimeException('Captcha is disabled.');
+            throw new RuntimeException('Captcha is disabled.');
         }
+
+        $this->secretKey = hash('sha256', $this->config['secret_key']); // ensure 256-bit key
     }
 
+    /**
+     * Generate captcha code and store (encrypted) in session.
+     */
     public function generate(): string
     {
         switch ($this->config['type']) {
@@ -70,114 +73,139 @@ class Captcha
                 $this->code = $this->generateAlnum();
                 break;
         }
-		$session = app('session');
-		$session->set($this->config['session_key'], $this->code);
-        // $_SESSION[$this->config['session_key']] = $this->code;
-        //app('session')->set($this->config['session_key'], $this->code);
-        //print_r(app('session')->get($this->config['session_key']));
+
+        $session = app('session');
+        $encrypted = $this->encrypt($this->code);
+        $session->set($this->config['session_key'], $encrypted);
+
         return $this->code;
     }
 
-    public function outputImage(): Response
-    {
-        $this->generate();
+    /**
+     * Output captcha as PNG image.
+     */
+	public function outputImage(): Response
+	{
+		$this->generate();
 
-        $width  = $this->config['width'];
-        $height = $this->config['height'];
+		$width  = (int)($this->config['width'] * $this->config['dpi_scale']);
+		$height = (int)($this->config['height'] * $this->config['dpi_scale']);
 
-        $image   = imagecreatetruecolor($width, $height);
-        $bgColor = imagecolorallocate($image, 250, 250, 250);
-        imagefilledrectangle($image, 0, 0, $width, $height, $bgColor);
 
-        // 干扰线
-        if ($this->config['lines']) {
-            for ($i = 0; $i < 5; ++$i) {
-                $lineColor = imagecolorallocate($image, mt_rand(150, 220), mt_rand(150, 220), mt_rand(150, 220));
-                imageline($image, mt_rand(0, $width), mt_rand(0, $height), mt_rand(0, $width), mt_rand(0, $height), $lineColor);
-            }
-        }
+		$image   = imagecreatetruecolor($width, $height);
+		$bgColor = imagecolorallocate($image, 250, 250, 250);
+		imagefilledrectangle($image, 0, 0, $width, $height, $bgColor);
 
-        // 干扰点
-        if ($this->config['noise']) {
-            for ($i = 0; $i < 100; ++$i) {
-                $dotColor = imagecolorallocate($image, mt_rand(150, 220), mt_rand(150, 220), mt_rand(150, 220));
-                imagesetpixel($image, mt_rand(0, $width), mt_rand(0, $height), $dotColor);
-            }
-        }
+		// 干扰线
+		if ($this->config['lines']) {
+			for ($i = 0; $i < 5; ++$i) {
+				$lineColor = imagecolorallocate($image, mt_rand(150, 220), mt_rand(150, 220), mt_rand(150, 220));
+				imageline($image, mt_rand(0, $width), mt_rand(0, $height), mt_rand(0, $width), mt_rand(0, $height), $lineColor);
+			}
+		}
 
-        // 文字
-        // print_r($this->config['chinese_font_path']);
-        // die();
-        $textColor = imagecolorallocate($image, mt_rand(0, 100), mt_rand(0, 100), mt_rand(0, 100));
-        $fontPath  = $this->config['type'] === 'chinese' ? $this->config['chinese_font_path'] : $this->config['font_path'];
+		// 干扰点
+		if ($this->config['noise']) {
+			for ($i = 0; $i < 100; ++$i) {
+				$dotColor = imagecolorallocate($image, mt_rand(150, 220), mt_rand(150, 220), mt_rand(150, 220));
+				imagesetpixel($image, mt_rand(0, $width), mt_rand(0, $height), $dotColor);
+			}
+		}
 
-        if ($this->config['type'] === 'math') {
-            $text = $this->mathExpr . ' = ?';
-        } else {
-            $text = $this->code;
-        }
+		$textColor = imagecolorallocate($image, mt_rand(0, 100), mt_rand(0, 100), mt_rand(0, 100));
+		$fontPath  = $this->config['type'] === 'chinese'
+			? $this->config['chinese_font_path']
+			: $this->config['font_path'];
 
-        if ($fontPath && file_exists($fontPath)) {
-            $bbox      = imagettfbbox($this->config['font_size'], 0, $fontPath, $text);
-            $textWidth = $bbox[2] - $bbox[0];
-            $x         = intval(($width - $textWidth) / 2); // 强制转换为整数
-            $y         = intval(($height + $this->config['font_size']) / 2); // 强制转换为整数
+		$text = $this->config['type'] === 'math'
+			? $this->mathExpr . ' = ?'
+			: $this->code;
 
-            // 使用 imagettftext 绘制文字
-            imagettftext($image, $this->config['font_size'], 0, $x, $y, $textColor, $fontPath, $text);
+		// ---------------------
+		// 动态字体缩放逻辑
+		// ---------------------
+		$fontSize = $this->config['font_size'];
 
-            // 如果启用了扭曲，则对已含文字的图像进行扭曲
-            if ($this->config['distortion']) {
-                $newImage = imagecreatetruecolor($width, $height);
-                imagefilledrectangle($newImage, 0, 0, $width, $height, $bgColor);
+		if ($fontPath && file_exists($fontPath)) {
+			// 测量文字宽度，若超过画布宽度则自动缩小字体
+			$maxWidth = $width * 0.9; // 预留一点边距
+			$bbox     = imagettfbbox($fontSize, 0, $fontPath, $text);
+			$textWidth = $bbox[2] - $bbox[0];
 
-                for ($i = 0; $i < $width; ++$i) {
-                    $offset = sin($i / 10) * 3; // 波浪幅度可配置
-                    for ($j = 0; $j < $height; ++$j) {
-                        $srcY = $j + (int) $offset;
-                        if ($srcY >= 0 && $srcY < $height) {
-                            $color = imagecolorat($image, $i, $srcY);
-                            imagesetpixel($newImage, $i, $j, $color);
-                        }
-                    }
-                }
+			while ($textWidth > $maxWidth && $fontSize > 8) {
+				$fontSize -= 1;
+				$bbox = imagettfbbox($fontSize, 0, $fontPath, $text);
+				$textWidth = $bbox[2] - $bbox[0];
+			}
 
-                imagedestroy($image);
-                $image = $newImage;
-            }
-        } else {
-            // fallback to basic gd font (no distortion support for simplicity)
-            imagestring($image, 5, 10, 10, $text, $textColor);
-        }
+			// 计算居中坐标
+			$x = (int)(($width - $textWidth) / 2);
+			$y = (int)(($height + $fontSize) / 2);
 
-        ob_start();
-        imagepng($image);
-        $imageData = ob_get_clean();
-        imagedestroy($image);
+			imagettftext($image, $fontSize, 0, $x, $y, $textColor, $fontPath, $text);
+		} else {
+			// fallback: 使用内置字体
+			$font = 5;
+			$textWidth = imagefontwidth($font) * strlen($text);
+			$x = (int)(($width - $textWidth) / 2);
+			$y = (int)(($height - imagefontheight($font)) / 2);
+			imagestring($image, $font, $x, $y, $text, $textColor);
+		}
 
-        return new Response($imageData, 200, [
-            'Content-Type'  => 'image/png',
-            'Cache-Control' => 'no-cache, no-store, must-revalidate',
-            'Pragma'        => 'no-cache',
-            'Expires'       => '0',
-        ]);
-    }
+		// 可选：文字扭曲
+		if ($this->config['distortion']) {
+			$distorted = imagecreatetruecolor($width, $height);
+			imagefilledrectangle($distorted, 0, 0, $width, $height, $bgColor);
+			for ($i = 0; $i < $width; ++$i) {
+				$offset = sin($i / 10) * 3;
+				for ($j = 0; $j < $height; ++$j) {
+					$srcY = $j + (int)$offset;
+					if ($srcY >= 0 && $srcY < $height) {
+						$color = imagecolorat($image, $i, $srcY);
+						imagesetpixel($distorted, $i, $j, $color);
+					}
+				}
+			}
+			imagedestroy($image);
+			$image = $distorted;
+		}
 
+		// 输出 PNG
+		ob_start();
+		imagepng($image);
+		$data = ob_get_clean();
+		imagedestroy($image);
+
+		return new Response($data, 200, [
+			'Content-Type'  => 'image/png',
+			'Cache-Control' => 'no-cache, no-store, must-revalidate',
+			'Pragma'        => 'no-cache',
+			'Expires'       => '0',
+		]);
+	}
+
+    /**
+     * Validate captcha input.
+     */
     public function validate(string $input): bool
     {
-		$session = app('session');
-        if ($session->get($this->config['session_key']) =='') {
+        $session = app('session');
+        $encrypted = $session->get($this->config['session_key']);
+        if (empty($encrypted)) {
             return false;
         }
 
-        $expected = $session->get($this->config['session_key']);
+        $expected = $this->decrypt($encrypted);
+        $session->remove($this->config['session_key']); // 仅验证一次
 
         if ($this->config['type'] === 'math') {
             return trim($input) === $expected;
         }
-		$session->set($this->config['session_key'], null);
+
         return strtolower(trim($input)) === strtolower($expected);
     }
+
+    // ================= Helper Generators ==================
 
     protected function generateAlnum(): string
     {
@@ -187,36 +215,46 @@ class Captcha
 
     protected function generateChinese(): string
     {
-        // 简体中文常用字（可扩展）
-        $chars  = '的一是在不了有和人这中大为上个国我以要他时来用们生到作地于出就分对成会可主发年动同工也能下过子说产种面而方后多定行学法所民得经十三之进着等部度家电力里如水化高自二理起小物现实加量都两体制机当使点从业本去把性好应开它合还因由其些然前外天政四日那社义事平形相全表间样与关各重新线内数正心反你明看原又么利比或但质气第向道命此变条只没结解问意建月公无系军很情者最立代想已通并提直题党程展五果料象员革位入常文总次品式活设及管特件长求老头基资边流路级少图山统接知较将组见计别她手角期根论运农指几九区强放决西被干做必战先回则任取据处';
-        $len    = mb_strlen($chars, 'UTF-8');
+        $chars = '的一是在不了有和人这中大为上个国我以要他时来用们生到作地于出就分对成会可主发年动同工也能下过子说产种面而方后多定行学法所民得经';
+        $len = mb_strlen($chars, 'UTF-8');
         $result = '';
-        for ($i = 0; $i < $this->config['length']; ++$i) {
-            $index = mt_rand(0, $len - 1);
-            $result .= mb_substr($chars, $index, 1, 'UTF-8');
+        for ($i = 0; $i < $this->config['length']; $i++) {
+            $result .= mb_substr($chars, mt_rand(0, $len - 1), 1, 'UTF-8');
         }
         return $result;
     }
 
     protected function generateMath(): string
     {
-        $a      = mt_rand(1, 10);
-        $b      = mt_rand(1, 10);
-        $op     = ['+', '-', '*'][mt_rand(0, 2)];
-        $expr   = "{$a} {$op} {$b}";
-        $answer = 0;
-        switch ($op) {
-            case '+': $answer = $a + $b;
-                break;
-            case '-': $answer = $a - $b;
-                break;
-            case '*': $answer = $a * $b;
-                break;
+        $a = mt_rand(1, 10);
+        $b = mt_rand(1, 10);
+        $op = ['+', '-', '*'][mt_rand(0, 2)];
+        $expr = "{$a} {$op} {$b}";
+        $this->mathExpr = $expr;
+        return (string) eval("return {$expr};");
+    }
+
+    // ================= Encryption Helpers ==================
+
+    private function encrypt(string $data): string
+    {
+        $iv = random_bytes(16);
+        $cipherText = openssl_encrypt($data, 'AES-256-CBC', $this->secretKey, 0, $iv);
+        return base64_encode($iv . $cipherText);
+    }
+
+    private function decrypt(string $data): string
+    {
+        $raw = base64_decode($data, true);
+        if ($raw === false || strlen($raw) < 17) {
+            return '';
         }
-        // 存储答案用于验证，显示表达式
-
-        $this->mathExpr = (string) $expr;
-
-        return (string) $answer;
+        $iv = substr($raw, 0, 16);
+        $cipherText = substr($raw, 16);
+        return openssl_decrypt($cipherText, 'AES-256-CBC', $this->secretKey, 0, $iv) ?: '';
     }
 }
+
+
+
+
