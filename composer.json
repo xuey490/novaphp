@@ -40,6 +40,7 @@
         "symfony/routing": "^7.3",
         "symfony/translation": "^7.3",
         "symfony/yaml": "^7.3",
+        "topthink/think-cache": "^3.0",
         "topthink/think-orm": "^3.0",
         "topthink/think-template": "^3.0",
         "topthink/think-validate": "^3.0",

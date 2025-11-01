@@ -5,8 +5,8 @@ declare(strict_types=1);
 /**
  * This file is part of Navaphp Framework.
  *
- * @link     https://github.com/xuey490/novaphp
- * @license  https://github.com/xuey490/novaphp/blob/main/LICENSE
+ * @link     https://github.com/xuey490/project
+ * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
  * @Filename: %filename%
  * @Date: 2025-10-16
@@ -16,18 +16,18 @@ declare(strict_types=1);
 
 namespace Framework\Cache;
 
+/*
+Cache interface for thinkcache
+*/
 interface CacheInterface
 {
-    public function get($key, $default = null);
+    public function get(string $key, mixed $default = null): mixed;
 
-    public function set($key, $value, $ttl = null);
+    public function set(string $key, mixed $value, int $ttl = 0): bool;
 
-    public function delete($key);
+    public function has(string $key): bool;
 
-    public function has($key);
+    public function delete(string $key): bool;
 
-    public function clear();
-
-    // ✅ 新增 tag 方法
-    public function tag(array|string $name): TaggedCacheInterface;
+    public function clear(): bool;
 }

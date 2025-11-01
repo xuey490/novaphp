@@ -65,7 +65,7 @@ class Home
         # print_r( $userService->getUsers(111) );
         // ✅ 此时 app() 已可用！
 
-        #dump(app()->getServiceIds()); // 查看所有服务 ID
+        # dump(app()->getServiceIds()); // 查看所有服务 ID
 
         // 日志测试
         // $logger = app('log');
@@ -73,13 +73,30 @@ class Home
 
         // echo renderCsrfField();
 
-        /* thinkcache测试
+        # thinkcache测试
         $cache = app('cache');
         $cache->set('test1', ['name' => 'mike'], 3600);
         $test1 =$cache->get('test1');
         //$test1 = $cache->clear();
         print_r($test1);
-        */
+		
+		
+		#caches('foo-----', 'bar', 120);  // set
+		#echo caches('foo');         // get
+
+		#$factory = new \Framework\Cache\ThinkCache(require BASE_PATH . '/config/cache.php');
+		#$redisCache = $factory->create(); // ✅ 成功
+		#$redisCache ->set('foo111', 'bar', 120);
+
+		//$ca = app(\Framework\Cache\ThinkCache::class)->create('redis');
+		//$ca->set('xxxx', 'bar', 120);
+		
+		
+
+		
+		
+		
+		
 
         // Symfony缓存
         #cache_set('user_1', ['name' => 'Alice'], 3600);
@@ -228,6 +245,13 @@ class Home
 
     public function successPage(Request $request)
     {
+		
+        $cache = app('cache');
+       # $cache->set('test1', ['name' => 'mike'], 3600);
+        $test1 =$cache->get('test1');
+        //$test1 = $cache->clear();
+        print_r($test1);
+		
         return new Response('<h1>提交成功！</h1>');
     }
 
