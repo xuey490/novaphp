@@ -8,26 +8,31 @@ return [
         'file' => [
             'driver' => 'file',
 			'type' => 'File',  //兼容thinkcache
-            'path' => dirname(__DIR__) . '/storage/cache',
+            'path' => '../storage/cache',
             'prefix' => 'cache_',           // ← 新增：key 前缀
             'enable_tags' => true,          // ← 新增：是否启用标签
         ],
 
         'redis' => [
             'driver' => 'redis',
-			'type'   => 'Redis',
+			'type'   => 'Redis', //兼容thinkcache
+			'host'       => '127.0.0.1',
+			'port'	 => 6379,
+            // redis密码
+            'password'  => null,
+			'expire'	=>3600,
+			/*
             'connection' => [
                 'scheme' => 'tcp',
                 'host' => env('REDIS_HOST', '127.0.0.1'),
                 'port' => env('REDIS_PORT', 6379),
                 'password' => env('REDIS_PASSWORD', null),
             ],
+			*/
             'database' => 0,
             'prefix' => 'redis_',           // Redis 缓存前缀
             'enable_tags' => true,
         ],
-
-
 
         'memcached' => [
             'driver' => 'memcached',

@@ -45,4 +45,14 @@ class Hello
 
         return new Response($content . $debugInfo);
     }
+	
+	
+	public function test()
+	{
+		for($i =0 ; $i<=10000 ; $i++)
+		{
+			echo $i+ rand(0 , 100)."<br/>";
+			
+		}
+	}
 }

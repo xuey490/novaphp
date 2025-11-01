@@ -5,8 +5,8 @@ declare(strict_types=1);
 /**
  * This file is part of Navaphp Framework.
  *
- * @link     https://github.com/xuey490/novaphp
- * @license  https://github.com/xuey490/novaphp/blob/main/LICENSE
+ * @link     https://github.com/xuey490/project
+ * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
  * @Filename: %filename%
  * @Date: 2025-10-16
@@ -66,10 +66,10 @@ class CacheFactory
 
     private function createRedisAdapter(string $prefix, array $config): AdapterInterface
     {
-        $conn     = $config['connection'];
-        $host     = $conn['host'];
-        $port     = $conn['port'];
-        $password = $conn['password']   ?? null;
+        #$conn     = $config['connection'];
+        $host     = $config['host'];
+        $port     = $config['port'];
+        $password = $config['password']   ?? null;
         $database = $config['database'] ?? 0;
 
         // 构造标准 Redis DSN: redis://[password@]host:port

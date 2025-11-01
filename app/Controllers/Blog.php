@@ -14,7 +14,7 @@ use App\Twig\AppTwigExtension;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Twig\Environment;
-
+use App\Models\Admin;
  // 假设你有文章服务
 
 class Blog
@@ -56,6 +56,11 @@ class Blog
 
     public function index(): Response
     {
+		
+        $users = Admin::select()->toArray();
+        print_r($users); // 因为你框架会处理 array => json
+		
+		
         // 🔍 检查当前 Twig 实例是否加载了 AppTwigExtension
         $extensions   = app('view')->getExtensions();
         $hasExtension = false;
@@ -85,6 +90,12 @@ class Blog
             'popularPosts' => $popularPosts,
             'mdContent'    => $mdContent,
         ]);
+		
+		for($i =0 ; $i<=10000 ; $i++)
+		{
+			echo $i+ rand(0 , 100)."<br/>";
+			
+		}
 
         return new Response($html);
     }
