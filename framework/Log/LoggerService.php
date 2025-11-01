@@ -5,11 +5,11 @@ declare(strict_types=1);
 /**
  * This file is part of Navaphp Framework.
  *
- * @link     https://github.com/xuey490/novaphp
- * @license  https://github.com/xuey490/novaphp/blob/main/LICENSE
+ * @link     https://github.com/xuey490/project
+ * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
- * @Filename: %filename%
- * @Date: 2025-10-16
+ * @Filename: LoggerService.php
+ * @Date: 2025-11-1
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
  */
@@ -34,7 +34,9 @@ class LoggerService implements LoggerInterface  // 实现 Psr\Log\LoggerInterfac
     ) {
         $channel = $this->config->get('log.log_channel', 'app');
         $logDir  = $this->config->get('log.log_path', BASE_PATH . '/storage/logs');
-
+        $maxSize = (int)$this->config->get('log.logSize', 5 * 1024 * 1024); // 默认 5MB
+        $keepDays = (int)$this->config->get('log.logKeepDays', 30);         // 默认保留30天
+		
         if (! is_dir($logDir)) {
             mkdir($logDir, 0755, true);
         }
@@ -43,7 +45,8 @@ class LoggerService implements LoggerInterface  // 实现 Psr\Log\LoggerInterfac
 
         // 1. Debug 日志：仅 DEBUG
         $debugHandler = new FilterHandler(
-            new StreamHandler($logDir . '/debug.log', MonoLogger::DEBUG),
+			new FileSizeRotateHandler($logDir . '/debug.log', $maxSize, $keepDays, MonoLogger::DEBUG),
+            //new StreamHandler($logDir . '/debug.log', MonoLogger::DEBUG),
             MonoLogger::DEBUG,
             MonoLogger::DEBUG
         );
@@ -51,7 +54,8 @@ class LoggerService implements LoggerInterface  // 实现 Psr\Log\LoggerInterfac
 
         // 2. Error 日志：ERROR ~ EMERGENCY
         $errorHandler = new FilterHandler(
-            new StreamHandler($logDir . '/error.log', MonoLogger::ERROR),
+			new FileSizeRotateHandler($logDir . '/error.log', $maxSize, $keepDays, MonoLogger::ERROR),
+            # new StreamHandler($logDir . '/error.log', MonoLogger::ERROR),
             MonoLogger::ERROR,
             MonoLogger::EMERGENCY
         );
@@ -59,7 +63,8 @@ class LoggerService implements LoggerInterface  // 实现 Psr\Log\LoggerInterfac
 
         // 3. App 日志：INFO, NOTICE, WARNING
         $appHandler = new FilterHandler(
-            new StreamHandler($logDir . '/app.log', MonoLogger::INFO),
+            // new StreamHandler($logDir . '/app.log', MonoLogger::INFO),
+			new FileSizeRotateHandler($logDir . '/app.log', $maxSize, $keepDays, MonoLogger::INFO),
             MonoLogger::INFO,
             MonoLogger::WARNING
         );
