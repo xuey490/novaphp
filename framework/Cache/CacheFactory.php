@@ -66,10 +66,10 @@ class CacheFactory
 
     private function createRedisAdapter(string $prefix, array $config): AdapterInterface
     {
-        $conn     = $config['connection'];
-        $host     = $conn['host'];
-        $port     = $conn['port'];
-        $password = $conn['password']   ?? null;
+        #$conn     = $config['connection'];
+        $host     = $config['host'];
+        $port     = $config['port'];
+        $password = $config['password']   ?? null;
         $database = $config['database'] ?? 0;
 
         // 构造标准 Redis DSN: redis://[password@]host:port
