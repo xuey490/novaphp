@@ -4,7 +4,7 @@
 define('BASE_PATH', realpath(dirname(__DIR__)));
 define('APP_DEBUG', true);
 
-define('FRAMEWORK_VERSION', '0.0.10-Bate (Powered by Blue2004)');
+define('FRAMEWORK_VERSION', '0.2.2');
 
 // 引入 Composer 自动加载（确保 vendor 目录在 BASE_PATH 下）
 if (file_exists(BASE_PATH . '/vendor/autoload.php')) {
