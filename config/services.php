@@ -13,15 +13,10 @@ use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorage;
 use Symfony\Component\HttpFoundation\Session\Storage\Handler\StrictSessionHandler;
 use Symfony\Component\HttpFoundation\Session\Storage\Handler\RedisSessionHandler;
-
-
 #use Valitron\Validator;
-
 
 return function (ContainerConfigurator $configurator) {
     $services = $configurator->services();
-
-
 
     // 默认配置
     $services
@@ -38,7 +33,6 @@ return function (ContainerConfigurator $configurator) {
             'root',
             [\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION]
         ])->public();
-
 		
     // ✅ 1. 手动注册 PDO 服务
 	/*
@@ -57,7 +51,6 @@ return function (ContainerConfigurator $configurator) {
     // 示例：注册一个服务 如果你有 test.service 且要手动 get() 必须加public这一行
     $services->set('test', \stdClass::class)->public();
 	
-
 	/*
     // 1. 配置 Redis 连接（与 Workerman 共用）
 	$services->set('redis.connection', \Redis::class)
@@ -65,8 +58,6 @@ return function (ContainerConfigurator $configurator) {
         // 若有密码，添加以下行
         // ->call('auth', ['your_redis_password'])
         ->public(); // 允许外部访问
-	
-		
 
     // 2. 配置 Redis Session 处理器
     $services->set(RedisSessionHandler::class)
@@ -100,9 +91,6 @@ return function (ContainerConfigurator $configurator) {
         ->public(); // 允许控制器直接获取
 	*/
 	
-	
-	
-
     // 加载session redis配置
     $redisConfig = require __DIR__ . '/redis.php';
     $sessionConfig = require __DIR__ . '/session.php';
@@ -155,8 +143,6 @@ return function (ContainerConfigurator $configurator) {
 			])
 			->public();
 
-
-
         // file 存储：不传 handler，使用原生文件存储
         // 默认：使用原生文件存储（PHP 默认）
 		/*
@@ -171,9 +157,7 @@ return function (ContainerConfigurator $configurator) {
         ->args([service('session.storage')])
         #->args([new Reference('session.storage')])
         ->public();
-
-	
-	
+		
 	// 注册 ConfigLoader 为服务
 	$services->set('config' , \Framework\Config\ConfigLoader::class)	//$globalConfig = $this->container->get('config')->loadAll();
 		->args(['%kernel.project_dir%/config'])
@@ -183,8 +167,7 @@ return function (ContainerConfigurator $configurator) {
     $services->set(\Framework\Config\ConfigLoader::class)
         ->args(['%kernel.project_dir%/config'])
         ->public();
-		
-	
+
     // 🔹 2. 注册 ConfigService 服务类
     $services->set(\Framework\Config\ConfigService::class)
         ->public(); // 自动注入 ConfigLoader（autowire 默认开启）
@@ -194,7 +177,6 @@ return function (ContainerConfigurator $configurator) {
 		->autowire() // 自动注入 ConfigService
         ->public(); // 允许直接 $container->get()
 
-	
     // 🔹 4. 注册 Logger 业务类
     $services->set(\Framework\Log\Logger::class)
 		->args([
@@ -215,8 +197,6 @@ return function (ContainerConfigurator $configurator) {
 	$services->set(\Framework\Core\Exception\Handler::class)
 		->autowire()
 		->public();		
-			
-			
 		
 	// 定义缓存管理器服务（单例）
 	$cacheConfig = require __DIR__ . '/cache.php';
@@ -227,6 +207,23 @@ return function (ContainerConfigurator $configurator) {
 		->args([$cacheConfig])
 		->public();
 	*/
+	
+    // 1 注册 ThinkCache 并注入配置
+    $services->set(\Framework\Cache\ThinkCache::class)
+        //->arg('$config', require __DIR__ . '/cache.php')
+		->args([$cacheConfig])
+        ->public();
+
+    // 2️ 注册 ThinkAdapter（即最终 Cache 服务）
+    $services->set(\Framework\Cache\ThinkAdapter::class)
+        // 直接调用 ThinkCache::create()
+        ->factory([service(\Framework\Cache\ThinkCache::class), 'create'])
+        ->public();
+
+    // 3️ 可选：别名方式简化访问
+    $services->set('cache', \Framework\Cache\ThinkAdapter::class)
+        ->factory([service(\Framework\Cache\ThinkCache::class), 'create'])
+        ->public();
 	
 	// symfony/cache 注册服务		
     $services->set(\Framework\Cache\CacheFactory::class)
@@ -254,7 +251,6 @@ return function (ContainerConfigurator $configurator) {
             service(RequestStack::class),
             '%kernel.project_dir%/resource/translations',
         ])->public();
-
 
 	//Override
 	$services->set(\Framework\Middleware\MiddlewareMethodOverride::class)
@@ -292,14 +288,11 @@ return function (ContainerConfigurator $configurator) {
 		->autowire()
 		->public();
 
-
-
     // 加载中间件配置
     $middlewareConfig = require __DIR__ . '/../config/middleware.php';
 
     // 动态注册：Rate_Limit 中间件
 	if ($middlewareConfig['rate_limit']['enabled']) {
-
 		//限流器
 		$services->set(\Framework\Middleware\MiddlewareRateLimit::class)
 			->args([
@@ -308,7 +301,6 @@ return function (ContainerConfigurator $configurator) {
 			])
 			->autoconfigure()
 			->public(); 
-			
 	}
 
     // 动态注册：CSRF 保护中间件 use Framework\Security\CsrfTokenManager;
@@ -344,7 +336,6 @@ return function (ContainerConfigurator $configurator) {
             ->public();
     }
 	
-
     // TWIG配置加载
 	$TempConfig = require dirname(__DIR__) . '/config/view.php';
 	$viewConfig = $TempConfig['Twig'];
@@ -416,10 +407,10 @@ return function (ContainerConfigurator $configurator) {
 		->public();	
 	*/
 	
-	// 2.注册thinkTemp
+	// 0 注册参数类
     $parameters = $configurator->parameters();
 	
-	// 0.注册模板工厂类
+	// 1 注册模板工厂类 ，可以这样注册
 	$services->set(\Framework\View\ThinkTemplateFactory::class)
 		->args([$tpTemplateConfig])
 		->public();	;
@@ -428,7 +419,7 @@ return function (ContainerConfigurator $configurator) {
     // 这是一种更 Symfony 的做法，便于管理
     $parameters->set('think_template.config', $tpTemplateConfig);
 
-    // 2. 注册 'thinkTemp' 服务
+    // 2. 注册 'thinkTemp' 服务 ，也可以这样注册
     $services->set('thinkTemp', \think\Template::class)
         // 使用 factory() 方法，并指向我们的工厂类
 		//->factory(service(\Framework\View\ThinkTemplateFactory::class))
@@ -440,7 +431,6 @@ return function (ContainerConfigurator $configurator) {
         ])
         ->public(); // 允许从容器外部获取
 
-	
     // 注册 MIME 检查器
     $services->set(\Framework\Utils\MimeTypeChecker::class)
              ->args([dirname(__DIR__) . '/config/mime_types.php'])->public();
@@ -449,8 +439,7 @@ return function (ContainerConfigurator $configurator) {
     $uploadConfig = include dirname(__DIR__) . '/config/upload.php';
 
     $services->set(\Framework\Utils\FileUploader::class)
-             ->args([$uploadConfig, service(\Framework\Utils\MimeTypeChecker::class)])->public();	
-
+        ->args([$uploadConfig, service(\Framework\Utils\MimeTypeChecker::class)])->public();	
 
 	// 注册ThinkValidator工厂类
     $services->set(\Framework\Validation\ThinkValidatorFactory::class)
@@ -474,7 +463,6 @@ return function (ContainerConfigurator $configurator) {
 		->autoconfigure() 
 		->public(); 
 
-	
 	//批量注册路由中间件
 	$services->load('App\\Middlewares\\', '../app/Middlewares/**/*.php')
 		->autowire()      // 支持中间件的依赖自动注入（如注入UserService）
@@ -488,14 +476,12 @@ return function (ContainerConfigurator $configurator) {
         ->autowire()
         ->autoconfigure()->public(); // 如果你后续要直接 get() 它，才需要 public；否则可省略
 		
-
     // ✅ 自动加载控制器（关键：使用相对路径）
     // 3. 控制器（必须 public！）
     $services->load('App\\Controllers\\', '../app/Controllers/**/*.php')
         ->autowire()
         ->autoconfigure()->public();
 };
-
 
 //redis===================
 /**

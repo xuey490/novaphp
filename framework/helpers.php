@@ -18,6 +18,8 @@ use Framework\Container\Container;
 use Framework\Core\App;
 use Framework\Core\Framework;
 use Framework\Security\CsrfTokenManager;
+use Framework\Cache\ThinkCache;
+use Framework\Cache\ThinkAdapter;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Cache\Adapter\TagAwareAdapter;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -118,6 +120,12 @@ if (!function_exists('getService')) {
     }
 }
 
+
+
+
+
+
+
 /**
  * 各路径辅助函数.
  */
@@ -145,6 +153,58 @@ function app_path(string $path = ''): string
 {
     return base_path('app') . ($path !== '' ? '/' . $path : '');
 }
+
+
+/**
+ * 简单缓存助手函数
+ *
+ * 用法：
+ *   caches('foo', 'bar');       // 设置
+ *   caches('foo');              // 获取
+ *   caches('foo', null);        // 删除
+ *   caches();                   // 返回默认实例
+ */
+if (!function_exists('caches')) {
+    function caches(?string $key = null, mixed $value = '__GET__', ?int $ttl = null): mixed
+    {
+        static $instance = null;
+
+        if ($instance === null) {
+            $config = require base_path() . '/config/cache.php';
+            $factory = new ThinkCache($config);
+            $instance = $factory->create($config['default'] ?? 'file');
+        }
+
+        // 无参数：返回实例
+        if ($key === null) {
+            return $instance;
+        }
+
+        // 删除
+        if ($value === null) {
+            return $instance->delete($key);
+        }
+
+        // 读取
+        if ($value === '__GET__') {
+            return $instance->get($key);
+        }
+
+        // 写入
+        return $instance->set($key, $value, $ttl);
+    }
+}
+
+/**
+ * 清空缓存助手
+ */
+if (!function_exists('caches_clear')) {
+    function caches_clear(): bool
+    {
+        return caches()->clear();
+    }
+}
+
 
 /**
  * 环境变量读取.
