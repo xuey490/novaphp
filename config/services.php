@@ -24,6 +24,10 @@ return function (ContainerConfigurator $configurator) {
         ->autowire()      // 所有服务默认自动装配
         ->autoconfigure() // 所有服务默认自动配置
     ;
+	
+	
+	$services->set('log_cache', \Framework\Log\LoggerCache::class)
+		->public();
 
     // 示例服务	
     $services->set('db.connection', \PDO::class)
