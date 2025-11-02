@@ -97,34 +97,39 @@ if (!function_exists('redirectToRoute')) {
 
 if (!function_exists('app')) {
     /**
-     * 获取服务容器或解析服务.
+     * 获取容器或解析服务
+     *
+     * @param string|null $id 服务ID
+     * @param array $params 可选构造参数
+     * @return ContainerInterface|object
      */
-    function app(?string $id = null): mixed
+    function app(?string $id = null, array $params = [])
     {
         if ($id === null) {
             return App::getContainer();
         }
 
-        return App::make($id);
+        return App::make($id, $params);
     }
 }
 
 if (!function_exists('getService')) {
     /**
-     * 从容器中获取服务实例.
+     * 从容器中获取服务（别名或类名）
+     *
+     * @param string $id
+     * @param array $params
+     * @return object
      */
-    function getService(string $id): object
+    function getService(string $id, array $params = []): object
     {
+		/*
         $framework = Framework::getInstance();
         return $framework->getContainer()->get($id);
+		*/
+        return App::make($id, $params);
     }
 }
-
-
-
-
-
-
 
 /**
  * 各路径辅助函数.

@@ -78,11 +78,14 @@ class Home
         $cache->set('test1', ['name' => 'mike'], 3600);
         $test1 =$cache->get('test1');
         //$test1 = $cache->clear();
-        print_r($test1);
+        #print_r($test1);
 		
+		#$loggerService = getService(\Framework\Log\LoggerService::class);
+#print_r($loggerService);	
+		#$loggerService->info('App----------------------------------------------------');
 		
-		#caches('foo-----', 'bar', 120);  // set
-		#echo caches('foo');         // get
+		caches('foo-----', 'bar', 120);  // set
+		#echo caches('foo-----');         // get
 
 		#$factory = new \Framework\Cache\ThinkCache(require BASE_PATH . '/config/cache.php');
 		#$redisCache = $factory->create(); // ✅ 成功
@@ -91,10 +94,16 @@ class Home
 		//$ca = app(\Framework\Cache\ThinkCache::class)->create('redis');
 		//$ca->set('xxxx', 'bar', 120);
 		
-		
+$logger1 = app('log_cache');
 
+$logger1->log('默认日志文件');
 		
-		
+// 使用自定义参数
+$logger2 = app('log_cache', [
+    'channel' => 'payment',
+    'logFile' => '/tmp/payment.log',
+]);
+$logger2->log('支付日志');	
 		
 		
 
