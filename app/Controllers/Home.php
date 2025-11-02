@@ -78,11 +78,11 @@ class Home
         $cache->set('test1', ['name' => 'mike'], 3600);
         $test1 =$cache->get('test1');
         //$test1 = $cache->clear();
-        print_r($test1);
+        #print_r($test1);
 		
 		
-		#caches('foo-----', 'bar', 120);  // set
-		#echo caches('foo');         // get
+		caches('foo-----', 'bar', 120);  // set
+		#echo caches('foo-----');         // get
 
 		#$factory = new \Framework\Cache\ThinkCache(require BASE_PATH . '/config/cache.php');
 		#$redisCache = $factory->create(); // ✅ 成功
