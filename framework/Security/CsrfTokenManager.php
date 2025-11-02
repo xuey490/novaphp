@@ -55,7 +55,7 @@ class CsrfTokenManager
     }
 
     private function getSessionKey(string $tokenId): string
-    {		 // echo $this->namespace . '.' . $tokenId.'----';
+    {
         return $this->namespace . '.' . $tokenId;
     }
 }

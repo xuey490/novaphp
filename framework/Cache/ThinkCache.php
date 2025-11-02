@@ -25,7 +25,7 @@ use think\facade\Cache;
 #$cache->set('test1', ['name' => 'mike'], 3600);
 #$test1 =$cache->get('test1');
 //$test1 = $cache->clear();
-#print_r($test1);
+
 
 
 //cache('foo', 'bar', 120);  // set

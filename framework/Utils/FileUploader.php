@@ -100,12 +100,11 @@ class FileUploader
     {
         header('Content-Type: application/json; charset=utf-8');
         http_response_code($code);
-        echo json_encode([
+        return json_encode([
             'status' => 'error',
             'code' => $code,
             'message' => $message,
         ], JSON_UNESCAPED_UNICODE);
-        exit;
     }
 
     /**

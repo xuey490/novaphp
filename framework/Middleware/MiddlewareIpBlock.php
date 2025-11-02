@@ -36,7 +36,6 @@ class MiddlewareIpBlock
             $this->blacklist = $config['blacklist'] ?? [];
             $this->enabled   = $config['enabled']   ?? true;
         }
-        // print_r($config);
     }
 
     public function handle(Request $request, callable $next): Response
