@@ -8,8 +8,8 @@
 $header = <<<'EOF'
 This file is part of Navaphp Framework.
 
-@link     https://github.com/xuey490/novaphp
-@license  https://github.com/xuey490/novaphp/blob/main/LICENSE
+@link     https://github.com/xuey490/project
+@license  https://github.com/xuey490/project/blob/main/LICENSE
 
 @Filename: %s
 @Date: %s
