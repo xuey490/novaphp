@@ -10,6 +10,7 @@ Container.php 内部逻辑示意图 + 初始化流程图，用文字图（ASCII 
 
 1️⃣ Container.php 内部逻辑示意图（单文件概览）
 
+```cpp
 Container (implements Symfony ContainerInterface)
 ├─ private static $container : SymfonyContainerInterface|null
 ├─ private const CACHE_FILE = BASE_PATH.'/storage/cache/container.php'
@@ -41,9 +42,12 @@ Container (implements Symfony ContainerInterface)
 │   ├─ getParameter($name)
 │   └─ setParameter($name, $value)
 
+```
+
 
 2️⃣ Container 初始化流程图（ASCII 风格）
 
+```cpp
 +-------------------------+
 |  Container::init()      |
 +-------------------------+
@@ -103,6 +107,8 @@ Container (implements Symfony ContainerInterface)
 | require cache.php  |   +-------------------+
 | self::$container=loaded
 +-------------------+
+
+```
 
 3️⃣ 核心思路总结
 
