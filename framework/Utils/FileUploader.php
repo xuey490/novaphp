@@ -5,10 +5,10 @@ declare(strict_types=1);
 /**
  * This file is part of Navaphp Framework.
  *
- * @link     https://github.com/xuey490/novaphp
- * @license  https://github.com/xuey490/novaphp/blob/main/LICENSE
+ * @link     https://github.com/xuey490/project
+ * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
- * @Filename: %filename%
+ * @Filename: FileUploader.php
  * @Date: 2025-10-16
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
@@ -19,9 +19,26 @@ namespace Framework\Utils;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 
+/*
+| 功能      | URL             | 方法   | 参数                                           |
+| ------- | --------------- | ---- | -------------------------------------------- |
+| 检查已上传分片 | `/upload/check` | GET  | `hash`                                       |
+| 上传分片    | `/upload/chunk` | POST | `file`, `index`, `total`, `hash`, `filename` |
+| 合并分片    | `/upload/merge` | POST | JSON `{hash, filename}`                      |
+| 普通上传    | `/upload`       | POST | 表单上传文件                                       |
+*/
 class FileUploader
 {
     private string $uploadDir;
+
+	//分片
+    private string $chunkDir;
+	
+	//合并
+    private string $mergeDir;
+	
+	//redis存储分片
+    private Redis $redis;
 
     private int $maxSize;
 
@@ -39,33 +56,163 @@ class FileUploader
     ) {
         $this->mimeChecker = $mimeChecker;
 
-        $this->maxSize   = $uploadConfig['max_size'] ?? 5 * 1024 * 1024;
+        $this->maxSize   = $uploadConfig['max_size'] ?? 5 * 1024 * 1024; //maxsize 5MB
         $this->whitelist = array_map('strtolower', $uploadConfig['whitelist_extensions'] ?? []);
         $this->blacklist = array_map('strtolower', $uploadConfig['blacklist_extensions'] ?? []);
         $this->naming    = $uploadConfig['naming'] ?? 'uuid';
 
         if (! in_array($this->naming, ['original', 'uuid', 'datetime', 'md5'])) {
-            throw new \InvalidArgumentException("Invalid naming strategy: {$this->naming}");
+            $this->raiseError("Invalid naming strategy: {$this->naming}");
+            # throw new \InvalidArgumentException("Invalid naming strategy: {$this->naming}");
         }
 
-        $uploadDir       = $uploadConfig['upload_dir'] ?? throw new \InvalidArgumentException('Missing upload_dir');
+        $uploadDir       = $uploadConfig['upload_dir'] ?? $this->raiseError('Missing upload_dir');
         $this->uploadDir = str_replace('%kernel.project_dir%', $this->getProjectDir(), $uploadDir);
 		
 
         if (! is_dir($this->uploadDir) && ! mkdir($this->uploadDir, 0755, true)) {
-            throw new \RuntimeException("Failed to create upload directory: {$this->uploadDir}");
+            $this->raiseError("Failed to create upload directory: {$this->uploadDir}");
+            # throw new \RuntimeException("Failed to create upload directory: {$this->uploadDir}");
         }
+		
 
         if (! is_writable($this->uploadDir)) {
-            throw new \RuntimeException("Upload directory is not writable: {$this->uploadDir}");
+            $this->raiseError("Upload directory is not writable: {$this->uploadDir}");
+            # throw new \RuntimeException("Upload directory is not writable: {$this->uploadDir}");
         }
+		
+        $this->chunkDir = $this->uploadDir . '/chunks';
+        $this->mergeDir = $this->uploadDir . '/complete';
+
+        if (!is_dir($this->chunkDir)) mkdir($this->chunkDir, 0755, true);
+        if (!is_dir($this->mergeDir)) mkdir($this->mergeDir, 0755, true);
+
+        // Redis 连接
+        $this->redis = new Redis();
+        $this->redis->connect($config['redis']['host'] ?? '127.0.0.1', $config['redis']['port'] ?? 6379);
+        $this->redis->select($config['redis']['db'] ?? 0);
     }
 
+    /**
+     * 统一错误处理函数
+     */
+    private function raiseError(string $message, int $code = 400): never
+    {
+        header('Content-Type: application/json; charset=utf-8');
+        http_response_code($code);
+        echo json_encode([
+            'status' => 'error',
+            'code' => $code,
+            'message' => $message,
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    /**
+     * 分片上传
+     */
+    public function uploadChunk(Request $request): array
+    {
+        $file = $request->files->get('file');
+        $hash = $request->request->get('hash');
+        $index = (int)$request->request->get('index');
+        $total = (int)$request->request->get('total');
+        $filename = $request->request->get('filename');
+
+        if (!$file || !$hash || !$filename) {
+            $this->raiseError('缺少必要参数');
+        }
+
+        $chunkDir = "{$this->chunkDir}/{$hash}";
+        if (!is_dir($chunkDir)) mkdir($chunkDir, 0755, true);
+
+        $chunkPath = "{$chunkDir}/{$index}.part";
+        try {
+            $file->move($chunkDir, "{$index}.part");
+        } catch (\Exception $e) {
+            $this->raiseError("保存分片失败: " . $e->getMessage());
+        }
+
+        // Redis 记录分片
+        $redisKey = "upload:{$hash}:chunks";
+        $this->redis->sAdd($redisKey, (string)$index);
+        $this->redis->expire($redisKey, 24 * 3600);
+
+        return [
+            'status' => 'ok',
+            'index' => $index,
+            'message' => '分片上传成功',
+        ];
+    }
+
+    /**
+     * 查询已上传分片（断点恢复）
+     */
+    public function checkUploadedChunks(Request $request): array
+    {
+        $hash = $request->query->get('hash');
+        if (!$hash) $this->raiseError('缺少 hash 参数');
+
+        $redisKey = "upload:{$hash}:chunks";
+        $uploaded = $this->redis->sMembers($redisKey);
+
+        return [
+            'status' => 'ok',
+            'uploaded' => array_map('intval', $uploaded),
+        ];
+    }
+
+    /**
+     * 合并分片
+     */
+    public function mergeChunks(Request $request): array
+    {
+        $data = json_decode($request->getContent(), true);
+        $hash = $data['hash'] ?? null;
+        $filename = $data['filename'] ?? null;
+        if (!$hash || !$filename) $this->raiseError('缺少 hash 或 filename');
+
+        $chunkDir = "{$this->chunkDir}/{$hash}";
+        if (!is_dir($chunkDir)) $this->raiseError('分片目录不存在');
+
+        $outputPath = "{$this->mergeDir}/" . basename($filename);
+        $chunks = glob("{$chunkDir}/*.part");
+        if (!$chunks) $this->raiseError('未找到分片文件');
+
+        natsort($chunks);
+        $output = fopen($outputPath, 'wb');
+        if (!$output) $this->raiseError('无法创建合并文件');
+
+        foreach ($chunks as $chunk) {
+            $in = fopen($chunk, 'rb');
+            if ($in) {
+                stream_copy_to_stream($in, $output);
+                fclose($in);
+            }
+        }
+        fclose($output);
+
+        // 清理 Redis + 临时文件
+        $this->redis->del("upload:{$hash}:chunks");
+        foreach ($chunks as $chunk) unlink($chunk);
+        @rmdir($chunkDir);
+
+        return [
+            'status' => 'ok',
+            'message' => "文件已合并: {$outputPath}",
+            'path' => str_replace($this->getProjectDir(), '', $outputPath),
+        ];
+    }
+
+    /**
+     * 普通上传
+     */
     public function upload(Request $request, string $formName = 'file'): array
     {
         $files = $request->files->get($formName);
         if (! $files) {
-            throw new \InvalidArgumentException("No file found under key '{$formName}'");
+            $this->raiseError("No file found under key '{$formName}'");
+            # throw new \InvalidArgumentException("No file found under key '{$formName}'");
         }
 
         $fileList = is_array($files) ? $files : [$files];
@@ -73,7 +220,8 @@ class FileUploader
 
         foreach ($fileList as $file) {
             if (! $file instanceof UploadedFile) {
-                throw new \InvalidArgumentException('Invalid uploaded file.');
+                $this->raiseError('Invalid uploaded file.');
+                # throw new \InvalidArgumentException('Invalid uploaded file.');
             }
             $results[] = $this->handleFile($file);
         }
@@ -81,16 +229,21 @@ class FileUploader
         return $results;
     }
 
+    /**
+     * 文件基础校验 + 保存逻辑
+     */
     private function handleFile(UploadedFile $file): array
     {
         // 1. 检查上传错误
         if ($file->getError() !== UPLOAD_ERR_OK) {
-            throw new \RuntimeException($this->getUploadErrorMessage($file->getError()));
+            $this->raiseError($this->getUploadErrorMessage($file->getError()));
+            # throw new \RuntimeException($this->getUploadErrorMessage($file->getError()));
         }
 
         // 2. 检查文件大小
         if ($file->getSize() > $this->maxSize) {
-            throw new \RuntimeException("File size exceeds limit ({$this->maxSize} bytes).");
+            $this->raiseError("File size exceeds limit ({$this->maxSize} bytes).");
+            #throw new \RuntimeException("File size exceeds limit ({$this->maxSize} bytes).");
         }
 
         // 3. 获取扩展名（优先原始扩展名，其次从 MIME 推断）
@@ -101,38 +254,43 @@ class FileUploader
             $extension          = $inferredExtensions[0] ?? '';
         }
         if (! $extension) {
-            throw new \RuntimeException('Cannot determine file extension and no valid MIME mapping found.');
+            $this->raiseError('Cannot determine file extension and no valid MIME mapping found.');
+            # throw new \RuntimeException('Cannot determine file extension and no valid MIME mapping found.');
         }
 
         // 4. 黑名单检查
         if (in_array($extension, $this->blacklist)) {
-            throw new \RuntimeException("File extension '{$extension}' is blacklisted.");
+            $this->raiseError("File extension '{$extension}' is blacklisted.");
+            # throw new \RuntimeException("File extension '{$extension}' is blacklisted.");
         }
 
         // 5. 白名单检查
         if (! empty($this->whitelist) && ! in_array($extension, $this->whitelist)) {
-            throw new \RuntimeException("File extension '{$extension}' is not allowed.");
+            $this->raiseError("File extension '{$extension}' is not allowed.");
+            # throw new \RuntimeException("File extension '{$extension}' is not allowed.");
         }
 
         // 6. MIME 类型严格校验（使用 fileinfo）
         $expectedMime = $this->mimeChecker->getMimeByExtension($extension);
         if (! $expectedMime || $expectedMime === 'application/octet-stream') {
-            throw new \RuntimeException("No valid MIME type defined for extension: {$extension}");
+            $this->raiseError("No valid MIME type defined for extension: {$extension}");
+            # throw new \RuntimeException("No valid MIME type defined for extension: {$extension}");
         }
 
         $finfo    = new \finfo(FILEINFO_MIME_TYPE);
         $realPath = $file->getRealPath();
         if (! $realPath || ! is_file($realPath)) {
-            throw new \RuntimeException('Temporary uploaded file not found.');
+            $this->raiseError('Temporary uploaded file not found.');
+            # throw new \RuntimeException('Temporary uploaded file not found.');
         }
 
         $detectedMime = $finfo->file($realPath);
         if (! $detectedMime) {
-            throw new \RuntimeException('Unable to detect MIME type of uploaded file.');
+            $this->raiseError('Unable to detect MIME type of uploaded file.');
         }
 
         if ($detectedMime !== $expectedMime) {
-            throw new \RuntimeException("Suspicious MIME type detected: {$detectedMime}, expected: {$expectedMime}");
+            $this->raiseError("Suspicious MIME type detected: {$detectedMime}, expected: {$expectedMime}");
         }
 
         // 7. 生成日期子目录（格式：Y-m-d）
@@ -140,17 +298,14 @@ class FileUploader
         $targetSubDir = $this->uploadDir . '/' . $datePath;
 
         if (! is_dir($targetSubDir) && ! mkdir($targetSubDir, 0755, true)) {
-            throw new \RuntimeException("Failed to create upload subdirectory: {$targetSubDir}");
+            $this->raiseError("Failed to create upload subdirectory: {$targetSubDir}");
         }
 
         // 8. 生成安全文件名并构建目标路径
         $safeFilename = $this->generateSafeFilename($file->getClientOriginalName(), $extension);
         $targetPath   = $targetSubDir . '/' . $safeFilename;
-		
-		
         $size =$file->getSize();
 		
-
         // 9. 移动文件（必须在 getRealPath() 之后、文件消失前完成所有读取）
         try {
 			if (defined('WORKERMAN_VERSION')) {
@@ -158,7 +313,7 @@ class FileUploader
 				$realPath = $file->getRealPath();
 				if (!@rename($realPath, $targetPath)) {
 					if (!@copy($realPath, $targetPath)) {
-						throw new \RuntimeException("Failed to move uploaded file manually (Workerman mode).");
+						$this->raiseError("Failed to move uploaded file manually (Workerman mode).");
 					}
 					@unlink($realPath);
 				}
@@ -167,12 +322,12 @@ class FileUploader
 				$file->move($targetSubDir, $safeFilename);
 			}
         } catch (\Exception $e) {
-            throw new \RuntimeException('Error: Failed to move uploaded file: ' . $e->getMessage());
+            $this->raiseError('Error: Failed to move uploaded file: ' . $e->getMessage());
         }
 
         // 10. 计算 MD5 哈希（操作已保存的文件）
-        if (! is_file($targetPath)) {
-            throw new \RuntimeException("Uploaded file not found after move: {$targetPath}");
+        if (!is_file($targetPath)) {
+            $this->raiseError("Uploaded file not found after move: {$targetPath}");
         }
         $md5Hash = md5_file($targetPath);
 
@@ -198,17 +353,17 @@ class FileUploader
     private function getUploadErrorMessage(int $code): string
     {
         return match ($code) {
-            UPLOAD_ERR_INI_SIZE   => 'The file is larger than upload_max_filesize.',
-            UPLOAD_ERR_FORM_SIZE  => 'The file is larger than MAX_FILE_SIZE.',
-            UPLOAD_ERR_PARTIAL    => 'The file was only partially uploaded.',
-            UPLOAD_ERR_NO_FILE    => 'No file was uploaded.',
-            UPLOAD_ERR_NO_TMP_DIR => 'Missing temporary folder.',
-            UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk.',
-            UPLOAD_ERR_EXTENSION  => 'A PHP extension stopped the upload.',
-            default               => 'Unknown upload error.',
+            UPLOAD_ERR_INI_SIZE   => '文件超过 php.ini 限制',
+            UPLOAD_ERR_FORM_SIZE  => '文件超过表单限制',
+            UPLOAD_ERR_PARTIAL    => '文件仅部分上传',
+            UPLOAD_ERR_NO_FILE    => '没有上传文件',
+            UPLOAD_ERR_NO_TMP_DIR => '缺少临时目录',
+            UPLOAD_ERR_CANT_WRITE => '磁盘写入失败',
+            UPLOAD_ERR_EXTENSION  => '扩展中断上传',
+            default               => '未知上传错误',
         };
     }
-
+	
     private function generateSafeFilename(string $originalName, string $extension): string
     {
         $name = pathinfo($originalName, PATHINFO_FILENAME);
