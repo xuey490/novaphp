@@ -181,14 +181,16 @@ return function (ContainerConfigurator $configurator) {
 		->autowire() // 自动注入 ConfigService
         ->public(); // 允许直接 $container->get()
 
-    // 🔹 4. 注册 Logger 业务类
+    // 🔹 4. 注册 Logger 业务类 （可被 ConfigService 替代）
+	/*
     $services->set(\Framework\Log\Logger::class)
 		->args([
 			'app', // channel 名称
-			'%kernel.project_dir%/storage/logs/app.log' // 日志文件路径（可被 ConfigService 替代）
+			'%kernel.project_dir%/storage/logs/app.log' // 日志文件路径
 		])
         ->public(); // 允许直接 $container->get()
-		
+	*/
+	
 	// 🔹 5. 别名注册
 	$services->set('log', \Framework\Log\LoggerService::class)
 		->autowire()	//不带args参数
@@ -240,22 +242,22 @@ return function (ContainerConfigurator $configurator) {
 	// 注册 RequestStack（用于在工厂中获取当前请求）
 	$services->set(RequestStack::class);
 
-	// i18n 多国语言翻译
+	// 多国语言翻译
 	// 注册 Translator 服务（不设 locale，延迟设置）
-	$services->set('translator1', \Framework\Translation\TranslationService::class)
+	$services->set('translator', \Framework\Translation\TranslationService::class)
 		->args([
 			service(RequestStack::class), // 或 RequestStack::class
 			'%kernel.project_dir%/resource/translations'
 		])
 		->public();
 
-    // 注册翻译助手，传入依赖
+	/*
     $services->set('translator', \Framework\Translation\TransHelper::class)
         ->args([
             service(RequestStack::class),
             '%kernel.project_dir%/resource/translations',
         ])->public();
-
+	*/
 	//Override
 	$services->set(\Framework\Middleware\MiddlewareMethodOverride::class)
 		->autowire()
