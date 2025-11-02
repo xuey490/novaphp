@@ -131,7 +131,7 @@ final class Framework
             );
         } catch (Throwable $e) {
             // 记录异常并返回错误响应
-            $this->logger?->error('Unhandled exception in run', ['exception' => $e]);
+            //$this->logger?->error('Unhandled exception in run', ['exception' => $e]);
             $this->logger?->info('Logging exception via logger->logException if available');
 
             // 如果容器中的 logger 实现了 logException 方法 完整记录（建议可选）
@@ -682,7 +682,7 @@ final class Framework
 
             // 环境信息（从容器或配置获取）
             'php_version' => PHP_VERSION,
-            'app_env' => function_exists('config') ? config('app.env') : 'production',
+            'app_env' => function_exists('config') ? config('app.env') : 'prod',
             'app_debug' => function_exists('config') ? config('app.debug') : false,
         ];
 
