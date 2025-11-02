@@ -19,6 +19,20 @@ namespace Framework\Core;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 #use Psr\Container\ContainerInterface;
 
+/*
+// 框架启动
+Container::init();
+$container = Container::getInstance();
+App::setContainer($container);
+
+// 获取服务
+$loggerService = getService(\Framework\Log\LoggerService::class);
+$logger = getService(\Framework\Log\Logger::class);
+$log = getService('log'); // 别名
+$configLoader = app('config');
+$configService = app(\Framework\Config\ConfigService::class);
+
+*/
 class App
 {
     protected static ?ContainerInterface $container = null;
