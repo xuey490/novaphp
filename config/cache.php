@@ -30,7 +30,7 @@ return [
             ],
 			*/
             'database' => 0,
-            'prefix' => 'redis_',           // Redis 缓存前缀
+            'prefix' => 'redis_cache_',           // Redis 缓存前缀
             'enable_tags' => true,
         ],
 
