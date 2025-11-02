@@ -206,7 +206,6 @@ class Router
             unset($parameters['_controller'], $parameters['_route']);
 
             // 打印中间件列表进行验证
-            print_r($middlewareList);
 
             return [
                 'controller' => $controllerClass,

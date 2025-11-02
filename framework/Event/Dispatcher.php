@@ -48,8 +48,7 @@ class Dispatcher implements EventDispatcherInterface
 
             // 包装成统一的二维数组格式
             $subscriptions = $this->normalizeSubscriptions($config);
-			
-						//print_r($subscriptions);
+
 
             foreach ($subscriptions as $subscription) {
                 $method   = $subscription['method'];
@@ -83,9 +82,7 @@ class Dispatcher implements EventDispatcherInterface
         // 判断是否是 [['handle', 100], ...] 风格
         elseif (!empty($config) && is_array($config[0])) {
             foreach ($config as $item) {
-								 //print_r($item);
 								 if(is_string($item)){
-									  //echo $item .'+++';
 										$result[] = [
 											'method'   => (string)$item ?? 'handle',
 											'priority' => 0,
@@ -100,11 +97,10 @@ class Dispatcher implements EventDispatcherInterface
 										];
 								 }
             }
-						 //print_r($result);
+
         }
         // 简写形式：['handleLogin', 100]
         elseif (isset($config[0]) && is_string($config[0])) {
-						//print_r($config);
             $result[] = [
                 'method'   => $config[0] ?? 'handle',
                 'priority' => $config[1] ?? 0,

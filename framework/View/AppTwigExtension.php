@@ -34,7 +34,6 @@ class AppTwigExtension extends AbstractExtension
         // ⚠️ 移除下面这行，除非你真的想每次覆盖用户！
         // $this->session->set('user', 'zhangSan');
 
-        // echo $this->tokenManager->getToken('default');
     }
 
     public function getGlobals(): array

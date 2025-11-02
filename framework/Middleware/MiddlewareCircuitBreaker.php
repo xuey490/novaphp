@@ -43,7 +43,7 @@ class MiddlewareCircuitBreaker
      */
     public function handle(Request $request, callable $next): Response
     {
-        // echo 'MiddlewareCircuitBreaker==>in';
+
         $service = 'default'; // 可扩展为按路由/服务名区分
         $key     = $this->cacheDir . 'breaker_' . md5($service);
         $now     = time();
@@ -71,7 +71,7 @@ class MiddlewareCircuitBreaker
 
         try {
             $response = $next($request);
-            // echo $response->getStatusCode();
+
 
             // 判断是否为服务端错误（可自定义）
             if (in_array($response->getStatusCode(), [500, 502, 503, 504], true)) {
@@ -102,7 +102,7 @@ class MiddlewareCircuitBreaker
                     'failures' => $failures,
                 ]));
             }
-            // echo 'MiddlewareCircuitBreaker==>out';
+
             // 返回 503 响应（不抛出异常，避免中断中间件链）
             return $this->buildServiceUnavailableResponse($request);
         }
