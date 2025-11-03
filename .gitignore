@@ -14,3 +14,10 @@ vendor
 
 /framework/Annotations
 
+storage/app.log
+server2.php
+storage/workerman/workerman.log
+storage/workerman/health.json
+storage/workerman/server.log
+watch.php
+workerman.log
