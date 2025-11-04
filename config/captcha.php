@@ -1,7 +1,6 @@
 <?php
 // config/captcha.php
 
-#print_r(__DIR__);
 return [
     'enabled' => true,
     'length' => 4,
