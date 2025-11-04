@@ -69,5 +69,8 @@ NovaFrame 是一款轻量级强大，快速，简单，安全的php框架，这�
 - Symfony: https://www.symfony.com/ (PHP界的Spring，基石)
 - Thinkphp: https://thinkphp.cn/ (中文互联网PHP框架顶流)
 
+## 代码质量扫描
+
+本框架的程序代码，非常规范，冗余，重复代码非常少，也适合新手自学扩展。
 
 [![](https://raw.githubusercontent.com/xuey490/project/refs/heads/main/quality.png)](https://gitee.com/fsscms/NovaFrame)
