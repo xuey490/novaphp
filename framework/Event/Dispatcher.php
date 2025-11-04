@@ -169,7 +169,7 @@ private function normalizeSubscriptions1(array $config): array
 
             // 如果事件实现了可停止接口，且已停止，则中断后续执行
             if ($event instanceof StoppableEventInterface && $event->isPropagationStopped()) {
-                // echo "🛑 Event propagation stopped by listener.\n";
+                //  "🛑 Event propagation stopped by listener.\n";
                 break;
             }
         }

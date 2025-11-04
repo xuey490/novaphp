@@ -168,7 +168,7 @@ return function (ContainerConfigurator $configurator) {
 		'%kernel.project_dir%/config',
 		'%kernel.project_dir%/storage/cache/config_cache.php'
 		])
-		->public();  //print_r($this->container->get(ConfigService::class)->loadAll());
+		->public();  //($this->container->get(ConfigService::class)->loadAll());
 		
     // 🔹 1. 注册 ConfigService 业务类
     $services->set(\Framework\Config\ConfigService::class)
