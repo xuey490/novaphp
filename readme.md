@@ -38,6 +38,12 @@ NovaFrame 是一款轻量级强大，快速，简单，安全的php框架，这�
 - 	PSR 标准：遵循 PSR-4 自动加载和其他相关标准
 - 	Composer 就绪：基于 Composer 的标准依赖管理
 
+## 代码质量扫描
+
+本框架的程序代码，非常规范，冗余，重复代码非常少，也适合新手自学扩展。
+
+[![](https://raw.githubusercontent.com/xuey490/project/refs/heads/main/quality.png)](https://gitee.com/fsscms/NovaFrame)
+
 ## 下载安装:
 ### 1.传统启动模式
 - 本地环境:php8.1及以上，Redis，MySQL5.7, composer 2.x及以上
@@ -69,8 +75,4 @@ NovaFrame 是一款轻量级强大，快速，简单，安全的php框架，这�
 - Symfony: https://www.symfony.com/ (PHP界的Spring，基石)
 - Thinkphp: https://thinkphp.cn/ (中文互联网PHP框架顶流)
 
-## 代码质量扫描
 
-本框架的程序代码，非常规范，冗余，重复代码非常少，也适合新手自学扩展。
-
-[![](https://raw.githubusercontent.com/xuey490/project/refs/heads/main/quality.png)](https://gitee.com/fsscms/NovaFrame)
