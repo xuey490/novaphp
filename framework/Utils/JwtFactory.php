@@ -227,7 +227,7 @@ class JwtFactory
 
 	public function revoke(string $token): void
 	{
-		$parsed = $this->parse($token); // 会验证 + 检查 Redis 存在性
+		$parsed = $this->parse($token);
 		$jti = $parsed->claims()->get('jti');
 		$userId = $parsed->claims()->get('uid');
 
@@ -236,7 +236,7 @@ class JwtFactory
 		}
 
 		// === 1. 从 Redis 删除（无论黑名单是否开启，都要踢下线）===
-		$redis = app('redis.client');
+		$redis = app('redis.client'); // 推荐使用 app('redis') 而非 app('redis.client')
 		$redis->del("login:token:{$jti}");
 		if ($userId) {
 			$redis->srem("user:active_tokens:{$userId}", $jti);
@@ -244,12 +244,15 @@ class JwtFactory
 
 		// === 2. 仅当黑名单开启时，加入缓存黑名单（防重放）===
 		if ($this->jwtConfig['blacklist_enabled']) {
-			$exp = $parsed->claims()->get('exp');
+			$exp = $parsed->claims()->get('exp'); // DateTimeImmutable
+			$expTimestamp = $exp->getTimestamp(); // ✅ 关键：转时间戳
 			$nowTimestamp = (new DateTimeImmutable('now', $this->timezone))->getTimestamp();
-			$ttl = max(0, $exp - $nowTimestamp + $this->jwtConfig['blacklist_grace_period']);
 
+			$ttl = max(0, $expTimestamp - $nowTimestamp + $this->jwtConfig['blacklist_grace_period']);
+
+			$expireAt = (new DateTimeImmutable('now', $this->timezone))->modify("+{$ttl} seconds");
 			if ($ttl > 0) {
-				cache()->put("jwt_blacklist:{$jti}", true, now()->addSeconds($ttl));
+				//app('cache')->set("jwt_blacklist:{$jti}", true, $expireAt );
 			}
 		}
 	}
