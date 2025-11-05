@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Framework\Utils\Cookie;
@@ -26,14 +27,14 @@ class Jwt
 	{
 		// 登录页面登录-->获取uid，role，name-->签发token-->token存入cookie/缓存-->到下一个页面的时候
 		//-->中间件请求头（或 Cookie）中提取 Token，验证 JWT 签名、issuer、exp、nbf 等标准 claims，再验证Redis 中是否存在 login:token:{jti}（用于判断是否被提前注销）-->验证失败，跳转到登录，
-		$this->tokenString = app('jwt')->issue(['uid' => 42]);
+		$this->tokenString = app('jwt')->issue(['uid' => 42, 'name'=>'admin']);
 		$token = "  Token: {$this->tokenString}<br/>";
 		// app('cache')->set('jwttoken' , $this->tokenString); // jwt无状态，违背无状态、浪费内存
 		// app('session')->set('jwttoken' , $this->tokenString);	//jwt无状态，违背无状态、浪费内存
 		
 		//解析结果
-		//$string = app('jwt')->getPayload($this->tokenString);
-		#print_r($string);
+		$string = app('jwt')->getPayload($this->tokenString);
+		print_r($string);
 		
 		
 		
@@ -74,13 +75,21 @@ class Jwt
 	}
 	
 	// 退出接口
-	public function logout(Request $request)
+	public function logout(Request $request): Response
 	{
-		$token = $request->cookie('token');
+		$token = app('cookie')->get('token');
+
 		if ($token) {
-			app(JwtFactory::class)->revoke($token);
+			app('jwt')->revoke($token);
 		}
-		return response()->json(['ok' => true])->withoutCookie('token');
+		
+		//清理cookie
+		app('cookie')->forget('token');	
+		
+		$response = new Response('logout');
+
+
+		return $response;
 	}
 	
 }
