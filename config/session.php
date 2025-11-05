@@ -2,7 +2,7 @@
 // config/session.php
 
 return [
-    'storage_type' => 'redis' , //env('SESSION_STORAGE') ?? 'redis', // 'file' 或 'redis'
+    'storage_type' => env('SESSION_STORAGE') ?? 'redis', // 'file' 或 'redis'
 
     'options' => [
         'cookie_secure'   => true,
