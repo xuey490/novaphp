@@ -105,7 +105,7 @@ return function (ContainerConfigurator $configurator) {
 
     // === 1. 注册 Redis 客户端（仅当需要时）===
     $services->set('redis.client', \Redis::class)
-        ->factory([RedisFactory::class, 'createRedisClient'])
+        ->factory([\Framework\Utils\RedisFactory::class, 'createRedisClient'])
         ->args([$redisConfig])
         ->public();
 
@@ -274,7 +274,26 @@ return function (ContainerConfigurator $configurator) {
 		])
 		->autowire()
 		->public();
-
+	
+	// 注册jwt服务
+	$jwtConfig = require __DIR__ . '/../config/jwt.php';
+	$services->set('jwt' , \Framework\Utils\JwtFactory::class)
+		->autowire()
+		->public();	
+		
+	// 注册cookie服务
+	
+    $cookieConfig = require __DIR__ . '/../config/cookie.php';
+    // 注册 Cookie 服务，并传入配置
+    $services->set('cookie', \Framework\Utils\Cookie::class)
+		->args([$cookieConfig])
+        ->public();
+    $services->set(\Framework\Utils\Cookie::class)
+		->args([$cookieConfig])
+        ->public();
+      
+		
+		
     // 加载中间件配置
     $middlewareConfig = require __DIR__ . '/../config/middleware.php';
 
@@ -469,24 +488,3 @@ return function (ContainerConfigurator $configurator) {
         ->autowire()
         ->autoconfigure()->public();
 };
-
-//redis===================
-/**
- * 工厂方法：创建 Redis 客户端
- */
-class RedisFactory {
-    public static function createRedisClient(array $config): \Redis {
-        $redis = new \Redis();
-        $connected = $redis->connect($config['host'], $config['port'], $config['timeout']);
-        if (!$connected) {
-            throw new RuntimeException('Failed to connect to Redis');
-        }
-        if (!empty($config['password'])) {
-            $redis->auth($config['password']);
-        }
-        if (isset($config['database'])) {
-            $redis->select($config['database']);
-        }
-        return $redis;
-    }
-}
