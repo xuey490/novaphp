@@ -66,7 +66,7 @@ class Kernel
         date_default_timezone_set($timezone);
 
         // 3. 初始化Cookie配置（强制检查安全密钥）
-        $this->initCookie();
+        //$this->initCookie();
 
         // 4. 注册事件监听器
         $this->registerEventListeners();
@@ -84,13 +84,14 @@ class Kernel
     {
         $config = [
             'domain' => app('config')->get('cookie.domain', ''),
-            'secure' => app('config')->get('app.env') === 'production', // 生产环境强制HTTPS
+            'secure' => app('config')->get('app.env') === 'prod', // 生产环境强制HTTPS
             'httponly' => true,
             'samesite' => app('config')->get('cookie.samesite', 'lax'),
             'secret' => app('config')->get('cookie.secret'),
             'encrypt' => app('config')->get('cookie.encrypt', true),
         ];
-
+		
+		
         // 强制检查Cookie密钥（安全红线）
         if (empty($config['secret'])) {
             throw new \RuntimeException('请在配置文件中设置 cookie.secret（安全密钥）');
