@@ -31,7 +31,7 @@ class Home
 	
 	public function setcookies(Request $request):Response
 	{
-		$this->cookie->make('session' , 'adsasdasd');
+
 		$response = new Response('Cookie set!!!');
 		$response->headers->setCookie(
 			//原生的cookie设置方法
@@ -41,13 +41,13 @@ class Home
 		//$theme = $request->cookies->get('theme'); // 'dark' 或 null		
 		    // 获取所有 cookies
 		$allCookies = $request->cookies->all();
-		#print_r($allCookies);
+		//print_r($allCookies);
 		
 		$cookieMgr = new \Framework\Utils\CookieManager();
 
 		// 1️⃣ 设置 cookie
 
-		$response->headers->setCookie($cookieMgr->make('workerman_teasdasst', 'asdsadasd'));
+		$response->headers->setCookie(app('cookie')->make('workerman_teasdasst', 'asdsadasd'));
 
 		
 		
@@ -129,7 +129,16 @@ class Home
 		//$ca = app(\Framework\Cache\ThinkCache::class)->create('redis');
 		//$ca->set('xxxx', 'bar', 120);
 		
+		#$logger1 = app('log_cache');
 
+		#$logger1->log('默认日志文件');
+				
+		// 使用自定义参数
+		$logger2 = app('log_cache', [
+			'channel' => 'payment',
+			'logFile' => BASE_PATH .'/storage/payment.log',
+		]);
+		$logger2->log('支付日志');	
 		
 		
 

@@ -29,7 +29,7 @@ class MiddlewareCookieConsent implements MiddlewareInterface
 		
         // 检查用户是否已同意
         //$hasConsented = $request->cookies->get('cookie_consent') === 'accepted';
-        $hasConsented = app('cookie')->get('cookie_consent') === 'accepted';
+        $hasConsented = $request->cookies->get('cookie_consent') === 'accepted';
 
         if (!$hasConsented) {
             // 注入前端同意横幅（可替换为模板片段）
