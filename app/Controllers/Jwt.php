@@ -33,13 +33,11 @@ class Jwt
 		$this->tokenString = app('jwt')->issue(['uid' => 42, 'name'=>'admin']);
 		$token = "  Token: {$this->tokenString}<br/>";
 
-		
-		app('cookie')->queueCookie('token', $this->tokenString, 3600);
-
-
-
 		$response = new Response('非常复杂的html内容'); // 可传空字符串
 		
+		app('cookie')->queueCookie('toke11n', $this->tokenString, 3600);
+		app('cookie')->queueCookie('token111', 'oooooo', 3600);
+
 		
 		// 在发送 Response 前统一绑定队列中的 Cookie
 		app('cookie')->sendQueuedCookies($response);

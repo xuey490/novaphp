@@ -31,7 +31,7 @@ class Home
 	
 	public function setcookies(Request $request):Response
 	{
-		$this->cookie->make('session' , 'adsasdasd');
+
 		$response = new Response('Cookie set!!!');
 		$response->headers->setCookie(
 			//原生的cookie设置方法
@@ -41,13 +41,13 @@ class Home
 		//$theme = $request->cookies->get('theme'); // 'dark' 或 null		
 		    // 获取所有 cookies
 		$allCookies = $request->cookies->all();
-		#print_r($allCookies);
+		//print_r($allCookies);
 		
 		$cookieMgr = new \Framework\Utils\CookieManager();
 
 		// 1️⃣ 设置 cookie
 
-		$response->headers->setCookie($cookieMgr->make('workerman_teasdasst', 'asdsadasd'));
+		$response->headers->setCookie(app('cookie')->make('workerman_teasdasst', 'asdsadasd'));
 
 		
 		
