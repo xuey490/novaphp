@@ -11,9 +11,12 @@ namespace App\Controllers;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Framework\Attributes\Route;
 use Framework\Utils\Cookie;
+use App\Middlewares\AuthMiddleware;
 
+
+#[Route(prefix: '/jwts/apijwt', group: 'apijwt' )]
 class Jwt
 {
 	private string $tokenString;
@@ -58,6 +61,11 @@ class Jwt
 		return new Response('token:' . $token);
 	}
 	
+	#[Route(path: '/', methods: ['GET'], name: 'demo1.index' , middleware: [AuthMiddleware::class])]
+	public function getdatas()
+	{
+		return new Response('getDatas');
+	}
 	
 	public function banner()
 	{

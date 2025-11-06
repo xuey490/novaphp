@@ -11,10 +11,31 @@ namespace App\Middlewares;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class AuthMiddleware
 {
-    public function handle(Request $request, callable $next): Response
+	
+	public function handle(Request $request, callable $next): Response
+	{
+		$token = app('cookie')->get('token') ?? $request->headers->get('Authorization')?->replace('Bearer ', '');
+
+		if (!$token) {
+			return new \Symfony\Component\HttpFoundation\RedirectResponse('/jwt/issue', 301);
+		}
+
+		try {
+			$parsed = app('jwt')->parse($token); // 内部已包含 JWT 验证 + Redis 检查
+			$request->attributes->set('user_claims', $parsed->claims()->all());
+		} catch (\Exception $e) {
+			return new \Symfony\Component\HttpFoundation\RedirectResponse('/jwt/issue', 301);
+		}
+
+		return $next($request);
+	}
+	
+	
+    public function handle1(Request $request, callable $next): Response
     {
         // dump('--- 进入 AuthMiddleware (中间件) ---');
 
@@ -25,7 +46,8 @@ class AuthMiddleware
         // }
 
         // 鉴权通过，执行下一个中间件/控制器
-        return $next($request);
+        //return $next($request);
         // dump('--- 退出 AuthMiddleware (中间件) ---');
+
     }
 }
