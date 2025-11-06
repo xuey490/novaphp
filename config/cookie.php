@@ -10,9 +10,9 @@ return [
     // 生成方式：openssl_random_pseudo_bytes(32) 或在线随机字符串生成器
     'secret' => env('COOKIE_SECRET', 'your-32-character-random-secret-key'),
 
-    // Cookie 域名（空表示当前域名） 本地开发用null
+    // Cookie 域名（空表示当前域名）本地测试设置为null
     // 子域名共享 Cookie 可设置为 .example.com（注意前缀点）
-    'domain' => null , //env('COOKIE_DOMAIN', ''),
+    'domain' => null , // env('COOKIE_DOMAIN', ''),
 
     // Cookie 路径（默认根路径，所有页面可访问）
     'path' => '/',
@@ -22,7 +22,7 @@ return [
 
     // 是否仅通过 HTTPS 传输（生产环境建议开启）
     // 框架会在 Kernel 中结合 APP_ENV 自动覆盖此值
-    'secure' =>  false , //env('APP_ENV') === 'prod',
+    'secure' => env('APP_ENV') === 'production',
 
     // 是否仅允许通过 HTTP 协议访问（防止 JS 读取，增强安全）
     'httponly' => true,
@@ -32,8 +32,8 @@ return [
     'samesite' => 'lax',
 
     // 是否加密 Cookie 内容（敏感信息建议开启）
-    'encrypt' => true,	//暂不可用
+    'encrypt' => true,
 
     // 加密算法（支持 AES-128-CBC、AES-256-CBC）
-    'cipher' => 'AES-256-CBC',	//暂不可用
+    'cipher' => 'AES-256-CBC',
 ];
