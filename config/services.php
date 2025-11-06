@@ -306,22 +306,19 @@ return function (ContainerConfigurator $configurator) {
 		->public();
 	
 	// 注册jwt服务
-<<<<<<< Updated upstream
-	$jwtConfig = require __DIR__ . '/../config/jwt.php';
-=======
->>>>>>> Stashed changes
+
 	$services->set('jwt' , \Framework\Utils\JwtFactory::class)
 		->autowire()
 		->public();	
 		
 	// 注册cookie服务
 	
-    $cookieConfig = require __DIR__ . '/../config/cookie.php';
+    $cookieConfig = __DIR__ . '/../config/cookie.php';
     // 注册 Cookie 服务，并传入配置
-    $services->set('cookie', \Framework\Utils\Cookie::class)
+    $services->set('cookie', \Framework\Utils\CookieManager::class)
 		->args([$cookieConfig])
         ->public();
-    $services->set(\Framework\Utils\Cookie::class)
+    $services->set(\Framework\Utils\CookieManager::class)
 		->args([$cookieConfig])
         ->public();
       
