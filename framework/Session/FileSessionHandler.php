@@ -8,17 +8,17 @@ declare(strict_types=1);
  * @link     https://github.com/xuey490/novaphp
  * @license  https://github.com/xuey490/novaphp/blob/main/LICENSE
  *
- * @Filename: CustomFileSessionHandler.php
+ * @Filename: FileSessionHandler.php
  * @Date: 2025-10-29
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
  */
 
-namespace Framework\Utils;
+namespace Framework\Session;
 
 #use Symfony\Component\HttpFoundation\Session\Storage\SessionStorageInterface,
 
-class CustomFileSessionHandler implements \SessionHandlerInterface
+class FileSessionHandler implements \SessionHandlerInterface
 {
     private string $savePath;
 	

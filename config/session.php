@@ -2,7 +2,8 @@
 // config/session.php
 
 return [
-    'storage_type' => env('SESSION_STORAGE') ?? 'redis', // 'file' 或 'redis'
+	// 可选值：file / redis / redis_grouped
+    'storage_type' => 'redis_grouped' , //env('SESSION_STORAGE') ?? 'redis', // 'file' 或 'redis' 'redis_grouped'
 
     'options' => [
         'cookie_secure'   => true,
@@ -12,8 +13,17 @@ return [
         'gc_maxlifetime'  => 3600, // 单位秒
         'gc_probability'  => 1,
         'gc_divisor'      => 100,
-		'name'            => 'file_session_', // ← 这就是 session cookie 名称（前缀）
+		'name'            => 'file_session_', // ← 这就是file session的cookie 名称（前缀）
     ],
+	
     // 新增：仅用于 file 存储的路径
     'file_save_path' => __DIR__ . '/../storage/sessions',
+	
+
+    // redis_grouped 模式扩展参数
+    'redis' => [
+        'ttl'          => (int) (env('SESSION_TTL') ?? 3600),
+        'group_prefix' 		=> env('SESSION_GROUP_PREFIX', 'session:default'),
+    ],
+	
 ];

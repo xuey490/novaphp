@@ -16,6 +16,10 @@ declare(strict_types=1);
 
 namespace Framework\Utils;
 
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Cookie;
+
 class CookieManager
 {
     protected array $config;
@@ -28,6 +32,8 @@ class CookieManager
     protected bool $httponly;
     protected string $samesite;
     protected bool $encrypt;
+	
+    protected array $queuedCookies = [];	
 
     public function __construct(?string $configPath = null)
     {
@@ -52,10 +58,76 @@ class CookieManager
         $this->cipher   = $this->config['cipher'] ?? 'AES-256-CBC';
     }
 
+
+    // 队列化 Cookie
+    public function queueCookie(string $name, string $value, ?int $expire = null): void
+    {
+        $expire = $expire ?? $this->expire;
+        $data = $this->encrypt ? $this->encryptValue($value) : $value;
+        $sig = $this->sign($data);
+        $payload = base64_encode(json_encode(['data'=>$data,'sig'=>$sig]));
+
+        $this->queuedCookies[] = [
+            'name' => $name,
+            'value' => $payload,
+            'expire' => time() + $expire,
+        ];
+    }
+
+    // 删除队列中的 Cookie（逻辑上删除）
+    public function queueForgetCookie(string $name): void
+    {
+        $this->queuedCookies[] = [
+            'name' => $name,
+            'value' => '',
+            'expire' => time() - 3600,
+        ];
+    }
+
+    // 发送队列中的 Cookie（FPM 或 Workerman）
+    public function sendQueuedCookies(?Response $response = null): void
+    {
+        foreach ($this->queuedCookies as $cookie) {
+            if ($response instanceof Response) {
+                $c = Cookie::create(
+                    $cookie['name'],
+                    $cookie['value'],
+                    $cookie['expire'],
+                    $this->path,
+                    $this->domain ?: null,
+                    $this->secure,
+                    $this->httponly,
+                    false,
+                    ucfirst($this->samesite)
+                );
+                $response->headers->setCookie($c);
+            } else {
+                // FPM/CLI 模式
+                setcookie(
+                    $cookie['name'],
+                    $cookie['value'],
+                    [
+                        'expires' => $cookie['expire'],
+                        'path' => $this->path,
+                        'domain' => $this->domain ?: '',
+                        'secure' => $this->secure,
+                        'httponly' => $this->httponly,
+                        'samesite' => ucfirst($this->samesite),
+                    ]
+                );
+                $_COOKIE[$cookie['name']] = $cookie['value'];
+            }
+        }
+
+        // 清空队列
+        $this->queuedCookies = [];
+    }
+
+
     /**
-     * 设置 Cookie
+     * 生成 Cookie 对象（不直接发送）
      */
-    public function make(string $name, string $value, ?int $expire = null): bool
+    public function make(string $name, string $value, ?int $expire = null): Cookie
     {
         $expire = $expire ?? $this->expire;
         $data = $this->encrypt ? $this->encryptValue($value) : $value;
@@ -66,30 +138,48 @@ class CookieManager
             'sig'  => $signature,
         ]));
 
-        return setcookie(
+        return Cookie::create(
             $name,
             $payload,
-            [
-                'expires'  => time() + $expire,
-                'path'     => $this->path,
-                'domain'   => $this->domain ?: '',
-                'secure'   => $this->secure,
-                'httponly' => $this->httponly,
-                'samesite' => ucfirst($this->samesite),
-            ]
+            time() + $expire,
+            $this->path,
+            $this->domain ?: null,
+            $this->secure,
+            $this->httponly,
+            false,
+            ucfirst($this->samesite)
         );
     }
 
     /**
-     * 获取 Cookie
+     * 删除 Cookie 对象（返回 Symfony Cookie）
      */
-    public function get(string $name): ?string
+    public function forget(string $name): Cookie
     {
-        if (empty($_COOKIE[$name])) {
+        return Cookie::create(
+            $name,
+            '',
+            time() - 3600,
+            $this->path,
+            $this->domain ?: null,
+            $this->secure,
+            $this->httponly,
+            false,
+            ucfirst($this->samesite)
+        );
+    }
+
+    /**
+     * 读取 Cookie 值（解密 + 验证签名）
+     */
+    public function get(Request $request, string $name): ?string
+    {
+        $cookies = $request->cookies->all();
+        if (empty($cookies[$name])) {
             return null;
         }
 
-        $raw = base64_decode($_COOKIE[$name], true);
+        $raw = base64_decode($cookies[$name], true);
         if ($raw === false) {
             return null;
         }
@@ -100,49 +190,40 @@ class CookieManager
         }
 
         if (!$this->verify($decoded['data'], $decoded['sig'])) {
-            return null; // 签名不匹配，可能被篡改
+            return null;
         }
 
-        $value = $this->encrypt ? $this->decryptValue($decoded['data']) : $decoded['data'];
-        return $value;
+        return $this->encrypt ? $this->decryptValue($decoded['data']) : $decoded['data'];
     }
 
     /**
-     * 删除 Cookie
+     * 快捷在 Response 上设置 Cookie（Workerman/FPM 通用）
      */
-    public function forget(string $name): void
+    public function setResponseCookie(Response $response, string $name, string $value, ?int $expire = null): void
     {
-        setcookie(
-            $name,
-            '',
-            [
-                'expires'  => time() - 3600,
-                'path'     => $this->path,
-                'domain'   => $this->domain ?: '',
-                'secure'   => $this->secure,
-                'httponly' => $this->httponly,
-                'samesite' => ucfirst($this->samesite),
-            ]
-        );
-        unset($_COOKIE[$name]);
+        $cookie = $this->make($name, $value, $expire);
+        $response->headers->setCookie($cookie);
     }
 
     /**
-     * AES 加密
+     * 快捷在 Response 上删除 Cookie
      */
+    public function forgetResponseCookie(Response $response, string $name): void
+    {
+        $cookie = $this->forget($name);
+        $response->headers->setCookie($cookie);
+    }
+
+    // ------------------------ 内部加密/签名方法 ------------------------
+
     protected function encryptValue(string $value): string
     {
         $ivLen = openssl_cipher_iv_length($this->cipher);
         $iv = random_bytes($ivLen);
         $ciphertext = openssl_encrypt($value, $this->cipher, $this->secret, OPENSSL_RAW_DATA, $iv);
-
-        // 避免 cookie 过长，采用 base64url 编码
         return $this->base64url_encode($iv . $ciphertext);
     }
 
-    /**
-     * AES 解密
-     */
     protected function decryptValue(string $encoded): string
     {
         $data = $this->base64url_decode($encoded);
@@ -153,21 +234,14 @@ class CookieManager
         return $decrypted ?: '';
     }
 
-    /**
-     * 签名（防篡改）
-     */
     protected function sign(string $data): string
     {
         return hash_hmac('sha256', $data, $this->secret);
     }
 
-    /**
-     * 验证签名
-     */
     protected function verify(string $data, string $sig): bool
     {
-        $expected = $this->sign($data);
-        return hash_equals($expected, $sig);
+        return hash_equals($this->sign($data), $sig);
     }
 
     protected function base64url_encode(string $data): string

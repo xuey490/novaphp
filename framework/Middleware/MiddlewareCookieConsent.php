@@ -7,7 +7,7 @@ namespace Framework\Middleware;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-use Framework\Utils\Cookie; 
+
 
 class MiddlewareCookieConsent implements MiddlewareInterface
 {
@@ -29,7 +29,7 @@ class MiddlewareCookieConsent implements MiddlewareInterface
 		
         // 检查用户是否已同意
         //$hasConsented = $request->cookies->get('cookie_consent') === 'accepted';
-        $hasConsented = Cookie::get('cookie_consent') === 'accepted';
+        $hasConsented = app('cookie')->get('cookie_consent') === 'accepted';
 
         if (!$hasConsented) {
             // 注入前端同意横幅（可替换为模板片段）

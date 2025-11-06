@@ -119,7 +119,7 @@ class JwtFactory
         $tokenStr = $token->toString();
 
         // 存 cookie（你的 app('cookie') 接口）
-        app('cookie')->make('token', $tokenStr);
+        //app('cookie')->make('token', $tokenStr);
 
         if ($userId) {
             $redis = app('redis.client');

@@ -16,12 +16,47 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Framework\Utils\Captcha as CCaptcha;
+use Framework\Utils\CookieManager;
+
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
+
 
 class Home
 {
     public function __construct(
         private CsrfTokenManager $csrf,private RequestStack $requestStack,
+		private CookieManager $cookie, 
+		//SessionServiceProvider 已经注册的服务名是 'session'， 容器会自动注入 Session 实例
     ) {}
+	
+	public function setcookies(Request $request):Response
+	{
+		$this->cookie->make('session' , 'adsasdasd');
+		$response = new Response('Cookie set!!!');
+		$response->headers->setCookie(
+			//原生的cookie设置方法
+			new \Symfony\Component\HttpFoundation\Cookie('workerman_test', 'success_v5', time() + 3600, '/', '', false, true)
+		);
+		// 获取单个 cookie
+		//$theme = $request->cookies->get('theme'); // 'dark' 或 null		
+		    // 获取所有 cookies
+		$allCookies = $request->cookies->all();
+		#print_r($allCookies);
+		
+		$cookieMgr = new \Framework\Utils\CookieManager();
+
+		// 1️⃣ 设置 cookie
+
+		$response->headers->setCookie($cookieMgr->make('workerman_teasdasst', 'asdsadasd'));
+
+		
+		
+		
+		return $response;		
+	}
+	
+	
+	
 	
 	public function html():Response
 	{
@@ -65,7 +100,7 @@ class Home
         # print_r( $userService->getUsers(111) );
         // ✅ 此时 app() 已可用！
 
-        # dump(app()->getServiceIds()); // 查看所有服务 ID
+        #dump(app()->getServiceIds()); // 查看所有服务 ID
 
         // 日志测试
         // $logger = app('log');
@@ -74,17 +109,17 @@ class Home
         // echo renderCsrfField();
 
         # thinkcache测试
-        $cache = app('cache');
-        $cache->set('test1', ['name' => 'mike'], 3600);
-        $test1 =$cache->get('test1');
+        //$cache = app('cache');
+        //$cache->set('test1', ['name' => 'mike'], 3600);
+        //$test1 =$cache->get('test1');
         //$test1 = $cache->clear();
         #print_r($test1);
 		
 		#$loggerService = getService(\Framework\Log\LoggerService::class);
-#print_r($loggerService);	
+		#print_r($loggerService);	
 		#$loggerService->info('App----------------------------------------------------');
 		
-		caches('foo-----', 'bar', 120);  // set
+		//caches('foo-----', 'bar', 120);  // set
 		#echo caches('foo-----');         // get
 
 		#$factory = new \Framework\Cache\ThinkCache(require BASE_PATH . '/config/cache.php');
@@ -94,16 +129,7 @@ class Home
 		//$ca = app(\Framework\Cache\ThinkCache::class)->create('redis');
 		//$ca->set('xxxx', 'bar', 120);
 		
-#$logger1 = app('log_cache');
 
-#$logger1->log('默认日志文件');
-		
-// 使用自定义参数
-$logger2 = app('log_cache', [
-    'channel' => 'payment',
-    'logFile' => BASE_PATH .'/storage/payment.log',
-]);
-$logger2->log('支付日志');	
 		
 		
 
@@ -120,6 +146,11 @@ $logger2->log('支付日志');
         // cache_invalidate_tags(['user_123']);
         // print_r( cache_get('post_1') );
 
+
+
+
+
+
         // session测试
          $session = app('session');
         // 设置一个 session 属性
@@ -127,6 +158,8 @@ $logger2->log('支付日志');
         // 获取一个 session 属性
         $userId = $session->get('user_id');
         #echo 'userId：'. $userId;
+		
+		#dump(app('session')->all());
 
         // 配置获取测试
         // print_r(config('database'));
@@ -146,24 +179,10 @@ $logger2->log('支付日志');
         );
 
 
-		
-		// 设置 Cookie（自动签名）
-		/*
-		Cookie::make('theme', 'dark', 60); // 60 分钟
 
-		// 获取
-		$theme = Cookie::get('theme', 'light');
 
-		// 删除
-		Cookie::forget('theme');
 
-		// 判断是否存在
-		if (Cookie::has('cookie_consent')) {
-			// ...
-		}		
-		*/
-		
-######
+
 
 		##
 		//Thinkphp验证##
@@ -233,7 +252,7 @@ $logger2->log('支付日志');
         if (!$captcha->validate($userInput)) {
             return new Response('验证码错误'.$userInput);
         }
-        return new Response('验证码正确', 200);
+        return new Response('验证码正确'.$userInput, 200);
     }
 
 

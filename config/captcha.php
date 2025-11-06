@@ -4,7 +4,7 @@
 return [
     'enabled' => true,
     'length' => 4,
-    'type' => 'alnum', // alnum | chinese | math
+    'type' => 'math', // alnum | chinese | math
     'width' => 80,
     'height' => 35,
     'font_size' => 16,
