@@ -88,11 +88,27 @@ class JwtFactory
         }
 
         $token = $builder->getToken($this->config->signer(), $this->config->signingKey());
+<<<<<<< Updated upstream
 		$tokenStr = $token->toString();
 		
 		//存cookie
 		//print_r($tokenStr);
 		app('cookie')->make('token', $tokenStr);
+=======
+        $tokenStr = $token->toString();
+
+        // 存 cookie（你的 app('cookie') 接口）
+        //app('cookie')->make('token', $tokenStr);
+
+        if ($userId) {
+            $redis = app('redis.client');
+            // token -> user_id 映射（用于快速查询）
+            $redis->setex("login:token:{$jti}", $ttl, (string)$userId);
+            // 将 jti 加入用户活跃列表
+            $redis->sadd("user:active_tokens:{$userId}", $jti);
+            // 可选：给这个 set 也设个稍长的 TTL（如果需要）
+        }
+>>>>>>> Stashed changes
 
 		if ($userId) {
 			$redis = app('redis.client'); // 或 Redis::connection()

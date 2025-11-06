@@ -14,9 +14,12 @@ use Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorage;
 use Symfony\Component\HttpFoundation\Session\Storage\Handler\StrictSessionHandler;
 use Symfony\Component\HttpFoundation\Session\Storage\Handler\RedisSessionHandler;
 #use Valitron\Validator;
+use Framework\Session\SessionServiceProvider;
 
 return function (ContainerConfigurator $configurator) {
     $services = $configurator->services();
+	
+	 (new SessionServiceProvider())($configurator);
 
     // 默认配置
     $services
@@ -95,13 +98,14 @@ return function (ContainerConfigurator $configurator) {
         ->public(); // 允许控制器直接获取
 	*/
 	
+	/*
     // 加载session redis配置
     $redisConfig = require __DIR__ . '/redis.php';
     $sessionConfig = require __DIR__ . '/session.php';
 
     $storageType = $sessionConfig['storage_type'];
     $sessionOptions = $sessionConfig['options'];
-	$fileSavePath = $sessionConfig['file_save_path'] ?? sys_get_temp_dir();
+	// $fileSavePath = $sessionConfig['file_save_path'] ?? sys_get_temp_dir();
 
     // === 1. 注册 Redis 客户端（仅当需要时）===
     $services->set('redis.client', \Redis::class)
@@ -111,7 +115,7 @@ return function (ContainerConfigurator $configurator) {
 
     // === 2. 注册 Session Storage（动态选择 file/redis）===
     if ($storageType === 'redis') {
-        // 使用 Redis 作为 handler
+        // 使用 Redis 作为 handler ，symfony原生的redis存储
         $services->set('session.handler', RedisSessionHandler::class)
             //->args([new Reference('redis.client')]);
             ->args([
@@ -126,10 +130,34 @@ return function (ContainerConfigurator $configurator) {
             //->args([$sessionOptions, new Reference('session.handler')])
             ->args([$sessionOptions, service('session.handler')])
             ->public();
+			
+	}else if($storageType =='redis_grouped'){	
+		// 动态确定分组前缀，可以从 session.php 配置中读取
+		$groupPrefix = $sessionConfig['redis']['group_prefix'] ?? 'session:default';
+
+		// 使用自定义分组 Redis Handler
+		$services->set('session.handler', \Framework\Session\RedisGroupSessionHandler::class)
+			->args([
+				service('redis.client'),
+				[
+					'group_prefix' => $groupPrefix, // 分组命名空间
+					'prefix' => 'sess_',         // 普通前缀
+					'ttl' => $sessionConfig['redis']['ttl'] ?? 3600,
+					'locking'        => true,          // 启用显式锁（默认 true）
+					'spin_lock_wait' => 150000,        // 自旋等待 microseconds
+					'lock_ttl'       => 30000,         // 锁过期时间 ms（用于 SET PX）
+				]
+			])
+			->public();
+
+		$services->set('session.storage', NativeSessionStorage::class)
+			->args([$sessionOptions, service('session.handler')])
+			->public();			
+
     } else {
 
 		// 1. 定义底层自定义 handler，并调用 setSavePath
-		$services->set('session.handler.custom_file', \Framework\Utils\CustomFileSessionHandler::class)
+		$services->set('session.handler.custom_file', \Framework\Session\FileSessionHandler::class)
 			->call('setSavePath', ['%kernel.project_dir%/storage/sessions'])
 			->call('setPrefix', [$sessionOptions['name']])
 			->public();
@@ -147,13 +175,13 @@ return function (ContainerConfigurator $configurator) {
 			])
 			->public();
 
-        // file 存储：不传 handler，使用原生文件存储
+        // file 存储：不传 handler，使用symfony原生文件存储
         // 默认：使用原生文件存储（PHP 默认）
-		/*
-        $services->set('session.storage', NativeSessionStorage::class)
-            ->args([$sessionOptions])
-            ->public();
-		*/
+		
+        #$services->set('session.storage', NativeSessionStorage::class)
+        #    ->args([$sessionOptions])
+        #    ->public();
+		
     }
 
     // === 3. 注册 Session 服务 ===
@@ -161,6 +189,8 @@ return function (ContainerConfigurator $configurator) {
         ->args([service('session.storage')])
         #->args([new Reference('session.storage')])
         ->public();
+		
+	*/
 		
 	// 注册 ConfigService 为服务
 	$services->set('config' , \Framework\Config\ConfigService::class)	//$globalConfig = $this->container->get('config')->loadAll();
@@ -276,7 +306,10 @@ return function (ContainerConfigurator $configurator) {
 		->public();
 	
 	// 注册jwt服务
+<<<<<<< Updated upstream
 	$jwtConfig = require __DIR__ . '/../config/jwt.php';
+=======
+>>>>>>> Stashed changes
 	$services->set('jwt' , \Framework\Utils\JwtFactory::class)
 		->autowire()
 		->public();	
