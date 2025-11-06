@@ -271,6 +271,10 @@ class JwtFactory
     public function revoke(string $token): void
     {
         $parsed = $this->parse($token);
+        if (!$parsed) {
+            throw new \RuntimeException('Token parse failed, cannot revoke .');
+        }		
+		
         $jti = $parsed->claims()->get('jti');
         $userId = $parsed->claims()->get('uid');
 

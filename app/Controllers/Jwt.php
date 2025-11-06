@@ -91,9 +91,11 @@ token:eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJOb3ZhRnJhbWUuSW5jIiwianRpI
 	{
 		$token = app('cookie')->get('token');
 		app('cookie')->forget('token');	
-		app('jwt')->revoke($token);
-		
-		return new Response('revoke' );
+		if($token){
+			app('jwt')->revoke($token);
+			return new Response('revoke' );
+		}
+		return new Response('revoke failed' );
 	}
 	
 	// 退出接口
