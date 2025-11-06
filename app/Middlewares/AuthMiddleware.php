@@ -18,36 +18,25 @@ class AuthMiddleware
 	
 	public function handle(Request $request, callable $next): Response
 	{
+		# dump('--- 进入 AuthMiddleware (中间件) ---');
 		$token = app('cookie')->get('token') ?? $request->headers->get('Authorization')?->replace('Bearer ', '');
 
 		if (!$token) {
-			return new \Symfony\Component\HttpFoundation\RedirectResponse('/jwt/issue', 301);
+			 return new Response('<h1>401 Unauthorized: Please login first</h1>', 401);
+			//return new \Symfony\Component\HttpFoundation\RedirectResponse('/jwt/issue', 301);
 		}
 
 		try {
 			$parsed = app('jwt')->parse($token); // 内部已包含 JWT 验证 + Redis 检查
 			$request->attributes->set('user_claims', $parsed->claims()->all());
 		} catch (\Exception $e) {
-			return new \Symfony\Component\HttpFoundation\RedirectResponse('/jwt/issue', 301);
+			 return new Response('<h1>401 Token is expired</h1>', 401);
+			//return new \Symfony\Component\HttpFoundation\RedirectResponse('/jwt/issue', 301);
 		}
 
-		return $next($request);
-	}
-	
-	
-    public function handle1(Request $request, callable $next): Response
-    {
-        // dump('--- 进入 AuthMiddleware (中间件) ---');
-
-        // $id = $request->getSession();
-        // 模拟鉴权：如果没有登录，返回401
-        // if (!$id->get('user_id')) {
-        //    return new Response('<h1>401 Unauthorized: Please login first</h1>', 401);
-        // }
-
         // 鉴权通过，执行下一个中间件/控制器
-        //return $next($request);
-        // dump('--- 退出 AuthMiddleware (中间件) ---');
+        return $next($request);
+        # dump('--- 退出 AuthMiddleware (中间件) ---');
+	}
 
-    }
 }

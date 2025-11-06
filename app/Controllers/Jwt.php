@@ -12,7 +12,7 @@ namespace App\Controllers;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Framework\Attributes\Route;
-use Framework\Utils\Cookie;
+use Framework\Utils\CookieManager;
 use App\Middlewares\AuthMiddleware;
 
 
@@ -22,7 +22,7 @@ class Jwt
 	private string $tokenString;
 	
     public function __construct(
-        private readonly Cookie $cookie
+        private readonly CookieManager $cookie
     ) {}
 	
 	
@@ -38,8 +38,6 @@ class Jwt
 		//解析结果
 		$string = app('jwt')->getPayload($this->tokenString);
 		print_r($string);
-		
-		
 		
 		//$this->cookie->make('token' , $this->tokenString);
 		
@@ -61,25 +59,41 @@ class Jwt
 		return new Response('token:' . $token);
 	}
 	
-	#[Route(path: '/', methods: ['GET'], name: 'demo1.index' , middleware: [AuthMiddleware::class])]
+	#[Route(path: '/getdatas', methods: ['GET'], name: 'demo1.index' , middleware: [AuthMiddleware::class])]
 	public function getdatas()
 	{
 		return new Response('getDatas');
 	}
 	
+	//banner uid=42的token
 	public function banner()
 	{
 		app('jwt')->revokeAllForUser(42);
 		return new Response('kick off');
 	}
 
-	public function cookie():Response
+	//获取cookie，cookie字符长度单项为超过4k
+	public function getcookie():Response
 	{
 		#$this->cookie->make('token' , 'okkkkkk');
-		
+		/*
+Token:eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJOb3ZhRnJhbWUuSW5jIiwianRpIjoiYTI4MGQwYTA5MTRlNWRiYzgzOWFiZWM0YmFiNTJhMGEiLCJpc3MiOiJOb3ZhRnJhbWUiLCJpYXQiOjE3NjI0MzE2OTIuNTgxMTE3LCJuYmYiOjE3NjI0MzE2OTIuNTgxMTE3LCJleHAiOjE3NjI0MzUyOTIuNTgxMTE3LCJ1aWQiOjQyLCJuYW1lIjoiYWRtaW4ifQ.HHJ8wwQ-tqHwyBiZBGKQOcWXvz8N6lDV5rPFfwgY030	
+token:eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJOb3ZhRnJhbWUuSW5jIiwianRpIjoiYTI4MGQwYTA5MTRlNWRiYzgzOWFiZWM0YmFiNTJhMGEiLCJpc3MiOiJOb3ZhRnJhbWUiLCJpYXQiOjE3NjI0MzE2OTIuNTgxMTE3LCJuYmYiOjE3NjI0MzE2OTIuNTgxMTE3LCJleHAiOjE3NjI0MzUyOTIuNTgxMTE3LCJ1aWQiOjQyLCJuYW1lIjoiYWRtaW4ifQ.HHJ8wwQ-tqHwyBiZBGKQOcWXvz8N6lDV5rPFfwgY030
+		*/
 		$token = app('cookie')->get('token');
 
 		return new Response('token:'.$token );
+	}
+	
+	
+	//清理某个token
+	public function revoke():Response
+	{
+		$token = app('cookie')->get('token');
+		app('cookie')->forget('token');	
+		app('jwt')->revoke($token);
+		
+		return new Response('revoke' );
 	}
 	
 	// 退出接口
@@ -94,7 +108,7 @@ class Jwt
 		//清理cookie
 		app('cookie')->forget('token');	
 		
-		$response = new Response('logout');
+		$response = new Response('logout succesfully');
 
 
 		return $response;
