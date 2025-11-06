@@ -32,18 +32,36 @@ class Jwt
 		//-->中间件请求头（或 Cookie）中提取 Token，验证 JWT 签名、issuer、exp、nbf 等标准 claims，再验证Redis 中是否存在 login:token:{jti}（用于判断是否被提前注销）-->验证失败，跳转到登录，
 		$this->tokenString = app('jwt')->issue(['uid' => 42, 'name'=>'admin']);
 		$token = "  Token: {$this->tokenString}<br/>";
-		// app('cache')->set('jwttoken' , $this->tokenString); // jwt无状态，违背无状态、浪费内存
-		// app('session')->set('jwttoken' , $this->tokenString);	//jwt无状态，违背无状态、浪费内存
+
+		
+		app('cookie')->queueCookie('token', $this->tokenString, 3600);
+
+
+
+		$response = new Response('非常复杂的html内容'); // 可传空字符串
+		
+		
+		// 在发送 Response 前统一绑定队列中的 Cookie
+		app('cookie')->sendQueuedCookies($response);
+
+		// 快捷设置 Cookie
+		//app('cookie')->setResponseCookie($response, 'token', $this->tokenString , 3600);
+
+		// 快捷删除 Cookie
+		//app('cookie')->forgetResponseCookie($response, 'old_cookie');
+
 		
 		//解析结果
 		$string = app('jwt')->getPayload($this->tokenString);
-		print_r($string);
+		#print_r($string);
 		
 		
 		
 		//$this->cookie->make('token' , $this->tokenString);
 		
-		return new Response($token);
+		return $response;
+		
+		
 	}
 	
 	public function refresh()
