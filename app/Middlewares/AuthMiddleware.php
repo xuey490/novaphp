@@ -18,8 +18,8 @@ class AuthMiddleware
 	
 	public function handle(Request $request, callable $next): Response
 	{
-		# dump('--- 进入 AuthMiddleware (中间件) ---');
-		$token = app('cookie')->get('token') ?? $request->headers->get('Authorization')?->replace('Bearer ', '');
+		dump('--- 进入 AuthMiddleware (中间件) ---');
+		$token = app('cookie')->get($request , 'token') ?? $request->headers->get('Authorization')?->replace('Bearer ', '');
 
 		if (!$token) {
 			 return new Response('<h1>401 Unauthorized: Please login first</h1>', 401);
