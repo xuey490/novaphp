@@ -456,6 +456,9 @@ if (isWorkerProcess()) {
 			if ($symReq->hasSession()) {
 				$symReq->getSession()->save(); // 或 ->save() / ->close()
 			}
+			
+			// ✅ 如果在业务逻辑里 queueCookie() 了 Cookie，统一发送
+			app('cookie')->sendQueuedCookies($symRes);
            
 			$connection->send(convert_to_workerman_response($symRes));
 

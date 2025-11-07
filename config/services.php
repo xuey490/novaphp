@@ -258,6 +258,11 @@ return function (ContainerConfigurator $configurator) {
 
 	// 注册 RequestStack（用于在工厂中获取当前请求）
 	$services->set(RequestStack::class);
+	
+	// 1. 先注册 Request 服务（确保全局使用同一个请求实例）
+	$services->set(Request::class)
+		->factory([Request::class, 'createFromGlobals']); // 通过工厂方法创建请求实例
+
 
 	// 多国语言翻译
 	// 注册 Translator 服务（不设 locale，延迟设置）
@@ -311,18 +316,18 @@ return function (ContainerConfigurator $configurator) {
 		->autowire()
 		->public();	
 		
-	// 注册cookie服务
+
 	
     $cookieConfig = __DIR__ . '/../config/cookie.php';
     // 注册 Cookie 服务，并传入配置
+    $services->set( \Framework\Utils\CookieManager::class)
+		->args([
+			$cookieConfig,
+		])
+        ->public();
     $services->set('cookie', \Framework\Utils\CookieManager::class)
-		->args([$cookieConfig])
         ->public();
-    $services->set(\Framework\Utils\CookieManager::class)
-		->args([$cookieConfig])
-        ->public();
-      
-		
+ 
 		
     // 加载中间件配置
     $middlewareConfig = require __DIR__ . '/../config/middleware.php';

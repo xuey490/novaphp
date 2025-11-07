@@ -35,8 +35,10 @@ class CookieManager
 	
     protected array $queuedCookies = [];	
 
-    public function __construct(?string $configPath = null)
+    public function __construct( ?string $configPath = null)
     {
+
+		
         $configPath = $configPath ?? __DIR__ . '/../../config/cookie.php';
         if (!file_exists($configPath)) {
             throw new \RuntimeException("Cookie config not found: $configPath");
@@ -65,8 +67,9 @@ class CookieManager
         $expire = $expire ?? $this->expire;
         $data = $this->encrypt ? $this->encryptValue($value) : $value;
         $sig = $this->sign($data);
-        $payload = base64_encode(json_encode(['data'=>$data,'sig'=>$sig]));
-
+        // $payload = base64_encode(json_encode(['data'=>$data,'sig'=>$sig]));
+		$payload = $this->base64url_encode(json_encode(['data'=>$data,'sig'=>$sig]));
+		
         $this->queuedCookies[] = [
             'name' => $name,
             'value' => $payload,
@@ -172,14 +175,15 @@ class CookieManager
     /**
      * 读取 Cookie 值（解密 + 验证签名）
      */
-    public function get(Request $request, string $name): ?string
+    public function get(Request $request  , string $name): ?string
     {
         $cookies = $request->cookies->all();
         if (empty($cookies[$name])) {
             return null;
         }
 
-        $raw = base64_decode($cookies[$name], true);
+        // $raw = base64_decode($cookies[$name], true);
+		$raw = $this->base64url_decode($cookies[$name]);
         if ($raw === false) {
             return null;
         }
@@ -215,6 +219,49 @@ class CookieManager
     }
 
     // ------------------------ 内部加密/签名方法 ------------------------
+
+/*
+// 加密（AES-128-GCM）
+protected function encryptValue(string $value): string
+{
+    $ivLen = 12; // GCM 推荐 IV 长度为 12 字节
+    $iv = random_bytes($ivLen);
+    $tagLen = 16; // GCM 认证标签长度
+    $ciphertext = openssl_encrypt(
+        $value,
+        $this->cipher,
+        $this->secret,
+        OPENSSL_RAW_DATA,
+        $iv,
+        $tag // 生成认证标签
+    );
+    // 拼接 IV + 密文 + 标签（标签用于解密时验证）
+    return $this->base64url_encode($iv . $ciphertext . $tag);
+}
+
+// 解密（AES-128-GCM）
+protected function decryptValue(string $encoded): string
+{
+    $data = $this->base64url_decode($encoded);
+    $ivLen = 12;
+    $tagLen = 16;
+    $iv = substr($data, 0, $ivLen);
+    $tag = substr($data, -$tagLen);
+    $ciphertext = substr($data, $ivLen, -$tagLen);
+    
+    $decrypted = openssl_decrypt(
+        $ciphertext,
+        $this->cipher,
+        $this->secret,
+        OPENSSL_RAW_DATA,
+        $iv,
+        $tag
+    );
+    return $decrypted ?: '';
+}
+*/
+// 移除单独的 sign() 和 verify() 方法（GCM 自带认证）
+
 
     protected function encryptValue(string $value): string
     {
