@@ -178,6 +178,9 @@ final class Framework
                 return $this->handleEasterEgg($route);
             }
 
+            // 绑定路由到请求
+            $this->request->attributes->set('_route', $route);
+
             // 通过中间件分发执行控制器
             $response = $this->middlewareDispatcher->dispatch(
                 $this->request,
