@@ -34,6 +34,6 @@ return [
     // 是否加密 Cookie 内容（敏感信息建议开启）
     'encrypt' => true,
 
-    // 加密算法（支持 AES-128-CBC、AES-256-CBC）
+    // 加密算法（支持 AES-128-CBC、AES-256-CBC,AES-128-GCM）
     'cipher' => 'AES-256-CBC',
 ];
