@@ -33,9 +33,9 @@ class Jwt
 		$this->tokenString = app('jwt')->issue(['uid' => 42, 'name'=>'admin']);
 		$token = "  Token: {$this->tokenString}<br/>";
 
-		$response = new Response('非常复杂的html内容'); // 可传空字符串
+		$response = new Response('非常复杂的html内容:'.$this->tokenString); // 可传空字符串
 		
-		app('cookie')->queueCookie('toke11n', $this->tokenString, 3600);
+		app('cookie')->queueCookie('token', $this->tokenString, 3600);
 		app('cookie')->queueCookie('token111', 'oooooo', 3600);
 
 		
@@ -87,19 +87,45 @@ class Jwt
 		app('jwt')->revokeAllForUser(42);
 		return new Response('kick off');
 	}
+	
+	
+	
 
 	//获取cookie，cookie字符长度单项为超过4k
-	public function getcookie():Response
+	public function getcookie( Request $request):Response
 	{
 		#$this->cookie->make('token' , 'okkkkkk');
-		/*
-Token:eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJOb3ZhRnJhbWUuSW5jIiwianRpIjoiYTI4MGQwYTA5MTRlNWRiYzgzOWFiZWM0YmFiNTJhMGEiLCJpc3MiOiJOb3ZhRnJhbWUiLCJpYXQiOjE3NjI0MzE2OTIuNTgxMTE3LCJuYmYiOjE3NjI0MzE2OTIuNTgxMTE3LCJleHAiOjE3NjI0MzUyOTIuNTgxMTE3LCJ1aWQiOjQyLCJuYW1lIjoiYWRtaW4ifQ.HHJ8wwQ-tqHwyBiZBGKQOcWXvz8N6lDV5rPFfwgY030	
-token:eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJOb3ZhRnJhbWUuSW5jIiwianRpIjoiYTI4MGQwYTA5MTRlNWRiYzgzOWFiZWM0YmFiNTJhMGEiLCJpc3MiOiJOb3ZhRnJhbWUiLCJpYXQiOjE3NjI0MzE2OTIuNTgxMTE3LCJuYmYiOjE3NjI0MzE2OTIuNTgxMTE3LCJleHAiOjE3NjI0MzUyOTIuNTgxMTE3LCJ1aWQiOjQyLCJuYW1lIjoiYWRtaW4ifQ.HHJ8wwQ-tqHwyBiZBGKQOcWXvz8N6lDV5rPFfwgY030
-		*/
-		$token = app('cookie')->get('token');
+		//$token = $request->cookies->get('token');
+		
+		
+		$token = app('cookie')->get($request , 'token');
+		
+/*
+#原生cookie操作
+// 1. 获取单个 Cookie（带默认值）
+$username = $request->cookies->get('username', '匿名用户'); // 若 cookie 不存在，返回 "匿名用户"
 
+// 2. 判断 Cookie 是否存在
+if ($request->cookies->has('token')) {
+$token = $request->cookies->get('token');
+} else {
+$token = '无 token Cookie';
+}
+
+// 3. 获取整数/布尔类型 Cookie（自动转换）
+#$uid = $request->cookies->getInt('uid', 0); // 非整数返回 0
+#$isVip = $request->cookies->getBoolean('is_vip', false); // 非布尔返回 false
+
+// 4. 获取所有 Cookie
+#$allCookies = $request->cookies->all();
+#dump($allCookies);
+*/
 		return new Response('token:'.$token );
 	}
+	
+	
+	
+	
 	
 	
 	//清理某个token
@@ -113,6 +139,17 @@ token:eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJOb3ZhRnJhbWUuSW5jIiwianRpI
 		}
 		return new Response('revoke failed' );
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	// 退出接口
 	public function logout(Request $request): Response
