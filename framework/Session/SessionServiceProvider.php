@@ -64,7 +64,7 @@ final class SessionServiceProvider
                         [
                             'group_prefix' => $groupPrefix,
                             'ttl' => $ttl,
-							'prefix' => 'sess_',         // 普通前缀
+							'prefix' => 'redis_grouped_',         // 普通前缀
 							'locking'        => true,          // 启用显式锁（默认 true）
 							'spin_lock_wait' => 150000,        // 自旋等待 microseconds
 							'lock_ttl'       => 30000,         // 锁过期时间 ms（用于 SET PX）
@@ -83,7 +83,7 @@ final class SessionServiceProvider
                     ->args([
                         service('redis.client'),
                         [
-                            'prefix' => 'redis_session_',
+                            'prefix' => 'redis_session_',	//前缀
                             'ttl' => $ttl,
                         ],
                     ])
@@ -96,7 +96,7 @@ final class SessionServiceProvider
 
             case 'file':
             default:
-                // ✅ 文件存储（使用你写的 FileSessionHandler）
+                // ✅ 文件存储（自定义 FileSessionHandler）
                 $services->set('session.handler.custom_file', FileSessionHandler::class)
                     ->call('setSavePath', [$fileSavePath])
                     ->call('setPrefix', [$sessionOptions['name'] ?? 'sess'])
