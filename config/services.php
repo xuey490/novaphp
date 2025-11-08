@@ -247,6 +247,8 @@ return function (ContainerConfigurator $configurator) {
     $services->set('cache', \Framework\Cache\ThinkAdapter::class)
         ->factory([service(\Framework\Cache\ThinkCache::class), 'create'])
         ->public();
+	//-------------------ThinkCache end------------------------------------	
+		
 	
 	// symfony/cache 注册服务		
     $services->set(\Framework\Cache\CacheFactory::class)

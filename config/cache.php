@@ -17,8 +17,7 @@ return [
             'driver' => 'redis',
 			'type'   => 'Redis', //兼容thinkcache
 			'host'       => '127.0.0.1',
-			'port'	 => 6379,
-            // redis密码
+			'port'	 	=> 6379,
             'password'  => null,
 			'expire'	=>3600,
 			/*

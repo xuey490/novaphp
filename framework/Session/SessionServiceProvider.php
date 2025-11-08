@@ -48,10 +48,16 @@ final class SessionServiceProvider
 
         // === 2. 注册 Redis 客户端（只有 Redis 模式需要）===
         if (in_array($storageType, ['redis', 'redis_grouped'], true)) {
-            $services->set('redis.client', \Redis::class)
-                ->factory([RedisFactory::class, 'createRedisClient'])
-                ->args([$redisConfig])
-                ->public();
+			// 注册 RedisFactory 服务
+			$services->set('redis.client', \Redis::class)
+				->factory([\Framework\Utils\RedisFactory::class, 'createRedisClient']) // 工厂方法放在自身
+				->args([$redisConfig])
+				->public();
+	
+			// 或者注册封装类别名
+			$services
+				->alias('redis', 'redis.client') 
+				->public();
         }
 
         // === 3. 注册 Session Handler & Storage ===
