@@ -14,9 +14,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Framework\Attributes\Route;
 use Framework\Utils\CookieManager;
 use App\Middlewares\AuthMiddleware;
+use Framework\Attributes\Auth;
 
 
-#[Route(prefix: '/jwts/apijwt', group: 'apijwt' )]
+#[Route(prefix: '/jwts/apijwt', group: 'apijwt' , middleware: [AuthMiddleware::class] )]
 class Jwt
 {
 	private string $tokenString;
@@ -30,7 +31,7 @@ class Jwt
 	{
 		// 登录页面登录-->获取uid，role，name-->签发token-->token存入cookie/缓存-->到下一个页面的时候
 		//-->中间件请求头（或 Cookie）中提取 Token，验证 JWT 签名、issuer、exp、nbf 等标准 claims，再验证Redis 中是否存在 login:token:{jti}（用于判断是否被提前注销）-->验证失败，跳转到登录，
-		$this->tokenString = app('jwt')->issue(['uid' => 42, 'name'=>'admin']);
+		$this->tokenString = app('jwt')->issue(['uid' => 42, 'name'=>'张三' ,'role'=>'admin']);
 		$token = "  Token: {$this->tokenString}<br/>";
 
 		$response = new Response('非常复杂的html内容:'.$this->tokenString); // 可传空字符串
@@ -75,10 +76,10 @@ class Jwt
 		return new Response('token:' . $token);
 	}
 	
-	#[Route(path: '/getdatas', methods: ['GET'], name: 'demo1.index' , middleware: [AuthMiddleware::class])]
+	#[Route(path: '/get', methods: ['GET'], name: 'demo1.index' )]
 	public function getdatas()
 	{
-		return new Response('getDatas');
+		return new Response('hello router');
 	}
 	
 	//banner uid=42的token

@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Models\Admin;
+use App\Middlewares\AuthMiddleware;
 use Framework\Middleware\MiddlewareXssFilter;
 use Framework\Security\CsrfTokenManager;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,10 +18,13 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Framework\Utils\Captcha as CCaptcha;
 use Framework\Utils\CookieManager;
+use Framework\Attributes\Auth;
 
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 
+#[Auth(roles: ['admin'])]
+#[Route(prefix: '/secure', middleware: [AuthMiddleware::class])]
 class Home
 {
     public function __construct(
@@ -56,8 +60,8 @@ class Home
 	}
 	
 	
-	
-	
+    #[Auth] // 仅登录即可访问
+	#[Route(path: '/html', methods: ['GET'], middleware: [AuthMiddleware::class])]
 	public function html():Response
 	{
 		
@@ -87,7 +91,8 @@ class Home
 		return $response;
 		
 	}
-
+	
+	#[Auth(required: true, roles: ['admin', 'editor'])]
     public function index(Request $request): Response
     {
 		
