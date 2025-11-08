@@ -318,6 +318,22 @@ return function (ContainerConfigurator $configurator) {
 		->autowire()
 		->public();	
 		
+		
+
+	$services->set(\Framework\Security\AuthGuard::class)
+		->args([
+			service('jwt'),
+		])	
+		->autowire()
+		->public();	
+
+
+	$services->set(\Framework\Security\AuthGuard::class)
+		->args([
+			service('jwt'),
+		])	
+		->autowire()
+		->public();	
 
 	
     $cookieConfig = __DIR__ . '/../config/cookie.php';

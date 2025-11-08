@@ -5,11 +5,11 @@ declare(strict_types=1);
 /**
  * This file is part of Navaphp Framework.
  *
- * @link     https://github.com/xuey490/novaphp
- * @license  https://github.com/xuey490/novaphp/blob/main/LICENSE
+ * @link     https://github.com/xuey490/project
+ * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
- * @Filename: %filename%
- * @Date: 2025-10-16
+ * @Filename: AttributeRouteLoader
+ * @Date: 2025-11-7
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
  */
@@ -21,17 +21,15 @@ use Symfony\Component\Routing\Route as SymfonyRoute;
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Finder\Finder;
 
-
 /**
  * AttributeRouteLoader：
  * 🔹 扫描控制器目录，解析 #[Route] 注解
  * 🔹 完全兼容 Symfony Route 写法
- * 🔹 支持控制器级 prefix / middleware / group 继承
+ * 🔹 支持控制器级 prefix / middleware / group / auth / roles 继承
  */
 class AttributeRouteLoader
 {
     private string $controllerDir;
-
     private string $controllerNamespace;
 
     public function __construct(string $controllerDir, string $controllerNamespace)
@@ -40,14 +38,12 @@ class AttributeRouteLoader
         $this->controllerNamespace = rtrim($controllerNamespace, '\\');
     }
 
-
     /**
      * 扫描控制器目录并加载所有注解路由.
      */
     public function loadRoutes(): RouteCollection
     {
         $routeCollection = new RouteCollection();
-
         $controllerFiles = $this->scanDirectory($this->controllerDir);
 
         foreach ($controllerFiles as $file) {
@@ -64,16 +60,20 @@ class AttributeRouteLoader
             // === 类级注解 ===
             $classAttrs      = $refClass->getAttributes(Route::class);
             $classPrefix     = '';
-			$classHost 		 = '';
             $classGroup      = null;
             $classMiddleware = [];
+            $classAuth       = null;
+            $classRoles      = [];
 
             if ($classAttrs) {
                 $classRoute      = $classAttrs[0]->newInstance();
-                $classPrefix     = $classRoute->prefix     ?? '';
-                $classGroup      = $classRoute->group      ?? null;
+                $classPrefix     = $classRoute->prefix ?? '';
+                $classGroup      = $classRoute->group ?? null;
                 $classMiddleware = $classRoute->middleware ?? [];
+                $classAuth       = $classRoute->auth ?? null;
+                $classRoles      = $classRoute->roles ?? [];
             }
+			
 
             // === 方法级注解 ===
             foreach ($refClass->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
@@ -90,6 +90,8 @@ class AttributeRouteLoader
                             '_controller' => "{$className}::{$method->getName()}",
                             '_group'      => $classGroup,
                             '_middleware' => $classMiddleware,
+                            '_auth'       => $classAuth,
+                            '_roles'      => $classRoles,
                         ],
                         methods: ['GET']
                     );
@@ -113,6 +115,11 @@ class AttributeRouteLoader
                         (array) $routeAttr->middleware
                     ));
 
+                    // ==== 合并 auth / roles ====
+                    // 方法级优先，如果方法级未设置则继承类级
+                    $needAuth = $routeAttr->auth ?? $classAuth ?? false;
+                    $roles    = $routeAttr->roles ?? $classRoles ?? [];
+
                     // ==== 创建 Symfony 路由 ====
                     $sfRoute = new SymfonyRoute(
                         path: $finalPath,
@@ -122,6 +129,8 @@ class AttributeRouteLoader
                                 '_controller' => "{$className}::{$method->getName()}",
                                 '_group'      => $routeAttr->group ?? $classGroup,
                                 '_middleware' => $mergedMiddleware,
+                                '_auth'       => $needAuth,
+                                '_roles'      => $roles,
                             ]
                         ),
                         requirements: $routeAttr->requirements,
@@ -140,18 +149,21 @@ class AttributeRouteLoader
             }
         }
 
-        // $this->loaded = true;
         return $routeCollection;
     }
 
     /**
-     * 从类或方法中提取 Route Attribute.
+     * 将多维数组递归“拍平”成一维数组.
      */
-    private function getRouteAttribute(\Reflector $ref): ?RouteAttribute
+    private function flattenArray(array $array): array
     {
-        $attributes = $ref->getAttributes(RouteAttribute::class);
-        return $attributes ? $attributes[0]->newInstance() : null;
+        $result = [];
+        array_walk_recursive($array, function ($value) use (&$result) {
+            $result[] = $value;
+        });
+        return $result;
     }
+
 
     /**
      * 扫描控制器目录，返回所有PHP文件.
@@ -161,9 +173,7 @@ class AttributeRouteLoader
         $rii   = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir));
         $files = [];
         foreach ($rii as $file) {
-            if ($file->isDir()) {
-                continue;
-            }
+            if ($file->isDir()) continue;
             if (pathinfo($file->getFilename(), PATHINFO_EXTENSION) === 'php') {
                 $files[] = $file->getPathname();
             }
