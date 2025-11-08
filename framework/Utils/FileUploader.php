@@ -88,9 +88,12 @@ class FileUploader
         if (!is_dir($this->mergeDir)) mkdir($this->mergeDir, 0755, true);
 
         // Redis 连接
-        $this->redis = new Redis();
+		$this->redis = app('redis.client');
+        /*
+		$this->redis = new Redis();
         $this->redis->connect($config['redis']['host'] ?? '127.0.0.1', $config['redis']['port'] ?? 6379);
         $this->redis->select($config['redis']['db'] ?? 0);
+		*/
     }
 
     /**
