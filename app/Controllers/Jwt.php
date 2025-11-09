@@ -27,7 +27,7 @@ class Jwt
     ) {}
 	
 	
-	public function issue()
+	public function issue(Request $request)
 	{
 		
 		#$response = app('response')->setContent('Hello NovaPHP!');
@@ -38,7 +38,7 @@ class Jwt
 		$this->tokenString = app('jwt')->issue(['uid' => 42, 'name'=>'张三' ,'role'=>'admin']);
 		$token = "  Token: {$this->tokenString}<br/>";
 
-		
+
 		
 		// app('cookie')->queueCookie('token', $this->tokenString, 3600);
 		// app('cookie')->queueCookie('token111', 'oooooo', 3600);
@@ -47,8 +47,8 @@ class Jwt
 		// 在发送 Response 前统一绑定队列中的 Cookie
 		// app('cookie')->sendQueuedCookies($response);
 
-		// 快捷设置 Cookie
-		app('cookie')->setResponseCookie($response, 'token', $this->tokenString , 3600);
+		// 快捷设置 Cookie 可以这样设置
+		//app('cookie')->setResponseCookie($response, 'token', $this->tokenString , 3600);
 
 		// 快捷删除 Cookie
 		//app('cookie')->forgetResponseCookie($response, 'old_cookie');
@@ -63,8 +63,7 @@ class Jwt
 
 		//解析结果
 		$string = app('jwt')->getPayload($this->tokenString);
-		#print_r($string);
-		
+
 		//$this->cookie->make('token' , $this->tokenString);
 		
 		return $response;
@@ -82,7 +81,7 @@ class Jwt
 		
 		//解析token
 		$string = app('jwt')->getPayload($token);
-		#print_r($string);
+
 		
 		return new Response('token:' . $token);
 	}
@@ -111,6 +110,10 @@ class Jwt
 		
 		
 		$token = app('cookie')->get($request , 'token');
+		
+		$user = app('jwt')->getPayload($token);
+		
+		print_r($user);
 		
 /*
 #原生cookie操作

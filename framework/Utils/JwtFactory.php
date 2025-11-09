@@ -32,7 +32,7 @@ use Lcobucci\JWT\Validation\Constraint\LooseValidAt;
 // 校验token
 use Lcobucci\JWT\Validation\Constraint\SignedWith;
 use Lcobucci\JWT\Validation\Validator;
-
+use Symfony\Component\HttpFoundation\Cookie;
 
 
 class JwtFactory
@@ -147,6 +147,7 @@ class JwtFactory
                     $cookiePath   = config('cookie.path')  ?? '/';
                     $samesite   = config('cookie.samesite')  ?? 'lax';
 
+					/*
                     $response->headers->setCookie(
                         new \Symfony\Component\HttpFoundation\Cookie(
                             $cookieName,
@@ -160,11 +161,12 @@ class JwtFactory
                             $samesite // SameSite
                         )
                     );
-
+					*/
 					# app('cookie')->setResponseCookie($response, 'token', $tokenStr , $ttl);
 					# app('cookie')->queueCookie('token', $tokenStr, $ttl );
 					# app('cookie')->sendQueuedCookies($response);
 					
+
 					app('cookie')->make('token', $tokenStr);
                 }
             } else {
