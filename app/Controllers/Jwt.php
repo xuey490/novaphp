@@ -48,7 +48,7 @@ class Jwt
 		// app('cookie')->sendQueuedCookies($response);
 
 		// 快捷设置 Cookie 可以这样设置
-		//app('cookie')->setResponseCookie($response, 'token', $this->tokenString , 3600);
+		app('cookie')->setResponseCookie($response, 'token', $this->tokenString , 3600);
 
 		// 快捷删除 Cookie
 		//app('cookie')->forgetResponseCookie($response, 'old_cookie');
@@ -62,7 +62,7 @@ class Jwt
 
 
 		//解析结果
-		$string = app('jwt')->getPayload($this->tokenString);
+		# $string = app('jwt')->getPayload($this->tokenString);
 
 		//$this->cookie->make('token' , $this->tokenString);
 		
