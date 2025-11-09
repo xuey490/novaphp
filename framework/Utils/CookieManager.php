@@ -20,6 +20,24 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Cookie;
 
+/*
+$response = app('response')->setContent('Hello NovaPHP!');
+
+//app('cookie')->queueCookie('token', $this->tokenString, 3600);
+//app('cookie')->queueCookie('token111', 'oooooo', 3600);
+
+
+// 在发送 Response 前统一绑定队列中的 Cookie
+//app('cookie')->sendQueuedCookies($response);
+
+// 快捷设置 Cookie
+#app('cookie')->setResponseCookie($response, 'token', $this->tokenString , 3600);
+
+// 快捷删除 Cookie
+//app('cookie')->forgetResponseCookie($response, 'old_cookie');
+
+return $response;
+*/
 class CookieManager
 {
     protected array $config;
