@@ -19,7 +19,7 @@ namespace Framework\Middleware;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class MiddlewareMethodOverride implements MiddlewareInterface
+class MethodOverrideMiddleware implements MiddlewareInterface
 {
     public function handle(Request $request, callable $next): Response
     {

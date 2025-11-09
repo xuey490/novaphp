@@ -22,7 +22,7 @@ return [
 
     // 是否仅通过 HTTPS 传输（生产环境建议开启）
     // 框架会在 Kernel 中结合 APP_ENV 自动覆盖此值
-    'secure' => env('APP_ENV') === 'production',
+    'secure' => env('APP_ENV') === 'prod',
 
     // 是否仅允许通过 HTTP 协议访问（防止 JS 读取，增强安全）
     'httponly' => true,

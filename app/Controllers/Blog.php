@@ -57,8 +57,8 @@ class Blog
     public function index(): Response
     {
 		
-        $users = Admin::select()->toArray();
-        print_r($users); // 因为你框架会处理 array => json
+        //$users = Admin::select()->toArray();
+        //print_r($users); // 因为你框架会处理 array => json
 		
 		
         // 🔍 检查当前 Twig 实例是否加载了 AppTwigExtension
@@ -90,12 +90,8 @@ class Blog
             'popularPosts' => $popularPosts,
             'mdContent'    => $mdContent,
         ]);
-		
-		for($i =0 ; $i<=10000 ; $i++)
-		{
-			echo $i+ rand(0 , 100)."<br/>";
-			
-		}
+            $response = app('response');
+			$response->headers->set('Authorization1', 'Bearer 123');
 
         return new Response($html);
     }

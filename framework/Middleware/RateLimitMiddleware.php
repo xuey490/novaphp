@@ -3,23 +3,23 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Navaphp Framework.
+ * This file is part of NovaFrame Framework.
  *
- * @link     https://github.com/xuey490/novaphp
- * @license  https://github.com/xuey490/novaphp/blob/main/LICENSE
+ * @link     https://github.com/xuey490/project
+ * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
- * @Filename: %filename%
- * @Date: 2025-10-16
+ * @Filename: RateLimitMiddleware.php
+ * @Date: 2025-11-6
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
  */
-
+ 
 namespace Framework\Middleware;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class MiddlewareRateLimit
+class RateLimitMiddleware
 {
     private int $maxRequests = 10;
 

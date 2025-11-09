@@ -29,27 +29,38 @@ class Jwt
 	
 	public function issue()
 	{
+		
+		#$response = app('response')->setContent('Hello NovaPHP!');
+		$response = new Response('非常复杂的html内容:'); // 可传空字符串
+		
 		// 登录页面登录-->获取uid，role，name-->签发token-->token存入cookie/缓存-->到下一个页面的时候
 		//-->中间件请求头（或 Cookie）中提取 Token，验证 JWT 签名、issuer、exp、nbf 等标准 claims，再验证Redis 中是否存在 login:token:{jti}（用于判断是否被提前注销）-->验证失败，跳转到登录，
 		$this->tokenString = app('jwt')->issue(['uid' => 42, 'name'=>'张三' ,'role'=>'admin']);
 		$token = "  Token: {$this->tokenString}<br/>";
 
-		$response = new Response('非常复杂的html内容:'.$this->tokenString); // 可传空字符串
 		
-		app('cookie')->queueCookie('token', $this->tokenString, 3600);
-		app('cookie')->queueCookie('token111', 'oooooo', 3600);
+		
+		// app('cookie')->queueCookie('token', $this->tokenString, 3600);
+		// app('cookie')->queueCookie('token111', 'oooooo', 3600);
 
 		
 		// 在发送 Response 前统一绑定队列中的 Cookie
-		app('cookie')->sendQueuedCookies($response);
+		// app('cookie')->sendQueuedCookies($response);
 
 		// 快捷设置 Cookie
-		//app('cookie')->setResponseCookie($response, 'token', $this->tokenString , 3600);
+		app('cookie')->setResponseCookie($response, 'token', $this->tokenString , 3600);
 
 		// 快捷删除 Cookie
 		//app('cookie')->forgetResponseCookie($response, 'old_cookie');
 
-		
+		// 如果续期了，可以获取新 token：
+		$newToken = $request->attributes->get('_new_token');
+		if ($newToken) {
+			// 在日志或前端提示中使用
+			$logger->info("Token refreshed for user {$user['uid']}");
+		}
+
+
 		//解析结果
 		$string = app('jwt')->getPayload($this->tokenString);
 		#print_r($string);

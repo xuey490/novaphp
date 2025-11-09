@@ -8,7 +8,7 @@ declare(strict_types=1);
  * @link     https://github.com/xuey490/novaphp
  * @license  https://github.com/xuey490/novaphp/blob/main/LICENSE
  *
- * @Filename: %filename%
+ * @Filename: CircuitBreakerMiddleware.php
  * @Date: 2025-10-16
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
@@ -20,7 +20,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class MiddlewareCircuitBreaker
+class CircuitBreakerMiddleware
 {
     private int $failureThreshold = 3; // 重试次数，如果超过次数，直接调整到 return new Response('服务熔断，暂不可用！', 503); 这行
 
