@@ -118,8 +118,65 @@ class JwtFactory
         $token = $builder->getToken($this->config->signer(), $this->config->signingKey());
         $tokenStr = $token->toString();
 
-        // 存 cookie（你的 app('cookie') 接口）
-        //app('cookie')->make('token', $tokenStr);
+       // === 自动设置响应 ===
+        try {
+            /** @var \Symfony\Component\HttpFoundation\Request|null $request */
+            $request = app('request');
+            /** @var \Symfony\Component\HttpFoundation\Response|null $response */
+            $response = app('response');
+
+            if ($response) {
+                // 判断是否为 API 请求
+                $isApi = false;
+                if ($request) {
+                    $accept = $request->headers->get('Accept');
+                    $ajax = $request->headers->get('X-Requested-With');
+                    $isApi = str_contains((string)$accept, 'json') || $ajax === 'XMLHttpRequest';
+                }
+
+                if ($isApi) {
+                    // === API / Ajax 场景：添加 Authorization 头 ===
+                    $response->headers->set('Authorization', 'Bearer ' . $tokenStr);
+                } else {
+                    // === Web 场景：写入 Cookie ===
+                    // Cookie 参数配置（可从 config/cookie.php 读取）
+                    $cookieName   =  'token';
+                    $cookieDomain = config('cookie.domain') ?? '';
+                    $cookieSecure = config('cookie.secure') ?? true;
+                    $cookieHttpOnly = config('cookie.httponly') ?? true;
+                    $cookiePath   = config('cookie.path')  ?? '/';
+                    $samesite   = config('cookie.samesite')  ?? 'lax';
+
+                    $response->headers->setCookie(
+                        new \Symfony\Component\HttpFoundation\Cookie(
+                            $cookieName,
+                            $tokenStr,
+                            $expiresAt,
+                            $cookiePath,
+                            $cookieDomain,
+                            $cookieSecure,
+                            $cookieHttpOnly,
+                            false, // raw
+                            $samesite // SameSite
+                        )
+                    );
+
+					# app('cookie')->setResponseCookie($response, 'token', $tokenStr , $ttl);
+					# app('cookie')->queueCookie('token', $tokenStr, $ttl );
+					# app('cookie')->sendQueuedCookies($response);
+					
+					app('cookie')->make('token', $tokenStr);
+                }
+            } else {
+                // 没有全局响应实例时，作为 Web 场景处理（例如 FPM）
+                app('cookie')->make('token', $tokenStr);
+				# app('cookie')->setResponseCookie($response, 'token', $tokenStr , $ttl);
+            }
+        } catch (Throwable $e) {
+            // 忽略响应设置错误，避免影响签发
+        }
+
+
 
         if ($userId) {
             $redis = app('redis.client');
