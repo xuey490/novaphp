@@ -8,6 +8,7 @@ use function Symfony\Component\DependencyInjection\Loader\Configurator\param;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorage;
@@ -261,10 +262,33 @@ return function (ContainerConfigurator $configurator) {
 	// 注册 RequestStack（用于在工厂中获取当前请求）
 	$services->set(RequestStack::class);
 	
-	// 1. 先注册 Request 服务（确保全局使用同一个请求实例）
-	$services->set(Request::class)
-		->factory([Request::class, 'createFromGlobals']); // 通过工厂方法创建请求实例
+	// 1. 注册 Request 服务（确保全局使用同一个请求实例）
+	$services->set('request' , Request::class)
+		->factory([Request::class, 'createFromGlobals'])->public(); // 通过工厂方法创建请求实例
 
+    // === 注册 Response 为服务 ===
+    // 定义一个工厂服务
+    $services->set('response' , Response::class)
+        ->public()
+        ->factory([\Framework\Utils\ResponseFactory::class, 'create']);
+	
+    // 定义工厂类
+    $services->set(\Framework\Utils\ResponseFactory::class)
+        ->public();
+	/*	
+	$services
+		->set('response1' , Response::class)
+		->args(['', Response::HTTP_OK, []])
+		->public();	
+		
+	$services
+		->set('response2' , Response::class)
+		->class(Response::class)
+		->public()
+		->synthetic(false) // 表示容器自己管理
+		->args(['', Response::HTTP_OK, []]);
+	*/	
+		
 
 	// 多国语言翻译
 	// 注册 Translator 服务（不设 locale，延迟设置）
@@ -277,40 +301,93 @@ return function (ContainerConfigurator $configurator) {
 
 
 	//Override
-	$services->set(\Framework\Middleware\MiddlewareMethodOverride::class)
+	$services->set(\Framework\Middleware\MethodOverrideMiddleware::class)
 		->autowire()
 		->autoconfigure()
 		->public();
 
 	//Cors
-	$services->set(\Framework\Middleware\MiddlewareCors::class)
+	$services->set(\Framework\Middleware\CorsMiddleware::class)
 		->autowire()
 		->autoconfigure()->public();
 		
 	//Cookie提示
-	$services->set(\Framework\Middleware\MiddlewareCookieConsent::class)
+	$services->set(\Framework\Middleware\CookieConsentMiddleware::class)
 		->autowire()
 		->autoconfigure()->public();
 
 	//熔断器
-	$services->set(\Framework\Middleware\MiddlewareCircuitBreaker::class)
+	$services->set(\Framework\Middleware\CircuitBreakerMiddleware::class)
 		->args(['%kernel.project_dir%/storage/cache'])
 		->autoconfigure()
 		->public(); 
 	
 	//IP Block
-	$services->set(\Framework\Middleware\MiddlewareIpBlock::class)
+	$services->set(\Framework\Middleware\IpBlockMiddleware::class)
 		->args(['%kernel.project_dir%/config/iplist.php'])
 		->public();	
 	
 	//XSS过滤
-	$services->set(\Framework\Middleware\MiddlewareXssFilter::class)
+	$services->set(\Framework\Middleware\XssFilterMiddleware::class)
 		->args([
 			'$enabled'     => true,
 			'$allowedHtml'  => [], //['b', 'i', 'u', 'a', 'p', 'br', 'strong', 'em'], 按需调整
 		])
 		->autowire()
 		->public();
+		
+	// 注册debug中间件 默认不启动
+	$services->set(\Framework\Middleware\DebugMiddleware::class)
+		->args([false])
+		->autowire()
+		->public();		
+		
+    // 加载中间件配置
+    $middlewareConfig = require __DIR__ . '/../config/middleware.php';
+    // 动态注册：Rate_Limit 中间件
+	if ($middlewareConfig['rate_limit']['enabled']) {
+		//限流器
+		$services->set(\Framework\Middleware\RateLimitMiddleware::class)
+			->args([
+			$middlewareConfig['rate_limit'],
+			'%kernel.project_dir%/storage/cache/'
+			])
+			->autoconfigure()
+			->public(); 
+	}
+
+    // 动态注册：CSRF 保护中间件 use Framework\Security\CsrfTokenManager;
+	// Session 必须已注册（确保你的框架已启动 session）
+	$services->set(\Framework\Security\CsrfTokenManager::class)
+		->args([
+			new Reference('session'), // 假设你已注册 'session' 服务
+			'csrf_token'
+		])->public();
+	
+    if ($middlewareConfig['csrf_protection']['enabled']) {
+        $services->set(\Framework\Middleware\CsrfProtectionMiddleware::class)
+            ->args([
+                new Reference(\Framework\Security\CsrfTokenManager::class),
+                $middlewareConfig['csrf_protection']['token_name'],
+                $middlewareConfig['csrf_protection']['except'],
+                $middlewareConfig['csrf_protection']['error_message'],
+                $middlewareConfig['csrf_protection']['remove_after_validation'],
+            ])
+            ->public(); // 如果要在 Kernel 中使用，需 public
+    }
+
+    // 动态注册：Referer 检查中间件
+    if ($middlewareConfig['referer_check']['enabled']) {
+        $services->set(\Framework\Middleware\RefererCheckMiddleware::class)
+            ->args([
+                $middlewareConfig['referer_check']['allowed_hosts'],
+                $middlewareConfig['referer_check']['allowed_schemes'],
+                $middlewareConfig['referer_check']['except'],
+                $middlewareConfig['referer_check']['strict'],
+                $middlewareConfig['referer_check']['error_message'],
+            ])
+            ->public();
+    }
 	
 	// 注册jwt服务
 
@@ -347,53 +424,7 @@ return function (ContainerConfigurator $configurator) {
         ->public();
  
 		
-    // 加载中间件配置
-    $middlewareConfig = require __DIR__ . '/../config/middleware.php';
 
-    // 动态注册：Rate_Limit 中间件
-	if ($middlewareConfig['rate_limit']['enabled']) {
-		//限流器
-		$services->set(\Framework\Middleware\MiddlewareRateLimit::class)
-			->args([
-			$middlewareConfig['rate_limit'],
-			'%kernel.project_dir%/storage/cache/'
-			])
-			->autoconfigure()
-			->public(); 
-	}
-
-    // 动态注册：CSRF 保护中间件 use Framework\Security\CsrfTokenManager;
-	// Session 必须已注册（确保你的框架已启动 session）
-	$services->set(\Framework\Security\CsrfTokenManager::class)
-		->args([
-			new Reference('session'), // 假设你已注册 'session' 服务
-			'csrf_token'
-		])->public();
-	
-    if ($middlewareConfig['csrf_protection']['enabled']) {
-        $services->set(\Framework\Middleware\MiddlewareCsrfProtection::class)
-            ->args([
-                new Reference(\Framework\Security\CsrfTokenManager::class),
-                $middlewareConfig['csrf_protection']['token_name'],
-                $middlewareConfig['csrf_protection']['except'],
-                $middlewareConfig['csrf_protection']['error_message'],
-                $middlewareConfig['csrf_protection']['remove_after_validation'],
-            ])
-            ->public(); // 如果要在 Kernel 中使用，需 public
-    }
-
-    // 动态注册：Referer 检查中间件
-    if ($middlewareConfig['referer_check']['enabled']) {
-        $services->set(\Framework\Middleware\MiddlewareRefererCheck::class)
-            ->args([
-                $middlewareConfig['referer_check']['allowed_hosts'],
-                $middlewareConfig['referer_check']['allowed_schemes'],
-                $middlewareConfig['referer_check']['except'],
-                $middlewareConfig['referer_check']['strict'],
-                $middlewareConfig['referer_check']['error_message'],
-            ])
-            ->public();
-    }
 	
     // TWIG配置加载
 	$TempConfig = require dirname(__DIR__) . '/config/view.php';
