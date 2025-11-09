@@ -3,9 +3,17 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Navaphp.
+ * This file is part of NovaFrame Framework.
  *
+ * @link     https://github.com/xuey490/project
+ * @license  https://github.com/xuey490/project/blob/main/LICENSE
+ *
+ * @Filename: AuthGuard.php
+ * @Date: 2025-11-6
+ * @Developer: xuey863toy
+ * @Email: xuey863toy@gmail.com
  */
+ 
 
 namespace Framework\Security;
 
@@ -18,6 +26,8 @@ class AuthGuard
 {
     private JwtFactory $jwt;
     private ?string $refreshedToken = null;
+	
+	protected int $refreshThreshold = 300; // 剩余 <300 秒时自动续期（5分钟）
 
     public function __construct(JwtFactory $jwt)
     {
@@ -55,9 +65,16 @@ class AuthGuard
                 return $this->forbidden("Role '{$userRole}' not allowed");
             }
 
+
+            $remaining = $exp - $now;
+            if ($remaining <= 0) {
+                // Token 已过期
+                return null;
+            }
+
             // --- 自动续期 ---
             $ttl = $exp - $now;
-            if ($ttl < 300) { // 剩余不到 5 分钟
+            if ($ttl < $this->refreshThreshold ) { // 剩余不到 5 分钟
                 $newToken = $this->jwt->refresh($token);
                 $this->refreshedToken = $newToken;
                 if ($newToken) {
