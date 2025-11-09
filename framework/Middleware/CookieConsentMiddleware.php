@@ -2,6 +2,18 @@
 
 declare(strict_types=1);
 
+/**
+ * This file is part of NovaFrame Framework.
+ *
+ * @link     https://github.com/xuey490/project
+ * @license  https://github.com/xuey490/project/blob/main/LICENSE
+ *
+ * @Filename: CookieConsentMiddleware.php
+ * @Date: 2025-11-6
+ * @Developer: xuey863toy
+ * @Email: xuey863toy@gmail.com
+ */
+ 
 namespace Framework\Middleware;
 
 use Symfony\Component\HttpFoundation\Request;
@@ -9,7 +21,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
 
-class MiddlewareCookieConsent implements MiddlewareInterface
+class CookieConsentMiddleware implements MiddlewareInterface
 {
     private array $excludedPaths = ['/api/*', '/consent-accept']; // API 或同意接口跳过
 

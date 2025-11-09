@@ -34,16 +34,17 @@ class MiddlewareDispatcher
 
     // 全局中间件（所有请求都会执行）
     private array $globalMiddleware = [
-        MiddlewareMethodOverride::class,
-        MiddlewareCors::class,
-        MiddlewareRateLimit::class,
-        // \Framework\Middleware\MiddlewareCircuitBreaker::class, //熔断中间件，正式环境使用，开发环境直接溢出错误堆栈
-        MiddlewareIpBlock::class,
-        MiddlewareXssFilter::class,
-        MiddlewareCsrfProtection::class,
-        MiddlewareRefererCheck::class,
-        MiddlewareCookieConsent::class,
-        // 添加日志、CORS、熔断器、限流器，xss、 ip block等全局中间件
+        MethodOverrideMiddleware::class,
+        CorsMiddleware::class,
+        RateLimitMiddleware::class,
+        CircuitBreakerMiddleware::class, //熔断中间件，正式环境使用，开发环境直接溢出错误堆栈
+        IpBlockMiddleware::class,
+        XssFilterMiddleware::class,
+        CsrfProtectionMiddleware::class,
+        RefererCheckMiddleware::class,
+        CookieConsentMiddleware::class,
+		DebugMiddleware::class,
+        // 添加日志、CORS、熔断器、限流器，xss、 ip block、Debug等全局中间件
     ];
 
     public function __construct(Container $container)
