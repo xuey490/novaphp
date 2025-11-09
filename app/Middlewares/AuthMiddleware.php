@@ -43,7 +43,6 @@ class AuthMiddleware
 
             $needAuth = false;	// 默认不需要认证
             $requiredRoles = [];
-
 			
 			if(isset($route['params']['_auth']) && $route['params']['_auth'] == true) { //注解路由上的auth，role
 				$needAuth = true;
