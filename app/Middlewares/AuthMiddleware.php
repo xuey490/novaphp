@@ -45,7 +45,7 @@ class AuthMiddleware
             $requiredRoles = [];
 
 			
-			if($route['params']['_auth'] == true) { //注解路由上的auth，role
+			if(isset($route['params']['_auth']) && $route['params']['_auth'] == true) { //注解路由上的auth，role
 				$needAuth = true;
 				$requiredRoles = $route['params']['_roles'] ?? [];
 			}else if ($controllerClass && $action) {
