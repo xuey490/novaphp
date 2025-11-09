@@ -21,20 +21,21 @@ NovaFrame 是一款轻量级强大，快速，简单，安全的php框架，这�
 - 	Workerman启动器： 使用workerman 可兼容FPM启动，一样的写法，超传统FPM 10倍以上的性能
 - 	Symfony 组件集成：利用 Symfony 7.x 组件实现 HTTP 基础、路由、依赖注入和缓存
 - 	轻量级设计：最小开销，快速请求处理
-- 	内置安全：CSRF保护、XSS过滤、速率限制和 IP阻断等中间件
+- 	集成中间件：CSRF保护、XSS过滤、速率限制和 IP阻断等中间件
 - 	路由缓存：基于文件的缓存系统优化路由加载，注解路由注入中间件
 - 	日志检查：基于Monolog的强大的日志功能，日志分片切分
 - 	事件管理：自由把控web开发的每个细节
   
 🔧 开发体验
-- 	多种路由选项：支持手动路由配置和基于属性的路由
+- 	多种路由选项：约定的自动路由、支持手动路由配置和基于属性的路由
 - 	依赖注入：完整的 Symfony DI 容器集成用于服务管理
 - 	模板灵活性：双重模板引擎支持（Twig 和 ThinkTemplate）
 - 	ORM 集成：ThinkORM 集成用于数据库操作
 - 	数据验证：ThinkValidate 的强大数据集验证
+-   权限控制：基于php注解和DOC Comment注释，注解路由的权限设置
   
 🛠️ 现代 PHP 特性
-- 	PHP 8.3+ 支持：利用现代 PHP 特性，包括属性和联合类型
+- 	PHP 8.0+ 支持：利用现代 PHP 特性，包括属性和联合类型
 - 	PSR 标准：遵循 PSR-4 自动加载和其他相关标准
 - 	Composer 就绪：基于 Composer 的标准依赖管理
 
@@ -46,7 +47,7 @@ NovaFrame 是一款轻量级强大，快速，简单，安全的php框架，这�
 
 ## 下载安装:
 ### 1.传统启动模式
-- 本地环境:php8.1及以上，Redis，MySQL5.7, composer 2.x及以上
+- 本地环境:php8.0 + 及以上，Redis，MySQL5.7, composer 2.x及以上
 - 从GitHub下载main版本，解压到本地目录，在根目录下运行
 
 `composer install `
@@ -58,7 +59,7 @@ NovaFrame 是一款轻量级强大，快速，简单，安全的php框架，这�
 - 打开浏览器，输入地址http://localhost:8000
 - 也可以部署到任何可以运行php的Apache或Nginx服务器上。
 ### 2.workerman启动
-- 本地环境:php8.1及以上，Redis，MySQL5.7, composer 2.x及以上
+- 本地环境:php8.0 + 及以上，Redis，MySQL5.7, composer 2.x及以上
 - 从GitHub下载main版本，解压到本地目录，在根目录下运行
 
 `composer install `
