@@ -147,6 +147,19 @@ class JwtFactory
                     $cookiePath   = config('cookie.path')  ?? '/';
                     $samesite   = config('cookie.samesite')  ?? 'lax';
 
+
+					$cookie = Cookie::create(
+						$cookieName,
+						$tokenStr,	//token值
+						$expiresAt,
+						$cookiePath,
+						$cookieDomain,
+						$cookieSecure,
+						$cookieHttpOnly,
+						false, // raw
+						$samesite // SameSite					
+					);
+					$response->headers->setCookie($cookie);
 					/*
                     $response->headers->setCookie(
                         new \Symfony\Component\HttpFoundation\Cookie(
