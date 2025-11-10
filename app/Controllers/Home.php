@@ -102,7 +102,7 @@ class Home
         // getService(\Framework\Log\LoggerService::class)->info('App started');
 
         # $userService = getService('App\Service\UserService'); // ✅ 只要容器已 set，就可以
-        # print_r( $userService->getUsers(111) );
+        
         // ✅ 此时 app() 已可用！
 
         #dump(app()->getServiceIds()); // 查看所有服务 ID
@@ -111,21 +111,20 @@ class Home
         // $logger = app('log');
         // $logger->info('Homepage visited--------------------');
 
-        // echo renderCsrfField();
 
         # thinkcache测试
         //$cache = app('cache');
         //$cache->set('test1', ['name' => 'mike'], 3600);
         //$test1 =$cache->get('test1');
         //$test1 = $cache->clear();
-        #print_r($test1);
+        
 		
 		#$loggerService = getService(\Framework\Log\LoggerService::class);
-		#print_r($loggerService);	
+		
 		#$loggerService->info('App----------------------------------------------------');
 		
 		//caches('foo-----', 'bar', 120);  // set
-		#echo caches('foo-----');         // get
+		
 
 		#$factory = new \Framework\Cache\ThinkCache(require BASE_PATH . '/config/cache.php');
 		#$redisCache = $factory->create(); // ✅ 成功
@@ -150,7 +149,7 @@ class Home
         // Symfony缓存
         #cache_set('user_1', ['name' => 'Alice'], 3600);
         #$user = cache_get('user_1');
-        //print_r( $user );
+        
 
         // $post = ['name' => 'Alice'];
         // cache_set('post_1', $post, 3600, ['posts', 'user_123']);
@@ -158,7 +157,7 @@ class Home
         // 删除所有 posts 相关缓存
         // cache_invalidate_tags(['posts']);
         // cache_invalidate_tags(['user_123']);
-        // print_r( cache_get('post_1') );
+        
 
 
 
@@ -171,12 +170,10 @@ class Home
          $session->set('user_id', 'tom_11');
         // 获取一个 session 属性
         $userId = $session->get('user_id');
-        #echo 'userId：'. $userId;
+        
 		
 		#dump(app('session')->all());
 
-        // 配置获取测试
-        // print_r(config('database'));
 
         // 在返回响应之前，收集信息
         $includedFiles = get_included_files();
@@ -212,10 +209,6 @@ class Home
 		if(!$result){
 		#echo $validate->getError();
 		}
-		
-###
-        // echo trans('hello'); // 自动输出对应语言
-        // echo '<br />当前语言包：' . current_locale();
         return new Response("<h1>Welcome to My Framework!___{$userId}</h1>");
     }
 
