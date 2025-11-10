@@ -11,7 +11,7 @@ namespace App\Controllers;
 
 use App\Services\UserService;
 use Framework\Container\Container;
-use PDO; // 用于API JSON响应
+use PDO;
 use Symfony\Component\HttpFoundation\JsonResponse; // 或者你需要的其他依赖
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -53,7 +53,7 @@ class Admin
         $container = Container::getInstance();
         // 获取DI服务
         // $test = $container->get('test.service');
-        // print_r($test);
+        
 
         // // 获取控制器（自动创建）
         // $homeController = $container->get('App\Controllers\HomeController');
