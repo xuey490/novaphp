@@ -21,7 +21,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Cookie;
 
 /*
-$response = app('response')->setContent('Hello NovaPHP!');
+$response = app('response')->setContent('Hello NovaFrame!');
 
 //app('cookie')->queueCookie('token', $this->tokenString, 3600);
 //app('cookie')->queueCookie('token111', 'oooooo', 3600);

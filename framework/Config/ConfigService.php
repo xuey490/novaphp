@@ -28,7 +28,7 @@ class ConfigService
         ?string $cacheFile = null
     ) {
         $this->configDir = rtrim($this->configDir, '/\\') . DIRECTORY_SEPARATOR;
-        $this->cacheFile = $cacheFile ?? sys_get_temp_dir() . '/NovaFrame_config.cache.php';
+        $this->cacheFile = $cacheFile ?? sys_get_temp_dir() . '/project_config.cache.php';
     }
 
     /**

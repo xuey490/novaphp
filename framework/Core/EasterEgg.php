@@ -5,8 +5,8 @@ declare(strict_types=1);
 /**
  * This file is part of NovaFrame Framework.
  *
- * @link     https://github.com/xuey490/novaphp
- * @license  https://github.com/xuey490/novaphp/blob/main/LICENSE
+ * @link     https://github.com/xuey490/project
+ * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
  * @Filename: %filename%
  * @Date: 2025-10-16
@@ -56,7 +56,7 @@ class EasterEgg
         [
             'name'   => 'Blue2004 (CYL)',
             'email'  => 'xuey863toy@gmail.com',
-            'github' => 'https://github.com/xuey490/novaphp',
+            'github' => 'https://github.com/xuey490/project',
         ],
     ];
 
