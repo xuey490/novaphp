@@ -14,8 +14,7 @@ declare(strict_types=1);
  * @Email: xuey863toy@gmail.com
  */
 
-namespace Framework\Session;
-
+namespace Framework\Providers;
 
 use Framework\Utils\RedisFactory;
 use Framework\Container\ServiceProviderInterface;
@@ -26,8 +25,9 @@ use Symfony\Component\HttpFoundation\Session\Storage\Handler\StrictSessionHandle
 use Symfony\Component\HttpFoundation\Session\Storage\Handler\RedisSessionHandler;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
-use Framework\Container\Container;
-
+/*
+* 注册全局的session服务
+*/
 final class SessionServiceProvider implements ServiceProviderInterface
 {
     //public function __invoke(ContainerConfigurator $configurator): void
@@ -66,7 +66,7 @@ final class SessionServiceProvider implements ServiceProviderInterface
         switch ($storageType) {
             case 'redis_grouped':
                 // ✅ 使用分组 Redis 存储
-                $services->set('session.handler', RedisGroupSessionHandler::class)
+                $services->set('session.handler', \Framework\Session\RedisGroupSessionHandler::class)
                     ->args([
                         service('redis.client'),
                         [
@@ -105,7 +105,7 @@ final class SessionServiceProvider implements ServiceProviderInterface
             case 'file':
             default:
                 // ✅ 文件存储（自定义 FileSessionHandler）
-                $services->set('session.handler.custom_file', FileSessionHandler::class)
+                $services->set('session.handler.custom_file', \Framework\Session\FileSessionHandler::class)
                     ->call('setSavePath', [$fileSavePath])
                     ->call('setPrefix', [$sessionOptions['name'] ?? 'sess'])
                     ->public();

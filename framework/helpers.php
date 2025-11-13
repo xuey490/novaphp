@@ -21,7 +21,6 @@ use Framework\Security\CsrfTokenManager;
 use Framework\Cache\ThinkCache;
 use Framework\Cache\ThinkAdapter;
 use Ramsey\Uuid\Uuid;
-use Symfony\Component\Cache\Adapter\TagAwareAdapter;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
@@ -368,12 +367,13 @@ if (!function_exists('cache_clear')) {
     }
 }
 
-function get_cache_instance(): TagAwareAdapter
+function get_cache_instance(): ?object
 {
     static $cache = null;
 
     if ($cache === null) {
-        $cache = Container::getInstance()->get(TagAwareAdapter::class);
+        $cache = Container::getInstance()->get('sf_cache');
+        //$cache = Container::getInstance()->get(TagAwareAdapter::class);
     }
 
     return $cache;

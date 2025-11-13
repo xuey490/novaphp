@@ -105,7 +105,7 @@ class Home
         
         // ✅ 此时 app() 已可用！
 
-        #dump(app()->getServiceIds()); // 查看所有服务 ID
+        dump(app()->getServiceIds()); // 查看所有服务 ID
 
         // 日志测试
         // $logger = app('log');
@@ -147,9 +147,11 @@ class Home
 		
 
         // Symfony缓存
-        #cache_set('user_1', ['name' => 'Alice'], 3600);
-        #$user = cache_get('user_1');
-        
+        cache_set('user_1', ['name' => 'AliceA'], 3600);
+        // $user = cache_get('user_1');
+		
+		// Thinkphp 缓存
+        // caches('foo', 'bar'); 
 
         // $post = ['name' => 'Alice'];
         // cache_set('post_1', $post, 3600, ['posts', 'user_123']);
