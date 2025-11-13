@@ -131,3 +131,78 @@ Container::getInstance() 获取容器对象
 App::setContainer(Container::getInstance()) 注入全局
 
 helpers: app('service_id') / getService(ClassName::class)
+
+===================================================
+
+下面我画一张直观的 Provider 注册 & boot 顺序图，展示现在框架的流程，包括核心 Provider 和应用 Provider，以及 register() 和 boot() 阶段。为了清晰，我用文本流程图的形式描述
+```
++------------------------+
+| Container 初始化        |
+|  ContainerConfigurator |
++------------------------+
+            |
+            v
++------------------------+
+| 核心 Provider 注册阶段  |
+| 读取 config/providers.php |
++------------------------+
+            |
+            v
++------------------------+
+| 逐个 register() 调用   |
+|  RequestProvider       |
+|  ResponseProvider      |
+|  SessionServiceProvider|
+|  CookieServiceProvider |
+|  MiddlewaresProvider   |
+|  ConfigServiceProvider |
+|  LoggerServiceProvider |
+|  ...                   |
++------------------------+
+            |
+            v
++------------------------+
+| 应用 Provider 注册阶段  |
+| 扫描 app/Providers     |
+| 自动 register()        |
++------------------------+
+            |
+            v
++------------------------+
+| 所有 Provider boot()   |
+|  按 loadedProviders 顺序|
+| 核心 -> 应用 Provider   |
++------------------------+
+            |
+            v
++------------------------+
+| 容器编译完成            |
+|  可以安全获取任意服务   |
++------------------------+
+```
+
+说明
+
+register() 阶段
+
+只是注册服务定义到容器
+
+不会触发服务实例化（延迟到容器编译时）
+
+核心 Framework\Provider 应该先注册，保证 App Provider 可以引用它们的服务
+
+boot() 阶段
+
+触发 Provider 内的初始化逻辑（比如事件监听器、Session 启动）
+
+顺序按 loadedProviders 数组，也就是先注册的先 boot()
+
+如果某个 Provider 依赖其他 Provider 的初始化结果，必须确保它在依赖 Provider 之后注册
+
+容器使用
+
+ContainerConfigurator 会在 Framework\Container\Container 的 compile 阶段解析依赖
+
+Autowire 会自动注入构造函数所需的类型
+
+如果服务在 register() 时未定义，会报错.
