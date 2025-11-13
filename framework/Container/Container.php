@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Navaphp Framework.
+ * This file is part of NovaFrame Framework.
  *
  * @link     https://github.com/xuey490/project
  * @license  https://github.com/xuey490/project/blob/main/LICENSE
@@ -44,7 +44,10 @@ class Container implements SymfonyContainerInterface
 
         // 加载 .env 文件
         $dotenv = new Dotenv();
-        $dotenv->load(BASE_PATH . '/.env');
+		$envFile = BASE_PATH . '/.env';
+		if (file_exists($envFile)) {
+			(new Dotenv())->load($envFile);
+		}
 
         $env    = env('APP_ENV') ?: 'local';
         $isProd = $env === 'prod';
@@ -82,9 +85,12 @@ class Container implements SymfonyContainerInterface
             file_put_contents(self::CACHE_FILE, $cacheContent);
 
             $loadedContainer = require self::CACHE_FILE;
+			/*self::$container = new \ProjectServiceContainer();
+			*/
             self::$container = $loadedContainer instanceof SymfonyContainerInterface
                 ? $loadedContainer
                 : $containerBuilder;
+				
         } else {
             self::$container = $containerBuilder;
         }
@@ -95,9 +101,13 @@ class Container implements SymfonyContainerInterface
      */
     public static function getInstance(): self
     {
-        self::init();
+		if (self::$container === null) {
+			self::init();
+		}
         return new self();
     }
+
+
 
     // ========== 代理所有 Symfony ContainerInterface 方法 ==========
     public function get(string $id, int $invalidBehavior = self::EXCEPTION_ON_INVALID_REFERENCE): ?object

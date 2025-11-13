@@ -21,7 +21,8 @@ use Framework\Attributes\Route;
  * 控制器级别示例：将整个控制器默认标记为后台菜单项（可选）
  */
 
-#[Route(prefix: '/vvv1/admins', group: 'apssi', middleware: [\App\Middlewares\AuthMiddleware::class, \App\Middlewares\LogMiddleware::class])]
+
+##[Route(prefix: '/vvv1/admins', group: 'apssi', middleware: [\App\Middlewares\AuthMiddleware::class, \App\Middlewares\LogMiddleware::class])]
 ##[Auth(required: true, roles: ['admins'])] // 如开启，则整个页面需要认证，哪怕方法类没有进行设置
 #[Menu(title: '系统管理', icon: 'cog', order: 100)]
 class Admins
@@ -32,7 +33,14 @@ class Admins
      * DocBlock 说明示例（可选）：
      * @menu 列表页
      */
-	#[Route(path: '/',  auth: true, roles: ['admin'], methods: ['GET'], name: 'demoaa1.index')] //注解路由的auth roles
+	##[Route(path: '/',  auth: true, roles: ['admin'], methods: ['GET'], name: 'demoaa1.index')] //注解路由的auth roles
+    /**
+     * 旧 DocBlock 
+     * 旧式的写法，role admin,super 用,隔开，不能用其他符号
+     * @auth true
+     * @role Super
+     * @menu 内容管理
+     */
     public function index(Request $request): Response
     {
         // 可以通过 $request->attributes->get('user') 读取经过中间件注入的用户信息（若有）
