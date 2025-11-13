@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Navaphp.
+ * This file is part of NovaFrame.
  *
  */
 
@@ -23,8 +23,8 @@ use Framework\Attributes\Auth;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 
-#[Auth(roles: ['admin'])]
-#[Route(prefix: '/secure', middleware: [AuthMiddleware::class])]
+##[Auth(roles: ['admin'])]
+##[Route(prefix: '/secure', middleware: [AuthMiddleware::class])]
 class Home
 {
     public function __construct(
@@ -60,8 +60,8 @@ class Home
 	}
 	
 	
-    #[Auth] // 仅登录即可访问
-	#[Route(path: '/html', methods: ['GET'], middleware: [AuthMiddleware::class])]
+    ##[Auth] // 仅登录即可访问
+	##[Route(path: '/html', methods: ['GET'], middleware: [AuthMiddleware::class])]
 	public function html():Response
 	{
 		
@@ -92,7 +92,7 @@ class Home
 		
 	}
 	
-	#[Auth(required: true, roles: ['admin', 'editor'])]
+	##[Auth(required: true, roles: ['admin', 'editor'])]
     public function index(Request $request): Response
     {
 		
