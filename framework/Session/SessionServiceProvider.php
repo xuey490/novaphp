@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Navaphp Framework.
+ * This file is part of NovaFrame Framework.
  *
  * @link     https://github.com/xuey490/novaphp
  * @license  https://github.com/xuey490/novaphp/blob/main/LICENSE
@@ -16,20 +16,22 @@ declare(strict_types=1);
 
 namespace Framework\Session;
 
-use Framework\Session\FileSessionHandler;
-use Framework\Session\RedisGroupSessionHandler;
+
 use Framework\Utils\RedisFactory;
+use Framework\Container\ServiceProviderInterface;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorage;
 use Symfony\Component\HttpFoundation\Session\Storage\Handler\StrictSessionHandler;
 use Symfony\Component\HttpFoundation\Session\Storage\Handler\RedisSessionHandler;
-
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
-final class SessionServiceProvider
+use Framework\Container\Container;
+
+final class SessionServiceProvider implements ServiceProviderInterface
 {
-    public function __invoke(ContainerConfigurator $configurator): void
+    //public function __invoke(ContainerConfigurator $configurator): void
+	public function register(ContainerConfigurator $configurator): void
     {
         $services = $configurator->services()
             ->defaults()
@@ -123,4 +125,10 @@ final class SessionServiceProvider
             ->args([service('session.storage')])
             ->public();
     }
+	
+    public function boot(ContainerConfigurator $container): void
+    {
+
+    }	
+	
 }

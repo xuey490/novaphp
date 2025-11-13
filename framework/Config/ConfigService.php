@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Navaphp Framework.
+ * This file is part of NovaFrame Framework.
  *
  * @link     https://github.com/xuey490/project
  * @license  https://github.com/xuey490/project/blob/main/LICENSE
@@ -28,7 +28,7 @@ class ConfigService
         ?string $cacheFile = null
     ) {
         $this->configDir = rtrim($this->configDir, '/\\') . DIRECTORY_SEPARATOR;
-        $this->cacheFile = $cacheFile ?? sys_get_temp_dir() . '/navaphp_config.cache.php';
+        $this->cacheFile = $cacheFile ?? sys_get_temp_dir() . '/NovaFrame_config.cache.php';
     }
 
     /**
