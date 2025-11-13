@@ -5,8 +5,8 @@ declare(strict_types=1);
 /**
  * This file is part of NovaFrame Framework.
  *
- * @link     https://github.com/xuey490/novaphp
- * @license  https://github.com/xuey490/novaphp/blob/main/LICENSE
+ * @link     https://github.com/xuey490/project
+ * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
  * @Filename: Captcha.php
  * @Date: 2025-10-16
@@ -20,7 +20,7 @@ use Symfony\Component\HttpFoundation\Response;
 use RuntimeException;
 
 /**
- * Captcha Utility for NovaPHP Framework.
+ * Captcha Utility for NovaFrame Framework.
  *
  * Provides alnum / chinese / math captcha types with encryption-based session storage.
  */
