@@ -80,6 +80,7 @@ class ContainerProvider
 
         // 调用 register
         if (method_exists($provider, 'register')) {
+			//var_dump( "[".$className."] Register executed.\n" );
             $provider->register($configurator);
         }
 
