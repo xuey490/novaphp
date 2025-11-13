@@ -30,7 +30,7 @@ final class CookieServiceProvider implements ServiceProviderInterface
     {
 		$services = $configurator->services();
 
-		$cookieConfig = __DIR__ . '/../config/cookie.php';
+		$cookieConfig = BASE_PATH . '/config/cookie.php';
 		// 注册 Cookie 服务，并传入配置
 		$services->set( \Framework\Utils\CookieManager::class)
 			->args([

@@ -25,7 +25,7 @@ return function (ContainerConfigurator $configurator) {
 
 	// 注册事件分发
     $services->set(\Framework\Event\Dispatcher::class)
-        ->arg('$container', service('service_container'))->public(); // ✅ 显式注入容器自身
+        ->arg('$container', service('service_container'))->public(); // ✅ 显式注入容器自身 注意arg，跟args差异
 
     // ✅ 1. 自动加载应用 Provider
     $providerManager = new ContainerProvider();
