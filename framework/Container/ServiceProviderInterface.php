@@ -19,7 +19,7 @@ namespace Framework\Container;
 /**
  * 服务提供者接口定义
  */
-#use Symfony\Component\DependencyInjection\ContainerBuilder; //或者直接用本目录的Container
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 interface ServiceProviderInterface
@@ -33,5 +33,5 @@ interface ServiceProviderInterface
     /**
      * 在容器编译后执行（初始化逻辑）
      */
-    public function boot(ContainerConfigurator $container): void;
+    public function boot(ContainerInterface $container): void;
 }
