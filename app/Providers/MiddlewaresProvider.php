@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Framework\Container\ServiceProviderInterface;
 
@@ -34,7 +35,8 @@ final class MiddlewaresProvider implements ServiceProviderInterface
 			->public(); // 关键：标记为公开，因为中间件需要通过容器动态获取（如从注解解析后）
     }
 	
-    public function boot(ContainerConfigurator $container): void
+	public function boot(ContainerInterface $container): void
+    #public function boot(ContainerConfigurator $container): void
     {
 
     }	

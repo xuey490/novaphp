@@ -8,14 +8,15 @@ declare(strict_types=1);
  * @link     https://github.com/xuey490/project
  * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
- * @Filename: TwigProvider.php
- * @Date: 2025-11-13
+ * @Filename: TwigServiceProvider.php
+ * @Date: 2025-11-14
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
  */
 
 namespace Framework\Providers;
 
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Framework\Container\ServiceProviderInterface;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
@@ -23,7 +24,7 @@ use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 /*
 * 注册twig全局服务
 */
-final class TwigProvider implements ServiceProviderInterface
+final class TwigServiceProvider implements ServiceProviderInterface
 {
     //public function __invoke(ContainerConfigurator $configurator): void
 	public function register(ContainerConfigurator $configurator): void
@@ -94,7 +95,8 @@ final class TwigProvider implements ServiceProviderInterface
 			
     }
 	
-    public function boot(ContainerConfigurator $container): void
+    public function boot(ContainerInterface $container): void
+    #public function boot(ContainerConfigurator $container): void
     {
 
     }	

@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Framework\Providers;
 
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Framework\Utils\RedisFactory;
 use Framework\Container\ServiceProviderInterface;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -126,9 +127,10 @@ final class SessionServiceProvider implements ServiceProviderInterface
             ->public();
     }
 	
-    public function boot(ContainerConfigurator $container): void
+    public function boot(ContainerInterface $container): void
+    #public function boot(ContainerConfigurator $container): void
     {
 
-    }	
+    }		
 	
 }

@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Framework\Providers;
 
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Framework\Container\ServiceProviderInterface;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
@@ -42,9 +43,10 @@ final class TranslationServiceProvider implements ServiceProviderInterface
 			
     }
 	
-    public function boot(ContainerConfigurator $container): void
+    public function boot(ContainerInterface $container): void
+    #public function boot(ContainerConfigurator $container): void
     {
 
-    }	
+    }		
 	
 }

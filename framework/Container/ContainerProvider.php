@@ -28,6 +28,8 @@ class ContainerProvider
 {
 
     protected array $loadedProviders = [];
+	
+    protected array $pendingBoot = [];
 
     /**
      * 扫描目录并注册 Provider
@@ -90,7 +92,7 @@ class ContainerProvider
     /**
      * 启动所有 Provider 的 boot 方法
      */
-    public function bootProviders(ContainerConfigurator $configurator): void
+    public function bootProviders1(ContainerConfigurator $configurator): void
     {
         foreach ($this->loadedProviders as $provider) {
             if (method_exists($provider, 'boot')) {
@@ -98,6 +100,27 @@ class ContainerProvider
             }
         }
     }
+
+	public function bootProviders($container): void
+	{
+		foreach ($this->loadedProviders as $provider) {
+
+			// 如果是 ContainerConfigurator，则推迟 boot
+			if ($container instanceof \Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator) {
+				// 暂存，等待 ContainerBuilder 阶段再执行
+				$this->pendingBoot[] = $provider;
+				continue;
+			}
+
+			// 真正 boot（Builder 阶段）
+			//if ($container instanceof \Framework\Container\Container) {
+			if ($container instanceof \Symfony\Component\DependencyInjection\ContainerBuilder) {
+				$provider->boot($container);
+			}
+		}
+	}
+
+
 
     /**
      * 根据文件路径解析命名空间类名

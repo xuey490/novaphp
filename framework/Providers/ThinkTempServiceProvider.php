@@ -8,7 +8,7 @@ declare(strict_types=1);
  * @link     https://github.com/xuey490/project
  * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
- * @Filename: ThinkTempProvider.php
+ * @Filename: ThinkTempServiceProvider.php
  * @Date: 2025-11-13
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Framework\Providers;
 
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Framework\Container\ServiceProviderInterface;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
@@ -24,7 +25,7 @@ use function Symfony\Component\DependencyInjection\Loader\Configurator\param;
 /*
 * 注册ThinkTemp 全局服务
 */
-final class ThinkTempProvider implements ServiceProviderInterface
+final class ThinkTempServiceProvider implements ServiceProviderInterface
 {
     //public function __invoke(ContainerConfigurator $configurator): void
 	public function register(ContainerConfigurator $configurator): void
@@ -61,9 +62,10 @@ final class ThinkTempProvider implements ServiceProviderInterface
 			
     }
 	
-    public function boot(ContainerConfigurator $container): void
+    public function boot(ContainerInterface $container): void
+    #public function boot(ContainerConfigurator $container): void
     {
 
-    }	
+    }		
 	
 }

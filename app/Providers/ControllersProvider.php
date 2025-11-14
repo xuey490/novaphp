@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Framework\Container\ServiceProviderInterface;
 
@@ -34,7 +35,8 @@ final class ControllersProvider implements ServiceProviderInterface
 			->autoconfigure()->public();			
     }
 	
-    public function boot(ContainerConfigurator $container): void
+	public function boot(ContainerInterface $container): void
+    #public function boot(ContainerConfigurator $container): void
     {
 		//echo "[ControllersProvider] Booted. all are ready.\n";
     }	
