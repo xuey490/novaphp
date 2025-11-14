@@ -40,31 +40,32 @@ class Jwt
 
 
 		
-		// app('cookie')->queueCookie('token', $this->tokenString, 3600);
-		// app('cookie')->queueCookie('token111', 'oooooo', 3600);
-
-		
-		// 在发送 Response 前统一绑定队列中的 Cookie
-		// app('cookie')->sendQueuedCookies($response);
+		//app('cookie')->queueCookie('token', $this->tokenString, 3600);
+		app('cookie')->queueCookie('token111', 'hello world', 3600);
 
 		// 快捷设置 Cookie 可以这样设置
-		app('cookie')->setResponseCookie($response, 'token', $this->tokenString , 3600);
+		//app('cookie')->setResponseCookie($response, 'token1111', $this->tokenString , 3600);
+
+		// 在发送 Response 前统一绑定队列中的 Cookie
+		app('cookie')->sendQueuedCookies($response);
+		
+		#dump($response);
 
 		// 快捷删除 Cookie
 		//app('cookie')->forgetResponseCookie($response, 'old_cookie');
 
 		// 如果续期了，可以获取新 token：
-		$newToken = $request->attributes->get('_new_token');
-		if ($newToken) {
+		//$newToken = $request->attributes->get('_new_token');
+		//if ($newToken) {
 			// 在日志或前端提示中使用
-			$logger->info("Token refreshed for user {$user['uid']}");
-		}
+		//	$logger->info("Token refreshed for user {$user['uid']}");
+		//}
 
 
 		//解析结果
 		# $string = app('jwt')->getPayload($this->tokenString);
 
-		//$this->cookie->make('token' , $this->tokenString);
+
 		
 		return $response;
 		
@@ -105,15 +106,15 @@ class Jwt
 	//获取cookie，cookie字符长度单项为超过4k
 	public function getcookie( Request $request):Response
 	{
-		#$this->cookie->make('token' , 'okkkkkk');
+		//$this->cookie->make('token' , 'okkkkkk');
 		//$token = $request->cookies->get('token');
 		
 		
 		$token = app('cookie')->get($request , 'token');
-		
+		//return new Response('token:'.$token );
 		$user = app('jwt')->getPayload($token);
 		
-		print_r($user);
+		//dump($user);
 		
 /*
 #原生cookie操作
@@ -137,12 +138,7 @@ $token = '无 token Cookie';
 */
 		return new Response('token:'.$token );
 	}
-	
-	
-	
-	
-	
-	
+
 	//清理某个token
 	public function revoke():Response
 	{
@@ -155,17 +151,7 @@ $token = '无 token Cookie';
 		return new Response('revoke failed' );
 	}
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
 	// 退出接口
 	public function logout(Request $request): Response
 	{
