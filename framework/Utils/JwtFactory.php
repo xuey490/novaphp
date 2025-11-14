@@ -139,14 +139,12 @@ class JwtFactory
                     $response->headers->set('Authorization', 'Bearer ' . $tokenStr);
                 } else {
                     // === Web 场景：写入 Cookie ===
-                    // Cookie 参数配置（可从 config/cookie.php 读取）
-                    $cookieName   =  'token';
-                    $cookieDomain = config('cookie.domain') ?? '';
-                    $cookieSecure = config('cookie.secure') ?? true;
-                    $cookieHttpOnly = config('cookie.httponly') ?? true;
-                    $cookiePath   = config('cookie.path')  ?? '/';
-                    $samesite   = config('cookie.samesite')  ?? 'lax';
-
+					$cookieName   =  'token';
+					$cookieDomain = config('cookie.domain') ?? '';
+					$cookieSecure = config('cookie.secure') ?? true;
+					$cookieHttpOnly = config('cookie.httponly') ?? true;
+					$cookiePath   = config('cookie.path')  ?? '/';
+					$samesite   = config('cookie.samesite')  ?? 'lax';
 
 					$cookie = Cookie::create(
 						$cookieName,
@@ -160,32 +158,29 @@ class JwtFactory
 						$samesite // SameSite					
 					);
 					$response->headers->setCookie($cookie);
-					/*
-                    $response->headers->setCookie(
-                        new \Symfony\Component\HttpFoundation\Cookie(
-                            $cookieName,
-                            $tokenStr,
-                            $expiresAt,
-                            $cookiePath,
-                            $cookieDomain,
-                            $cookieSecure,
-                            $cookieHttpOnly,
-                            false, // raw
-                            $samesite // SameSite
-                        )
-                    );
-					*/
-					# app('cookie')->setResponseCookie($response, 'token', $tokenStr , $ttl);
-					# app('cookie')->queueCookie('token', $tokenStr, $ttl );
-					# app('cookie')->sendQueuedCookies($response);
-					
-
-					app('cookie')->make('token', $tokenStr);
+					app('cookie')->queueCookie('token', $tokenStr, $ttl );
                 }
             } else {
                 // 没有全局响应实例时，作为 Web 场景处理（例如 FPM）
-                app('cookie')->make('token', $tokenStr);
-				# app('cookie')->setResponseCookie($response, 'token', $tokenStr , $ttl);
+				$cookieName   =  'token';
+				$cookieDomain = config('cookie.domain') ?? '';
+				$cookieSecure = config('cookie.secure') ?? true;
+				$cookieHttpOnly = config('cookie.httponly') ?? true;
+				$cookiePath   = config('cookie.path')  ?? '/';
+				$samesite   = config('cookie.samesite')  ?? 'lax';
+
+				$cookie = Cookie::create(
+					$cookieName,
+					$tokenStr,	//token值
+					$expiresAt,
+					$cookiePath,
+					$cookieDomain,
+					$cookieSecure,
+					$cookieHttpOnly,
+					false, // raw
+					$samesite // SameSite					
+				);
+				$response->headers->setCookie($cookie);
             }
         } catch (Throwable $e) {
             // 忽略响应设置错误，避免影响签发
