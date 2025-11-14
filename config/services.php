@@ -7,7 +7,7 @@ use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\param;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
-use Framework\Container\ContainerProvider;
+use Framework\Container\ContainerProviders;
 
 return function (ContainerConfigurator $configurator) {
     $services = $configurator->services();
@@ -28,19 +28,14 @@ return function (ContainerConfigurator $configurator) {
         ->arg('$container', service('service_container'))->public(); // ✅ 显式注入容器自身 注意arg，跟args差异
 
     // ✅ 1. 自动加载应用 Provider
-    $providerManager = new ContainerProvider();
+    $providerManager = new ContainerProviders();
 
-    // ✅ 2. 加载框架核心 Provider
-    $providers = require dirname(__DIR__) . '/config/providers.php';
-    foreach ($providers as $providerClass) {
-        $providerManager->registerProvider($configurator, $providerClass);
-    }
-	
-    $providerManager->loadFromDirectory(
-        $configurator,
-        BASE_PATH . '/app/Providers',
-        'App\\Providers\\'
-    );
+	// ✅ 2. 自动加载核心 + 应用 Provider
+	$providerManager->loadAll(
+		$configurator,
+		BASE_PATH . '/app/Providers',
+		'App\\Providers\\'
+	);
 
     // ✅ 3. 启动所有 Provider（boot）
     $providerManager->bootProviders($configurator);
