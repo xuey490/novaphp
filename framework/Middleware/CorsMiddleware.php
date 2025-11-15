@@ -3,17 +3,16 @@
 declare(strict_types=1);
 
 /**
- * This file is part of NovaFrame Framework.
+ * This file is part of NavaFrame Framework.
  *
  * @link     https://github.com/xuey490/project
  * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
- * @Filename: CorsMiddleware.php
- * @Date: 2025-11-6
+ * @Filename: %filename%
+ * @Date: 2025-11-15
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
  */
- 
 
 namespace Framework\Middleware;
 

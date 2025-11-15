@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 /**
- * This file is part of NovaFrame Framework.
+ * This file is part of NavaFrame Framework.
  *
  * @link     https://github.com/xuey490/project
  * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
- * @Filename: LoggerService.php
- * @Date: 2025-11-1
+ * @Filename: %filename%
+ * @Date: 2025-11-15
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
  */
@@ -21,9 +21,9 @@ use Monolog\Handler\FilterHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger as MonoLogger;
 use Psr\Log\LoggerInterface;  // 导入 LoggerInterface
+use Stringable;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Stringable;  // 引入 Stringable 接口
+use Symfony\Component\HttpFoundation\Response;  // 引入 Stringable 接口
 
 class LoggerService implements LoggerInterface  // 实现 Psr\Log\LoggerInterface
 {
@@ -32,11 +32,11 @@ class LoggerService implements LoggerInterface  // 实现 Psr\Log\LoggerInterfac
     public function __construct(
         private ConfigService $config
     ) {
-        $channel = $this->config->get('log.log_channel', 'app');
-        $logDir  = $this->config->get('log.log_path', BASE_PATH . '/storage/logs');
-        $maxSize = (int)$this->config->get('log.logSize', 5 * 1024 * 1024); // 默认 5MB
-        $keepDays = (int)$this->config->get('log.logKeepDays', 30);         // 默认保留30天
-		
+        $channel  = $this->config->get('log.log_channel', 'app');
+        $logDir   = $this->config->get('log.log_path', BASE_PATH . '/storage/logs');
+        $maxSize  = (int) $this->config->get('log.logSize', 5 * 1024 * 1024); // 默认 5MB
+        $keepDays = (int) $this->config->get('log.logKeepDays', 30);         // 默认保留30天
+
         if (! is_dir($logDir)) {
             mkdir($logDir, 0755, true);
         }
@@ -45,8 +45,8 @@ class LoggerService implements LoggerInterface  // 实现 Psr\Log\LoggerInterfac
 
         // 1. Debug 日志：仅 DEBUG
         $debugHandler = new FilterHandler(
-			new FileSizeRotateHandler($logDir . '/debug.log', $maxSize, $keepDays, MonoLogger::DEBUG),
-            //new StreamHandler($logDir . '/debug.log', MonoLogger::DEBUG),
+            new FileSizeRotateHandler($logDir . '/debug.log', $maxSize, $keepDays, MonoLogger::DEBUG),
+            // new StreamHandler($logDir . '/debug.log', MonoLogger::DEBUG),
             MonoLogger::DEBUG,
             MonoLogger::DEBUG
         );
@@ -54,7 +54,7 @@ class LoggerService implements LoggerInterface  // 实现 Psr\Log\LoggerInterfac
 
         // 2. Error 日志：ERROR ~ EMERGENCY
         $errorHandler = new FilterHandler(
-			new FileSizeRotateHandler($logDir . '/error.log', $maxSize, $keepDays, MonoLogger::ERROR),
+            new FileSizeRotateHandler($logDir . '/error.log', $maxSize, $keepDays, MonoLogger::ERROR),
             # new StreamHandler($logDir . '/error.log', MonoLogger::ERROR),
             MonoLogger::ERROR,
             MonoLogger::EMERGENCY
@@ -64,7 +64,7 @@ class LoggerService implements LoggerInterface  // 实现 Psr\Log\LoggerInterfac
         // 3. App 日志：INFO, NOTICE, WARNING
         $appHandler = new FilterHandler(
             // new StreamHandler($logDir . '/app.log', MonoLogger::INFO),
-			new FileSizeRotateHandler($logDir . '/app.log', $maxSize, $keepDays, MonoLogger::INFO),
+            new FileSizeRotateHandler($logDir . '/app.log', $maxSize, $keepDays, MonoLogger::INFO),
             MonoLogger::INFO,
             MonoLogger::WARNING
         );
@@ -72,47 +72,47 @@ class LoggerService implements LoggerInterface  // 实现 Psr\Log\LoggerInterfac
     }
 
     // 实现 Psr\Log\LoggerInterface 的方法，修改为 Stringable|string
-    public function emergency(Stringable|string $message, array $context = []): void
+    public function emergency(string|\Stringable $message, array $context = []): void
     {
         $this->logger->emergency($message, $context);
     }
 
-    public function alert(Stringable|string $message, array $context = []): void
+    public function alert(string|\Stringable $message, array $context = []): void
     {
         $this->logger->alert($message, $context);
     }
 
-    public function critical(Stringable|string $message, array $context = []): void
+    public function critical(string|\Stringable $message, array $context = []): void
     {
         $this->logger->critical($message, $context);
     }
 
-    public function error(Stringable|string $message, array $context = []): void
+    public function error(string|\Stringable $message, array $context = []): void
     {
         $this->logger->error($message, $context);
     }
 
-    public function warning(Stringable|string $message, array $context = []): void
+    public function warning(string|\Stringable $message, array $context = []): void
     {
         $this->logger->warning($message, $context);
     }
 
-    public function notice(Stringable|string $message, array $context = []): void
+    public function notice(string|\Stringable $message, array $context = []): void
     {
         $this->logger->notice($message, $context);
     }
 
-    public function info(Stringable|string $message, array $context = []): void
+    public function info(string|\Stringable $message, array $context = []): void
     {
         $this->logger->info($message, $context);
     }
 
-    public function debug(Stringable|string $message, array $context = []): void
+    public function debug(string|\Stringable $message, array $context = []): void
     {
         $this->logger->debug($message, $context);
     }
 
-    public function log($level, Stringable|string $message, array $context = []): void
+    public function log($level, string|\Stringable $message, array $context = []): void
     {
         $this->logger->log($level, $message, $context);
     }

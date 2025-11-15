@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 /**
- * This file is part of NovaFrame Framework.
+ * This file is part of NavaFrame Framework.
  *
  * @link     https://github.com/xuey490/project
  * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
- * @Filename: Auth.php
- * @Date: 2025-11-7
+ * @Filename: %filename%
+ * @Date: 2025-11-15
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
  */
@@ -17,8 +17,6 @@ declare(strict_types=1);
 // src/Attributes/Auth.php
 
 namespace Framework\Attributes;
-
-use Attribute;
 
 /**
  * @Auth
@@ -29,13 +27,13 @@ use Attribute;
  * #[Auth(roles: ['admin', 'editor'])]
  * #[Auth(required: false)] // 可选认证
  */
-#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
+#[\Attribute(\Attribute::TARGET_CLASS | \Attribute::TARGET_METHOD)]
 class Auth
 {
     /**
-     * @param array<string> $roles 允许访问的角色列表
-     * @param bool $required 是否强制要求认证（false 表示匿名也能访问）
-     * @param bool $refresh 是否自动续期 JWT（默认 true）
+     * @param array<string> $roles    允许访问的角色列表
+     * @param bool          $required 是否强制要求认证（false 表示匿名也能访问）
+     * @param bool          $refresh  是否自动续期 JWT（默认 true）
      */
     public function __construct(
         public array $roles = [],

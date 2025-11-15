@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 /**
- * This file is part of NovaFrame Framework.
+ * This file is part of NavaFrame Framework.
  *
  * @link     https://github.com/xuey490/project
  * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
- * @Filename: Container.php
- * @Date: 2025-11-1
+ * @Filename: %filename%
+ * @Date: 2025-11-15
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
  */
@@ -30,10 +30,9 @@ class Container implements SymfonyContainerInterface
     private static ?SymfonyContainerInterface $container = null;
 
     /**
-     * 初始化容器
+     * 初始化容器.
      *
-     * @param array $parameters 全局参数
-     * @return void
+     * @param  array             $parameters 全局参数
      * @throws \RuntimeException
      */
     public static function init(array $parameters = []): void
@@ -43,11 +42,11 @@ class Container implements SymfonyContainerInterface
         }
 
         // 加载 .env 文件
-        $dotenv = new Dotenv();
-		$envFile = BASE_PATH . '/.env';
-		if (file_exists($envFile)) {
-			(new Dotenv())->load($envFile);
-		}
+        $dotenv  = new Dotenv();
+        $envFile = BASE_PATH . '/.env';
+        if (file_exists($envFile)) {
+            (new Dotenv())->load($envFile);
+        }
 
         $env    = env('APP_ENV') ?: 'local';
         $isProd = $env === 'prod';
@@ -55,59 +54,56 @@ class Container implements SymfonyContainerInterface
         $projectRoot = BASE_PATH;
         $configDir   = $projectRoot . '/config';
 
-        if (!is_dir($configDir)) {
+        if (! is_dir($configDir)) {
             throw new \RuntimeException("配置目录不存在: {$configDir}");
         }
 
         $servicesFile = $configDir . '/services.php';
-        if (!file_exists($servicesFile)) {
+        if (! file_exists($servicesFile)) {
             throw new \RuntimeException("服务配置文件不存在: {$servicesFile}");
         }
 
         $containerBuilder = new ContainerBuilder();
         $containerBuilder->setParameter('kernel.project_dir', $projectRoot);
-        $containerBuilder->setParameter('kernel.debug', (bool)getenv('APP_DEBUG'));
+        $containerBuilder->setParameter('kernel.debug', (bool) getenv('APP_DEBUG'));
         $containerBuilder->setParameter('kernel.environment', $env);
 
-        if (!empty($parameters)) {
+        if (! empty($parameters)) {
             $containerBuilder->setParameter('config', $parameters);
         }
 
         $loader = new PhpFileLoader($containerBuilder, new FileLocator($configDir));
         $loader->load('services.php');
-		
+
         $containerBuilder->compile();
 
         if ($isProd) {
             @mkdir(dirname(self::CACHE_FILE), 0777, true);
-            $dumper = new PhpDumper($containerBuilder);
+            $dumper       = new PhpDumper($containerBuilder);
             $cacheContent = $dumper->dump(['class' => 'ProjectServiceContainer']);
             file_put_contents(self::CACHE_FILE, $cacheContent);
 
             $loadedContainer = require self::CACHE_FILE;
-			/*self::$container = new \ProjectServiceContainer();
-			*/
+            /*self::$container = new \ProjectServiceContainer();
+            */
             self::$container = $loadedContainer instanceof SymfonyContainerInterface
                 ? $loadedContainer
                 : $containerBuilder;
-				
         } else {
             self::$container = $containerBuilder;
         }
     }
 
     /**
-     * 获取 Container 实例
+     * 获取 Container 实例.
      */
     public static function getInstance(): self
     {
-		if (self::$container === null) {
-			self::init();
-		}
+        if (self::$container === null) {
+            self::init();
+        }
         return new self();
     }
-
-
 
     // ========== 代理所有 Symfony ContainerInterface 方法 ==========
     public function get(string $id, int $invalidBehavior = self::EXCEPTION_ON_INVALID_REFERENCE): ?object
@@ -176,5 +172,4 @@ class Container implements SymfonyContainerInterface
         self::$container->addCompilerPass($pass, $type, $priority);
         return $this;
     }
-	
 }

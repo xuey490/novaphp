@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of NovaFrame Framework.
+ * This file is part of NavaFrame Framework.
  *
  * @link     https://github.com/xuey490/project
  * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
- * @Filename: Captcha.php
+ * @Filename: %filename%
  * @Date: 2025-11-15
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
@@ -16,28 +16,27 @@ declare(strict_types=1);
 
 namespace Framework\Utils;
 
-use Symfony\Component\HttpFoundation\Request;
 use Ramsey\Uuid\Uuid;
 
 class Captcha
 {
     /**
-     * 验证验证码是否正确
+     * 验证验证码是否正确.
      */
     public static function check(string $code, string $key): bool
     {
         $config = config('captcha.captcha');
 
         $redisKey = $config['prefix'] . ':' . $key;
-		
+
         $redis = app('redis');
-        $hash = $redis->get($redisKey);
-        if (!$hash) {
+        $hash  = $redis->get($redisKey);
+        if (! $hash) {
             return false;
         }
 
         $code = mb_strtolower($code, 'UTF-8');
-        $ok = password_verify($code, $hash);
+        $ok   = password_verify($code, $hash);
 
         if ($ok) {
             $redis->del($redisKey);
@@ -46,11 +45,8 @@ class Captcha
         return $ok;
     }
 
-
     /**
-     * 输出验证码并把验证码的值保存的session中
-     * @access public
-     * @param array $_config
+     * 输出验证码并把验证码的值保存的session中.
      * @return array
      * @throws \Exception
      */
@@ -58,18 +54,18 @@ class Captcha
     {
         $config = app('config')->get('captcha.captcha');
 
-        if (!empty($_config)) {
+        if (! empty($_config)) {
             $config = array_merge($config, $_config);
         }
 
-		#return $config;
+        # return $config;
         $generator = self::generateValue($config);
         // 图片宽(px)
         $config['imageW'] || $config['imageW'] = $config['length'] * $config['fontSize'] * 1.5 + $config['length'] * $config['fontSize'] / 2;
         // 图片高(px)
         $config['imageH'] || $config['imageH'] = $config['fontSize'] * 2.5;
         // 建立一幅 $config['imageW'] x $config['imageH'] 的图像
-        $im = imagecreate((int)$config['imageW'], (int) $config['imageH']);
+        $im = imagecreate((int) $config['imageW'], (int) $config['imageH']);
         // 设置背景
         imagecolorallocate($im, $config['bg'][0], $config['bg'][1], $config['bg'][2]);
 
@@ -110,7 +106,7 @@ class Captcha
         $text = $config['useZh'] ? preg_split('/(?<!^)(?!$)/u', $generator['value']) : str_split($generator['value']); // 验证码
 
         foreach ($text as $index => $char) {
-            $x     = $config['fontSize'] * ($index + 1) * mt_rand((int)1.2, (int)1.6) * ($config['math'] ? 1 : 1.5);
+            $x     = $config['fontSize'] * ($index + 1) * mt_rand((int) 1.2, (int) 1.6) * ($config['math'] ? 1 : 1.5);
             $y     = $config['fontSize'] + mt_rand(10, 20);
             $angle = $config['math'] ? 0 : mt_rand(-40, 40);
             imagettftext($im, $config['fontSize'], $angle, (int) $x, (int) $y, $color, $fontttf, $char);
@@ -122,29 +118,28 @@ class Captcha
         imagedestroy($im);
 
         return [
-            'key' => $generator['key'],
+            'key'    => $generator['key'],
             'base64' => 'data:image/png;base64,' . base64_encode($content),
         ];
     }
 
     /**
-     * 生成验证码内容并保存到 Redis
+     * 生成验证码内容并保存到 Redis.
      */
     protected static function generateValue(array $config): array
     {
-
         if ($config['math']) {
-            $x = random_int(10, 30);
-            $y = random_int(1, 9);
-            $value = "{$x}+{$y}";
-            $answer = (string)($x + $y);
+            $x      = random_int(10, 30);
+            $y      = random_int(1, 9);
+            $value  = "{$x}+{$y}";
+            $answer = (string) ($x + $y);
         } else {
-            $value = '';
+            $value      = '';
             $characters = $config['useZh']
                 ? preg_split('/(?<!^)(?!$)/u', $config['zhSet'])
                 : str_split($config['codeSet']);
 
-            for ($i = 0; $i < $config['length']; $i++) {
+            for ($i = 0; $i < $config['length']; ++$i) {
                 $value .= $characters[array_rand($characters)];
             }
 
@@ -152,7 +147,7 @@ class Captcha
         }
 
         // redis key
-        $key = Uuid::uuid4()->toString();
+        $key      = Uuid::uuid4()->toString();
         $redisKey = $config['prefix'] . ':' . $key;
 
         app('redis')->setex(
@@ -169,7 +164,7 @@ class Captcha
 
     protected static function pickFont(string $path, array &$config): string
     {
-        if (!empty($config['fontttf'])) {
+        if (! empty($config['fontttf'])) {
             return $path . $config['fontttf'];
         }
 
@@ -187,7 +182,8 @@ class Captcha
     // ====== 干扰项绘制函数 保留原样 =======
     /**
      * @desc: 画一条由两条连在一起构成的随机正弦函数曲线作干扰线(你可以改成更帅的曲线函数)
-     * @param array $config
+     * @param mixed $im
+     * @param mixed $color
      */
     protected static function writeCurve(array $config, $im, $color): void
     {
@@ -200,15 +196,15 @@ class Captcha
         $w = (2 * M_PI) / $T;
 
         $px1 = 0; // 曲线横坐标起始位置
-        $px2 = mt_rand((int) ($config['imageW'] / 2), (int)$config['imageW']); // 曲线横坐标结束位置
+        $px2 = mt_rand((int) ($config['imageW'] / 2), (int) $config['imageW']); // 曲线横坐标结束位置
 
         for ($px = $px1; $px <= $px2; $px = $px + 1) {
-            if (0 != $w) {
+            if ($w != 0) {
                 $py = $A * sin($w * $px + $f) + $b + $config['imageH'] / 2; // y = Asin(ωx+φ) + b
                 $i  = (int) ($config['fontSize'] / 5);
                 while ($i > 0) {
-                    imagesetpixel($im, (int) $px + $i, (int) $py + $i, (int)$color); // 这里(while)循环画像素点比imagettftext和imagestring用字体大小一次画出（不用这while循环）性能要好很多
-                    $i--;
+                    imagesetpixel($im, (int) $px + $i, (int) $py + $i, (int) $color); // 这里(while)循环画像素点比imagettftext和imagestring用字体大小一次画出（不用这while循环）性能要好很多
+                    --$i;
                 }
             }
         }
@@ -217,18 +213,18 @@ class Captcha
         $A   = mt_rand(1, (int) ($config['imageH'] / 2)); // 振幅
         $f   = mt_rand(-(int) ($config['imageH'] / 4), (int) ($config['imageH'] / 4)); // X轴方向偏移量
         $T   = mt_rand((int) $config['imageH'], (int) ($config['imageW'] * 2)); // 周期
-        $w   = (2 * M_PI) / $T;
+        $w   = (2 * M_PI)                                        / $T;
         $b   = $py - $A * sin($w * $px + $f) - $config['imageH'] / 2;
         $px1 = $px2;
         $px2 = $config['imageW'];
 
         for ($px = $px1; $px <= $px2; $px = $px + 1) {
-            if (0 != $w) {
+            if ($w != 0) {
                 $py = $A * sin($w * $px + $f) + $b + $config['imageH'] / 2; // y = Asin(ωx+φ) + b
                 $i  = (int) ($config['fontSize'] / 5);
                 while ($i > 0) {
-                    imagesetpixel($im, (int) $px + $i, (int) $py + $i, (int)$color);
-                    $i--;
+                    imagesetpixel($im, (int) $px + $i, (int) $py + $i, (int) $color);
+                    --$i;
                 }
             }
         }
@@ -236,17 +232,14 @@ class Captcha
 
     /**
      * @desc: 画杂点  往图片上写不同颜色的字母或数字
-     * @param array $config
-     * @param $im
-     * @author Tinywan(ShaoBo Wan)
      */
     protected static function writeNoise(array $config, $im): void
     {
         $codeSet = 'NovaFrame20222345678abcdefhijkmnpqrstuvwxyz';
-        for ($i = 0; $i < 10; $i++) {
-            //杂点颜色
+        for ($i = 0; $i < 10; ++$i) {
+            // 杂点颜色
             $noiseColor = imagecolorallocate($im, mt_rand(150, 225), mt_rand(150, 225), mt_rand(150, 225));
-            for ($j = 0; $j < 5; $j++) {
+            for ($j = 0; $j < 5; ++$j) {
                 // 绘杂点
                 imagestring($im, 5, mt_rand(-10, (int) $config['imageW']), mt_rand(-10, (int) $config['imageH']), $codeSet[mt_rand(0, 29)], (int) $noiseColor);
             }
@@ -255,9 +248,6 @@ class Captcha
 
     /**
      * @desc: 绘制背景图片 注：如果验证码输出图片比较大，将占用比较多的系统资源
-     * @param array $config
-     * @param $im
-     * @author Tinywan(ShaoBo Wan)
      */
     protected static function background(array $config, $im): void
     {
@@ -266,7 +256,7 @@ class Captcha
 
         $bgs = [];
         while (false !== ($file = $dir->read())) {
-            if ('.' != $file[0] && substr($file, -4) == '.jpg') {
+            if ($file[0] != '.' && substr($file, -4) == '.jpg') {
                 $bgs[] = $path . $file;
             }
         }
@@ -275,7 +265,7 @@ class Captcha
         $gb = $bgs[array_rand($bgs)];
 
         [$width, $height] = @getimagesize($gb);
-        $bgImage = @imagecreatefromjpeg($gb);
+        $bgImage          = @imagecreatefromjpeg($gb);
         @imagecopyresampled($im, $bgImage, 0, 0, 0, 0, (int) $config['imageW'], (int) $config['imageH'], $width, $height);
         @imagedestroy($bgImage);
     }

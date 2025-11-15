@@ -3,24 +3,22 @@
 declare(strict_types=1);
 
 /**
- * This file is part of NovaFrame Framework.
+ * This file is part of NavaFrame Framework.
  *
  * @link     https://github.com/xuey490/project
  * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
- * @Filename: RedisFactory
- * @Date: 2025-10-16
+ * @Filename: %filename%
+ * @Date: 2025-11-15
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
  */
 
 namespace Framework\Utils;
 
-
-
 /*
 class RedisFactory {
-	
+
     public static function createRedisClient(array $config): \Redis {
         $redis = new \Redis();
         $connected = $redis->connect($config['host'], $config['port'], $config['timeout']);
@@ -40,19 +38,18 @@ class RedisFactory {
 
 use Redis;
 use RuntimeException;
-use Throwable;
 use Workerman\Timer;
 
 /**
- * Redis 客户端工厂（带自动重连 + 故障切换 + 自动续期分布式锁）
+ * Redis 客户端工厂（带自动重连 + 故障切换 + 自动续期分布式锁）.
  */
 class RedisFactory
 {
     /** @var array Redis 节点配置 */
     private static array $configList = [];
 
-    /** @var Redis|null 当前连接 */
-    private static ?Redis $redis = null;
+    /** @var null|\Redis 当前连接 */
+    private static ?\Redis $redis = null;
 
     /** @var int 最大重试次数 */
     private static int $maxRetries = 3;
@@ -65,71 +62,18 @@ class RedisFactory
 
     // ========== 连接管理 ==========
 
-    public static function createRedisClient(array $configList): Redis
+    public static function createRedisClient(array $configList): \Redis
     {
         self::$configList = $configList;
         return self::client();
     }
 
-    public static function client(): Redis
+    public static function client(): \Redis
     {
-        if (!self::$redis instanceof Redis || !self::$redis->isConnected()) {
+        if (! self::$redis instanceof \Redis || ! self::$redis->isConnected()) {
             self::connect();
         }
         return self::$redis;
-    }
-
-    private static function connect(): void
-    {
-        foreach (self::$configList as $config) {
-            try {
-                $redis = new Redis();
-                $ok = $redis->connect(
-                    $config['host'],
-                    (int)($config['port'] ?? 6379),
-                    (float)($config['timeout'] ?? 2.0)
-                );
-                if (!$ok) {
-                    throw new RuntimeException("Connect fail: {$config['host']}");
-                }
-                if (!empty($config['password'])) {
-                    $redis->auth($config['password']);
-                }
-                if (isset($config['database'])) {
-                    $redis->select((int)$config['database']);
-                }
-                $redis->ping(); // 验证连接
-                self::$redis = $redis;
-                return;
-            } catch (Throwable $e) {
-                error_log('[Redis] Fail connect node: ' . $e->getMessage());
-            }
-        }
-        throw new RuntimeException('No Redis node available.');
-    }
-	
-    /**
-     * 通用执行器（带重试与故障转移）
-     */
-    private static function exec(callable $fn)
-    {
-        $attempt = 0;
-        while ($attempt < self::$maxRetries) {
-            try {
-                if (!self::$redis || !self::$redis->isConnected()) {
-                    self::connect();
-                }
-                return $fn(self::$redis);
-            } catch (Throwable $e) {
-                $attempt++;
-                if ($attempt >= self::$maxRetries) {
-                    throw $e;
-                }
-                usleep((int)(self::$retryDelay * 1_000_000));
-                self::connect();
-            }
-        }
-        throw new RuntimeException('Redis operation failed after retries.');
     }
 
     // ========== 基础 Redis 操作（略，保持不变）==========
@@ -137,75 +81,78 @@ class RedisFactory
 
     public static function set(string $key, $value, int $ttl = 0, bool $nx = false): bool
     {
-        return self::exec(function (Redis $r) use ($key, $value, $ttl, $nx) {
+        return self::exec(function (\Redis $r) use ($key, $value, $ttl, $nx) {
             $opt = [];
-            if ($ttl > 0) $opt['ex'] = $ttl;
-            if ($nx) $opt['nx'] = true;
+            if ($ttl > 0) {
+                $opt['ex'] = $ttl;
+            }
+            if ($nx) {
+                $opt['nx'] = true;
+            }
             return $r->set($key, $value, $opt);
         });
     }
 
     public static function get(string $key)
     {
-        return self::exec(fn(Redis $r) => $r->get($key));
+        return self::exec(fn (\Redis $r) => $r->get($key));
     }
 
-    public static function del(string|array $key): int
+    public static function del(array|string $key): int
     {
-        return self::exec(fn(Redis $r) => $r->del($key));
+        return self::exec(fn (\Redis $r) => $r->del($key));
     }
 
     public static function exists(string $key): bool
     {
-        return (bool) self::exec(fn(Redis $r) => $r->exists($key));
+        return (bool) self::exec(fn (\Redis $r) => $r->exists($key));
     }
 
     public static function incr(string $key, int $by = 1): int
     {
-        return self::exec(fn(Redis $r) => $r->incrBy($key, $by));
+        return self::exec(fn (\Redis $r) => $r->incrBy($key, $by));
     }
 
     public static function decr(string $key, int $by = 1): int
     {
-        return self::exec(fn(Redis $r) => $r->decrBy($key, $by));
+        return self::exec(fn (\Redis $r) => $r->decrBy($key, $by));
     }
 
     public static function hSet(string $hash, string $field, $value): int
     {
-        return self::exec(fn(Redis $r) => $r->hSet($hash, $field, $value));
+        return self::exec(fn (\Redis $r) => $r->hSet($hash, $field, $value));
     }
 
     public static function hGet(string $hash, string $field)
     {
-        return self::exec(fn(Redis $r) => $r->hGet($hash, $field));
+        return self::exec(fn (\Redis $r) => $r->hGet($hash, $field));
     }
 
     public static function hGetAll(string $hash): array
     {
-        return self::exec(fn(Redis $r) => $r->hGetAll($hash));
+        return self::exec(fn (\Redis $r) => $r->hGetAll($hash));
     }
 
     // ========== 分布式锁（增强版）==========
 
-
     /**
-     * 获取分布式锁（带自动续期）
+     * 获取分布式锁（带自动续期）.
      *
-     * @param string $key       锁名称
-     * @param int    $ttl       初始过期时间（秒）
-     * @param int    $renewTtl  续期时间（秒），建议为 ttl 的 1/3
-     * @return string|false     成功返回唯一 token，失败返回 false
+     * @param  string       $key      锁名称
+     * @param  int          $ttl      初始过期时间（秒）
+     * @param  int          $renewTtl 续期时间（秒），建议为 ttl 的 1/3
+     * @return false|string 成功返回唯一 token，失败返回 false
      */
-    public static function lock(string $key, int $ttl = 10, int $renewTtl = null): string|false
+    public static function lock(string $key, int $ttl = 10, ?int $renewTtl = null): false|string
     {
-        $token = uniqid('lock_', true); // 唯一标识，防止误删
-        $fullKey = "lock:$key";
+        $token   = uniqid('lock_', true); // 唯一标识，防止误删
+        $fullKey = "lock:{$key}";
 
-        $acquired = self::exec(function (Redis $r) use ($fullKey, $token, $ttl) {
+        $acquired = self::exec(function (\Redis $r) use ($fullKey, $token, $ttl) {
             return $r->set($fullKey, $token, ['nx', 'ex' => $ttl]);
         });
 
-        if (!$acquired) {
+        if (! $acquired) {
             return false;
         }
 
@@ -222,11 +169,11 @@ class RedisFactory
                         return 0
                     end
                 ';
-                self::exec(function (Redis $r) use ($script, $fullKey, $token, $ttl) {
+                self::exec(function (\Redis $r) use ($script, $fullKey, $token, $ttl) {
                     $r->eval($script, [$fullKey, $token, $ttl], 1);
                 });
-            } catch (Throwable $e) {
-                error_log("[Redis Lock Renew] Error: " . $e->getMessage());
+            } catch (\Throwable $e) {
+                error_log('[Redis Lock Renew] Error: ' . $e->getMessage());
                 // 续期失败不中断，由 TTL 自然过期
             }
         }, [], true); // true = persistent
@@ -240,14 +187,14 @@ class RedisFactory
     }
 
     /**
-     * 释放锁（安全删除 + 清理续期任务）
+     * 释放锁（安全删除 + 清理续期任务）.
      *
-     * @param string $key    锁名称
-     * @param string $token  加锁时返回的 token
+     * @param string $key   锁名称
+     * @param string $token 加锁时返回的 token
      */
     public static function unlock(string $key, string $token): void
     {
-        $fullKey = "lock:$key";
+        $fullKey = "lock:{$key}";
 
         // Lua 脚本：原子判断并删除
         $script = '
@@ -259,7 +206,7 @@ class RedisFactory
         ';
 
         try {
-            self::exec(function (Redis $r) use ($script, $fullKey, $token) {
+            self::exec(function (\Redis $r) use ($script, $fullKey, $token) {
                 $r->eval($script, [$fullKey, $token], 1);
             });
         } finally {
@@ -272,14 +219,67 @@ class RedisFactory
     }
 
     /**
-     * 事务封装
+     * 事务封装.
      */
     public static function transaction(callable $callback): array
     {
-        return self::exec(function (Redis $r) use ($callback) {
+        return self::exec(function (\Redis $r) use ($callback) {
             $r->multi();
             $callback($r);
             return $r->exec();
         });
+    }
+
+    private static function connect(): void
+    {
+        foreach (self::$configList as $config) {
+            try {
+                $redis = new \Redis();
+                $ok    = $redis->connect(
+                    $config['host'],
+                    (int) ($config['port'] ?? 6379),
+                    (float) ($config['timeout'] ?? 2.0)
+                );
+                if (! $ok) {
+                    throw new \RuntimeException("Connect fail: {$config['host']}");
+                }
+                if (! empty($config['password'])) {
+                    $redis->auth($config['password']);
+                }
+                if (isset($config['database'])) {
+                    $redis->select((int) $config['database']);
+                }
+                $redis->ping(); // 验证连接
+                self::$redis = $redis;
+                return;
+            } catch (\Throwable $e) {
+                error_log('[Redis] Fail connect node: ' . $e->getMessage());
+            }
+        }
+        throw new \RuntimeException('No Redis node available.');
+    }
+
+    /**
+     * 通用执行器（带重试与故障转移）.
+     */
+    private static function exec(callable $fn)
+    {
+        $attempt = 0;
+        while ($attempt < self::$maxRetries) {
+            try {
+                if (! self::$redis || ! self::$redis->isConnected()) {
+                    self::connect();
+                }
+                return $fn(self::$redis);
+            } catch (\Throwable $e) {
+                ++$attempt;
+                if ($attempt >= self::$maxRetries) {
+                    throw $e;
+                }
+                usleep((int) (self::$retryDelay * 1_000_000));
+                self::connect();
+            }
+        }
+        throw new \RuntimeException('Redis operation failed after retries.');
     }
 }

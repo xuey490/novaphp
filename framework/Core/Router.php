@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 /**
- * This file is part of NovaFrame Framework.
+ * This file is part of NavaFrame Framework.
  *
  * @link     https://github.com/xuey490/project
  * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
  * @Filename: %filename%
- * @Date: 2025-10-16
+ * @Date: 2025-11-15
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
  */
@@ -21,14 +21,12 @@ use Framework\Middleware\MiddlewareMethodOverride;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Routing\Exception\MethodNotAllowedException;
+use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Routing\Matcher\UrlMatcher;
 // 引入你的静态容器
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouteCollection;
-
-
 
 // 推荐使用 PSR-11 标准接口
 
@@ -78,7 +76,6 @@ class Router
         $context = new RequestContext();
         $context->fromRequest($request);
 
-
         // 🔥 检查 版本彩蛋
         if (EasterEgg::isTriggeredVersion($request)) {
             return EasterEgg::getRouteMarker();
@@ -92,12 +89,12 @@ class Router
         // 2. 策略1：匹配手动路由 + 注解路由（共用Symfony UrlMatcher）
         $manualOrAnnotationRoute = $this->matchManualAndAnnotationRoutes($path, $context);
         if ($manualOrAnnotationRoute) {
-			//$context->setMethod('GET');	//✅ 强制设置方法
+            // $context->setMethod('GET');	//✅ 强制设置方法
             return $manualOrAnnotationRoute;
         }
-		
-		// 再尝试自动路由（GET 默认）
-		
+
+        // 再尝试自动路由（GET 默认）
+
         // 3. 策略2：匹配自动解析路由（最低优先级）
         $autoRoute = $this->matchAutoRoute($path, $request);
         if ($autoRoute) {
@@ -111,39 +108,36 @@ class Router
     /**
      * 匹配路由.
      */
-	private function matchManualAndAnnotationRoutes(string $path, RequestContext $context): ?array
-	{
-		try {
-			$matcher    = new UrlMatcher($this->allRoutes, $context);
-			$parameters = $matcher->match($path);
+    private function matchManualAndAnnotationRoutes(string $path, RequestContext $context): ?array
+    {
+        try {
+            $matcher    = new UrlMatcher($this->allRoutes, $context);
+            $parameters = $matcher->match($path);
 
-			$routeName      = $parameters['_route'];
-			$routeObject    = $this->allRoutes->get($routeName);
-			$middlewareList = $routeObject ? $routeObject->getDefault('_middleware', []) : [];
+            $routeName      = $parameters['_route'];
+            $routeObject    = $this->allRoutes->get($routeName);
+            $middlewareList = $routeObject ? $routeObject->getDefault('_middleware', []) : [];
 
-			if (!isset($parameters['_controller'])) {
-				return null;
-			}
+            if (! isset($parameters['_controller'])) {
+                return null;
+            }
 
-			[$controllerClass, $actionMethod] = explode('::', $parameters['_controller'], 2);
+            [$controllerClass, $actionMethod] = explode('::', $parameters['_controller'], 2);
 
-			unset($parameters['_controller'], $parameters['_route']);
+            unset($parameters['_controller'], $parameters['_route']);
 
-			return [
-				'controller' => $controllerClass,
-				'method'     => $actionMethod,
-				'params'     => $parameters,
-				'middleware' => $middlewareList,
-			];
-		} catch (ResourceNotFoundException | MethodNotAllowedException $e) {
-			// ✅ 捕获两种异常，让 POST / PUT / DELETE 自动回退到自动路由逻辑
-			return null;
-		}
-	}
+            return [
+                'controller' => $controllerClass,
+                'method'     => $actionMethod,
+                'params'     => $parameters,
+                'middleware' => $middlewareList,
+            ];
+        } catch (MethodNotAllowedException|ResourceNotFoundException $e) {
+            // ✅ 捕获两种异常，让 POST / PUT / DELETE 自动回退到自动路由逻辑
+            return null;
+        }
+    }
 
-	 	 
-	 
-	 
     private function matchManualAndAnnotationRoutes1(string $path, RequestContext $context): ?array
     {
         try {
@@ -275,32 +269,32 @@ class Router
      * 构建控制器完整类名（支持多级命名空间）
      * 例：[api, v2, user] → App\Controllers\Api\V2\UserController.
      */
-	private function buildControllerClassName(array $segments): string
-	{
-		if (empty($segments)) {
-			// 先尝试 Home，再尝试 HomeController
-			$homeClass = "{$this->controllerNamespace}\\Home";
-			if (class_exists($homeClass)) {
-				return $homeClass;
-			}
-			return "{$this->controllerNamespace}\\HomeController";
-		}
+    private function buildControllerClassName(array $segments): string
+    {
+        if (empty($segments)) {
+            // 先尝试 Home，再尝试 HomeController
+            $homeClass = "{$this->controllerNamespace}\\Home";
+            if (class_exists($homeClass)) {
+                return $homeClass;
+            }
+            return "{$this->controllerNamespace}\\HomeController";
+        }
 
-		// 尝试不加后缀的类名
-		$namespaceSegments = array_map('ucfirst', $segments);
-		$classNameWithoutSuffix = $this->controllerNamespace . '\\' . implode('\\', $namespaceSegments);
+        // 尝试不加后缀的类名
+        $namespaceSegments      = array_map('ucfirst', $segments);
+        $classNameWithoutSuffix = $this->controllerNamespace . '\\' . implode('\\', $namespaceSegments);
 
-		if (class_exists($classNameWithoutSuffix)) {
-			return $classNameWithoutSuffix;
-		}
+        if (class_exists($classNameWithoutSuffix)) {
+            return $classNameWithoutSuffix;
+        }
 
-		// 回退：加 Controller 后缀（兼容旧命名）
-		$lastSegment = array_pop($namespaceSegments);
-		$lastSegment .= 'Controller';
-		$namespaceSegments[] = $lastSegment;
+        // 回退：加 Controller 后缀（兼容旧命名）
+        $lastSegment = array_pop($namespaceSegments);
+        $lastSegment .= 'Controller';
+        $namespaceSegments[] = $lastSegment;
 
-		return $this->controllerNamespace . '\\' . implode('\\', $namespaceSegments);
-	}
+        return $this->controllerNamespace . '\\' . implode('\\', $namespaceSegments);
+    }
 
     /**
      * 匹配动作名和参数（自动路由核心）.

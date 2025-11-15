@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 /**
- * This file is part of NovaFrame Framework.
+ * This file is part of NavaFrame Framework.
  *
  * @link     https://github.com/xuey490/project
  * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
- * @Filename: MakeListenerCommand.php
- * @Date: 2025-10-22
+ * @Filename: %filename%
+ * @Date: 2025-11-15
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
  */
@@ -26,7 +26,7 @@ use Symfony\Component\Filesystem\Filesystem;
 class MakeListenerCommand extends Command
 {
     /**
-     * 命令名称 - 必须定义
+     * 命令名称 - 必须定义.
      */
     protected static $defaultName = 'make:listener';
 
@@ -100,7 +100,7 @@ class MakeListenerCommand extends Command
         $eventClass = $eventArg ? ucfirst($eventArg) . 'Event' : 'EventInterface';
         $eventParam = $eventArg
             ? "\\App\\Events\\{$eventClass} \$event"
-            : '\\Framework\\Event\\EventInterface $event';
+            : '\Framework\Event\EventInterface $event';
 
         $useStatement = $eventArg
             ? "use App\\Events\\{$eventClass};"
@@ -108,16 +108,16 @@ class MakeListenerCommand extends Command
 
         $handleMethodDoc = $eventArg
             ? "     * @param \\App\\Events\\{$eventClass} \$event"
-            : "     * @param \\Framework\\Event\\EventInterface \$event";
+            : '     * @param \\Framework\\Event\\EventInterface $event';
 
         return <<<PHP
 <?php
 
 declare(strict_types=1);
 
-namespace App\Listeners;
+namespace App\\Listeners;
 
-use Framework\Event\ListenerInterface;
+use Framework\\Event\\ListenerInterface;
 {$useStatement}
 
 class {$listenerName} implements ListenerInterface

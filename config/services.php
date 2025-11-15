@@ -36,8 +36,9 @@ return function (ContainerConfigurator $configurator) {
 	// ✅ 2. 自动加载核心 + 应用 Provider
 	$providerManager->loadAll(
 		$configurator,
-		BASE_PATH . '/app/Providers',
-		'App\\Providers\\'
+		'App\\Providers\\',
+		BASE_PATH . '/app/Providers'
+		
 	);
 
     // ✅ 3. 启动所有 Provider（boot）

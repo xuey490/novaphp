@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 /**
- * This file is part of NovaFrame Framework.
+ * This file is part of NavaFrame Framework.
  *
  * @link     https://github.com/xuey490/project
  * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
- * @Filename: MakeEventCommand.php
- * @Date: 2025-10-22
+ * @Filename: %filename%
+ * @Date: 2025-11-15
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
  */
@@ -26,7 +26,7 @@ use Symfony\Component\Filesystem\Filesystem;
 class MakeEventCommand extends Command
 {
     /**
-     * 命令名称 - 必须定义
+     * 命令名称 - 必须定义.
      */
     protected static $defaultName = 'make:event';
 
@@ -96,9 +96,9 @@ class MakeEventCommand extends Command
 
 declare(strict_types=1);
 
-namespace App\Events;
+namespace App\\Events;
 
-use Framework\Event\EventInterface;
+use Framework\\Event\\EventInterface;
 
 class {$eventName} implements EventInterface
 {

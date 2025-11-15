@@ -3,23 +3,21 @@
 declare(strict_types=1);
 
 /**
- * This file is part of NovaFrame Framework.
+ * This file is part of NavaFrame Framework.
  *
  * @link     https://github.com/xuey490/project
  * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
- * @Filename: Menu.php
- * @Date: 2025-11-7
+ * @Filename: %filename%
+ * @Date: 2025-11-15
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
  */
 
 // src/Utils/ControllerScanner.php
+
 namespace Framework\Utils;
 
-use ReflectionClass;
-use RecursiveIteratorIterator;
-use RecursiveDirectoryIterator;
 use Framework\Attributes\Auth;
 use Framework\Attributes\Menu;
 
@@ -35,21 +33,21 @@ class ControllerScanner
     public static function scan(string $controllerDir): array
     {
         $menuControllers = [];
-        $authRequired = [];
+        $authRequired    = [];
 
-        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($controllerDir));
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($controllerDir));
 
         foreach ($iterator as $file) {
-            if (!$file->isFile() || $file->getExtension() !== 'php') {
+            if (! $file->isFile() || $file->getExtension() !== 'php') {
                 continue;
             }
 
             $className = self::getClassFullName($file->getPathname());
-            if (!$className || !class_exists($className)) {
+            if (! $className || ! class_exists($className)) {
                 continue;
             }
 
-            $ref = new ReflectionClass($className);
+            $ref = new \ReflectionClass($className);
 
             // --- 检查类级别的 Attribute ---
             foreach ($ref->getAttributes() as $attr) {
@@ -77,13 +75,13 @@ class ControllerScanner
         }
 
         return [
-            'auth_required' => array_unique($authRequired),
+            'auth_required'    => array_unique($authRequired),
             'menu_controllers' => array_unique($menuControllers),
         ];
     }
 
     /**
-     * 从文件解析出完整类名（通过 namespace + class）
+     * 从文件解析出完整类名（通过 namespace + class）.
      */
     private static function getClassFullName(string $filePath): ?string
     {

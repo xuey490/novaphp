@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 /**
- * This file is part of NovaFrame Framework.
+ * This file is part of NavaFrame Framework.
  *
  * @link     https://github.com/xuey490/project
  * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
- * @Filename: AttributeRouteLoader
- * @Date: 2025-11-7
+ * @Filename: %filename%
+ * @Date: 2025-11-15
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
  */
@@ -19,7 +19,6 @@ namespace Framework\Core;
 use Framework\Attributes\Route;
 use Symfony\Component\Routing\Route as SymfonyRoute;
 use Symfony\Component\Routing\RouteCollection;
-use Symfony\Component\Finder\Finder;
 
 /**
  * AttributeRouteLoader：
@@ -30,6 +29,7 @@ use Symfony\Component\Finder\Finder;
 class AttributeRouteLoader
 {
     private string $controllerDir;
+
     private string $controllerNamespace;
 
     public function __construct(string $controllerDir, string $controllerNamespace)
@@ -67,13 +67,12 @@ class AttributeRouteLoader
 
             if ($classAttrs) {
                 $classRoute      = $classAttrs[0]->newInstance();
-                $classPrefix     = $classRoute->prefix ?? '';
-                $classGroup      = $classRoute->group ?? null;
+                $classPrefix     = $classRoute->prefix     ?? '';
+                $classGroup      = $classRoute->group      ?? null;
                 $classMiddleware = $classRoute->middleware ?? [];
-                $classAuth       = $classRoute->auth ?? null;
-                $classRoles      = $classRoute->roles ?? [];
+                $classAuth       = $classRoute->auth       ?? null;
+                $classRoles      = $classRoute->roles      ?? [];
             }
-			
 
             // === 方法级注解 ===
             foreach ($refClass->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
@@ -117,7 +116,7 @@ class AttributeRouteLoader
 
                     // ==== 合并 auth / roles ====
                     // 方法级优先，如果方法级未设置则继承类级
-                    $needAuth = $routeAttr->auth ?? $classAuth ?? false;
+                    $needAuth = $routeAttr->auth  ?? $classAuth ?? false;
                     $roles    = $routeAttr->roles ?? $classRoles ?? [];
 
                     // ==== 创建 Symfony 路由 ====
@@ -164,7 +163,6 @@ class AttributeRouteLoader
         return $result;
     }
 
-
     /**
      * 扫描控制器目录，返回所有PHP文件.
      */
@@ -173,7 +171,9 @@ class AttributeRouteLoader
         $rii   = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir));
         $files = [];
         foreach ($rii as $file) {
-            if ($file->isDir()) continue;
+            if ($file->isDir()) {
+                continue;
+            }
             if (pathinfo($file->getFilename(), PATHINFO_EXTENSION) === 'php') {
                 $files[] = $file->getPathname();
             }
