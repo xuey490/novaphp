@@ -3,25 +3,24 @@
 declare(strict_types=1);
 
 /**
- * This file is part of NovaFrame Framework.
+ * This file is part of NavaFrame Framework.
  *
  * @link     https://github.com/xuey490/project
  * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
- * @Filename: ResponseFactory.php
- * @Date: 2025-11-9
+ * @Filename: %filename%
+ * @Date: 2025-11-15
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
  */
- 
+
 namespace Framework\Middleware;
- 
-use Closure;
+
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
- 
+
 /**
- * DebugMiddleware
+ * DebugMiddleware.
  *
  * 调试中间件（仅在 debug 模式启用）：
  *  - 打印 Request Headers、Query、Body 参数
@@ -29,7 +28,6 @@ use Symfony\Component\HttpFoundation\Response;
  *  - 自动检测运行环境（FPM / Workerman）
  *  - 支持 PSR-15 风格中间件（handle/next）
  */
-
 class DebugMiddleware
 {
     /** @var bool 是否启用调试输出 */
@@ -41,13 +39,9 @@ class DebugMiddleware
     }
 
     /**
-     * 中间件入口
-     *
-     * @param Request $request
-     * @param Closure $next
-     * @return Response
+     * 中间件入口.
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, \Closure $next): Response
     {
         // === 请求阶段 ===
         if ($this->debug) {
@@ -66,7 +60,7 @@ class DebugMiddleware
     }
 
     /**
-     * 打印请求信息
+     * 打印请求信息.
      */
     protected function dumpRequest(Request $request): void
     {
@@ -100,7 +94,7 @@ class DebugMiddleware
     }
 
     /**
-     * 打印响应信息
+     * 打印响应信息.
      */
     protected function dumpResponse(Response $response): void
     {

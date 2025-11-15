@@ -3,21 +3,20 @@
 declare(strict_types=1);
 
 /**
- * This file is part of NovaFrame Framework.
+ * This file is part of NavaFrame Framework.
  *
  * @link     https://github.com/xuey490/project
  * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
  * @Filename: %filename%
- * @Date: 2025-10-16
+ * @Date: 2025-11-15
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
  */
- 
-namespace Framework\Cache;
- 
-use think\facade\Cache;
 
+namespace Framework\Cache;
+
+use think\facade\Cache;
 
 /*
 # thinkcache测试
@@ -47,17 +46,15 @@ echo $fileCache->get('foot');
 */
 class ThinkCache
 {
-	private array $config;
-	
+    private array $config;
+
     public function __construct(array $config = [])
     {
-		
-		$this->config =$config;
-		Cache::config($config);
+        $this->config =$config;
+        Cache::config($config);
     }
-	
-	
-	/*
+
+    /*
     public function __construct(protected array $config = [])
     {
     }
@@ -71,23 +68,21 @@ class ThinkCache
         // ✅ 再包装成框架的适配器
         return new ThinkAdapter($cache);
     }
-	*/
-	
-	/*
-	*
-	工厂支持切换 store（即选择 redis 或 file）
-	$redisCache = $container->get(ThinkCache::class)->create('redis');
-	$fileCache  = $container->get(ThinkCache::class)->create('file');
-	*
-	*/
-	public function create(?string $store = null): ThinkAdapter
-	{
-		
-		$cache = Cache::connect($this->config['stores'][$this->config['default']]);
-		if ($store) {
-			$cache = Cache::store($store); // $cache->store($store);
-		}
-		return new ThinkAdapter($cache);
-	}
+    */
 
+    /*
+    *
+    工厂支持切换 store（即选择 redis 或 file）
+    $redisCache = $container->get(ThinkCache::class)->create('redis');
+    $fileCache  = $container->get(ThinkCache::class)->create('file');
+    *
+    */
+    public function create(?string $store = null): ThinkAdapter
+    {
+        $cache = Cache::connect($this->config['stores'][$this->config['default']]);
+        if ($store) {
+            $cache = Cache::store($store); // $cache->store($store);
+        }
+        return new ThinkAdapter($cache);
+    }
 }

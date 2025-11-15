@@ -3,42 +3,44 @@
 declare(strict_types=1);
 
 /**
- * This file is part of NovaFrame Framework.
+ * This file is part of NavaFrame Framework.
  *
  * @link     https://github.com/xuey490/project
  * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
- * @Filename: Kernel.php
- * @Date: 2025-10-16
+ * @Filename: %filename%
+ * @Date: 2025-11-15
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
  */
 
 namespace Framework\Core;
 
+use Framework\Cache\CacheFactory;
 use Framework\Config\Config;
+use Framework\Core\Exception\Handler as ExceptionHandler;
 use Framework\Event\Dispatcher;
 use Framework\Event\ListenerScanner;
-use Framework\Core\Exception\Handler as ExceptionHandler;
 use Framework\Utils\Cookie;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class Kernel
 {
     private ContainerInterface $container;
+
     private bool $booted = false;
 
     public function __construct(ContainerInterface $container)
     {
         // 确保容器是可编译的（Symfony ContainerBuilder）
-        if (!$container instanceof ContainerInterface) {
+        if (! $container instanceof ContainerInterface) {
             throw new \InvalidArgumentException('容器必须是 ContainerInterface 实例');
         }
         $this->container = $container;
     }
 
     /**
-     * 启动内核：初始化核心服务、注册事件、设置异常处理
+     * 启动内核：初始化核心服务、注册事件、设置异常处理.
      */
     public function boot(): void
     {
@@ -48,25 +50,25 @@ class Kernel
 
         // 1. 设置全局容器入口（供助手函数使用）
         App::setContainer($this->container);
-				
-		$sessionConfig = require $this->getProjectDir().'/config/session.php';
-		if (($sessionConfig['storage_type'] ?? 'redis') === 'file') {
-			$savePath = $sessionConfig['file_save_path'];
-			if (!is_dir($savePath)) {
-				mkdir($savePath, 0755, true);
-			}
-			ini_set('session.save_path', $savePath);
-		}
-		
+
+        $sessionConfig = require $this->getProjectDir() . '/config/session.php';
+        if (($sessionConfig['storage_type'] ?? 'redis') === 'file') {
+            $savePath = $sessionConfig['file_save_path'];
+            if (! is_dir($savePath)) {
+                mkdir($savePath, 0755, true);
+            }
+            ini_set('session.save_path', $savePath);
+        }
+
         // $debug = app('config')->get('app.debug', false);
-        //dump(app()->getServiceIds()); // 查看所有服务 ID
-		
-		// 2. 初始化时区（从配置获取）
+        // dump(app()->getServiceIds()); // 查看所有服务 ID
+
+        // 2. 初始化时区（从配置获取）
         $timezone = app('config')->get('app.time_zone', 'UTC');
         date_default_timezone_set($timezone);
 
         // 3. 初始化Cookie配置（强制检查安全密钥）
-        //$this->initCookie();
+        // $this->initCookie();
 
         // 4. 注册事件监听器
         $this->registerEventListeners();
@@ -78,20 +80,43 @@ class Kernel
     }
 
     /**
-     * 初始化Cookie配置（强化安全校验）
+     * 获取容器（修正返回类型）.
+     */
+    public function getContainer(): ContainerInterface
+    {
+        return $this->container;
+    }
+
+    /**
+     * 检查内核是否已启动.
+     */
+    public function isBooted(): bool
+    {
+        return $this->booted;
+    }
+
+    /**
+     * 获取项目根目录.
+     */
+    public function getProjectDir(): string
+    {
+        return dirname(__DIR__, 2); // 从 framework/Core 到项目根
+    }
+
+    /**
+     * 初始化Cookie配置（强化安全校验）.
      */
     private function initCookie(): void
     {
         $config = [
-            'domain' => app('config')->get('cookie.domain', ''),
-            'secure' => app('config')->get('app.env') === 'prod', // 生产环境强制HTTPS
+            'domain'   => app('config')->get('cookie.domain', ''),
+            'secure'   => app('config')->get('app.env') === 'prod', // 生产环境强制HTTPS
             'httponly' => true,
             'samesite' => app('config')->get('cookie.samesite', 'lax'),
-            'secret' => app('config')->get('cookie.secret'),
-            'encrypt' => app('config')->get('cookie.encrypt', true),
+            'secret'   => app('config')->get('cookie.secret'),
+            'encrypt'  => app('config')->get('cookie.encrypt', true),
         ];
-		
-		
+
         // 强制检查Cookie密钥（安全红线）
         if (empty($config['secret'])) {
             throw new \RuntimeException('请在配置文件中设置 cookie.secret（安全密钥）');
@@ -101,12 +126,12 @@ class Kernel
     }
 
     /**
-     * 注册事件监听器（基于扫描的方式）
+     * 注册事件监听器（基于扫描的方式）.
      */
     private function registerEventListeners(): void
     {
         $dispatcher = $this->container->get(Dispatcher::class);
-        $cache = $this->container->get(\Framework\Cache\CacheFactory::class); // 从容器获取缓存服务
+        $cache      = $this->container->get(CacheFactory::class); // 从容器获取缓存服务
 
         // 扫描并注册所有事件订阅者
         $scanner = new ListenerScanner($cache);
@@ -118,7 +143,7 @@ class Kernel
     }
 
     /**
-     * 设置异常处理机制（统一接管错误与异常）
+     * 设置异常处理机制（统一接管错误与异常）.
      */
     private function setupExceptionHandling(): void
     {
@@ -126,14 +151,14 @@ class Kernel
         $exceptionHandler = $this->container->get(ExceptionHandler::class);
         set_exception_handler(function (\Throwable $e) use ($exceptionHandler) {
             $exceptionHandler->report($e);
-            $exceptionHandler->render($e);//->send();
+            $exceptionHandler->render($e); // ->send();
             exit(1); // 异常后终止程序
         });
 
         // 2. 注册错误处理器（将错误转为异常）
         set_error_handler(function ($severity, $message, $file, $line) {
             // 忽略非用户级错误（如E_STRICT）
-            if (!(error_reporting() & $severity)) {
+            if (! (error_reporting() & $severity)) {
                 return false;
             }
             throw new \ErrorException($message, 0, $severity, $file, $line);
@@ -156,29 +181,4 @@ class Kernel
             }
         });
     }
-
-    /**
-     * 获取容器（修正返回类型）
-     */
-    public function getContainer(): ContainerInterface
-    {
-        return $this->container;
-    }
-
-    /**
-     * 检查内核是否已启动
-     */
-    public function isBooted(): bool
-    {
-        return $this->booted;
-    }
-	
-    /**
-     * 获取项目根目录
-     */
-    public function getProjectDir(): string
-    {
-        return dirname(__DIR__, 2); // 从 framework/Core 到项目根
-    }
-	
 }

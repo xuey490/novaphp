@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 /**
- * This file is part of NovaFrame Framework.
+ * This file is part of NavaFrame Framework.
  *
  * @link     https://github.com/xuey490/project
  * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
- * @Filename: App.php
- * @Date: 2025-11-1
+ * @Filename: %filename%
+ * @Date: 2025-11-15
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
  */
@@ -22,9 +22,10 @@ namespace Framework\Log;
 class LoggerCache
 {
     protected string $channel;
+
     protected string $logFile;
 
-    public function __construct(string $channel = 'app', string $logFile = BASE_PATH .'/storage/app.log')
+    public function __construct(string $channel = 'app', string $logFile = BASE_PATH . '/storage/app.log')
     {
         $this->channel = $channel;
         $this->logFile = $logFile;
@@ -32,6 +33,6 @@ class LoggerCache
 
     public function log(string $message): void
     {
-        file_put_contents($this->logFile, "[" . $this->channel . "] " . $message . PHP_EOL, FILE_APPEND);
+        file_put_contents($this->logFile, '[' . $this->channel . '] ' . $message . PHP_EOL, FILE_APPEND);
     }
 }

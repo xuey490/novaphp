@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 /**
- * This file is part of NovaFrame Framework.
+ * This file is part of NavaFrame Framework.
  *
  * @link     https://github.com/xuey490/project
  * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
- * @Filename: ConfigService.php
- * @Date: 2025-10-16
+ * @Filename: %filename%
+ * @Date: 2025-11-15
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
  */
@@ -19,9 +19,12 @@ namespace Framework\Config;
 class ConfigService
 {
     private ?array $cachedConfig = null;   // 内存缓存
+
     private string $cacheFile;             // 文件缓存路径
+
     private int $cacheTtl = 60;            // 缓存有效期（秒）
-    private array $excludedFiles = ['routes.php' ,'services.php']; // ❗ 不参与缓存的配置文件名
+
+    private array $excludedFiles = ['routes.php', 'services.php']; // ❗ 不参与缓存的配置文件名
 
     public function __construct(
         private string $configDir,
@@ -74,7 +77,7 @@ class ConfigService
         // 写入缓存文件（不含被排除项）
         $cacheableData = array_diff_key(
             $config,
-            array_flip(array_map(fn($f) => basename($f, '.php'), $this->excludedFiles))
+            array_flip(array_map(fn ($f) => basename($f, '.php'), $this->excludedFiles))
         );
 
         $this->writeCacheFile($cacheableData);
@@ -83,7 +86,7 @@ class ConfigService
     }
 
     /**
-     * 获取配置项（支持点语法：database.host）
+     * 获取配置项（支持点语法：database.host）.
      */
     public function get(string $key, mixed $default = null): mixed
     {
@@ -103,7 +106,7 @@ class ConfigService
     }
 
     /**
-     * 清除缓存（内存 + 文件）
+     * 清除缓存（内存 + 文件）.
      */
     public function clearCache(): void
     {
@@ -114,16 +117,40 @@ class ConfigService
     }
 
     /**
-     * 判断缓存文件是否有效
+     * 返回当前配置目录路径.
+     */
+    public function getConfigDir(): string
+    {
+        return $this->configDir;
+    }
+
+    /**
+     * 动态添加/修改排除文件列表.
+     */
+    public function setExcludedFiles(array $files): void
+    {
+        $this->excludedFiles = $files;
+    }
+
+    /**
+     * 获取当前排除文件列表.
+     */
+    public function getExcludedFiles(): array
+    {
+        return $this->excludedFiles;
+    }
+
+    /**
+     * 判断缓存文件是否有效.
      */
     private function isCacheValid(): bool
     {
-        if (!file_exists($this->cacheFile)) {
+        if (! file_exists($this->cacheFile)) {
             return false;
         }
 
         $cacheMTime = filemtime($this->cacheFile);
-        if (!$cacheMTime) {
+        if (! $cacheMTime) {
             return false;
         }
 
@@ -148,11 +175,11 @@ class ConfigService
     }
 
     /**
-     * 写入缓存文件
+     * 写入缓存文件.
      */
     private function writeCacheFile(array $data): void
     {
-        $export = var_export($data, true);
+        $export  = var_export($data, true);
         $content = <<<PHP
 <?php
 // generated at: {date('Y-m-d H:i:s')}
@@ -162,40 +189,16 @@ PHP;
     }
 
     /**
-     * 重新加载被排除的文件内容
+     * 重新加载被排除的文件内容.
      */
     private function reloadExcludedFiles(array &$config): void
     {
         foreach ($this->excludedFiles as $filename) {
             $file = $this->configDir . $filename;
             if (is_file($file)) {
-                $key = basename($filename, '.php');
+                $key          = basename($filename, '.php');
                 $config[$key] = require $file;
             }
         }
-    }
-
-    /**
-     * 返回当前配置目录路径
-     */
-    public function getConfigDir(): string
-    {
-        return $this->configDir;
-    }
-
-    /**
-     * 动态添加/修改排除文件列表
-     */
-    public function setExcludedFiles(array $files): void
-    {
-        $this->excludedFiles = $files;
-    }
-
-    /**
-     * 获取当前排除文件列表
-     */
-    public function getExcludedFiles(): array
-    {
-        return $this->excludedFiles;
     }
 }

@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 /**
- * This file is part of NovaFrame Framework.
+ * This file is part of NavaFrame Framework.
  *
  * @link     https://github.com/xuey490/project
  * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
- * @Filename: FileUploader.php
- * @Date: 2025-10-16
+ * @Filename: %filename%
+ * @Date: 2025-11-15
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
  */
@@ -31,13 +31,13 @@ class FileUploader
 {
     private string $uploadDir;
 
-	//分片
+    // 分片
     private string $chunkDir;
-	
-	//合并
+
+    // 合并
     private string $mergeDir;
-	
-	//redis存储分片
+
+    // redis存储分片
     private Redis $redis;
 
     private int $maxSize;
@@ -56,7 +56,7 @@ class FileUploader
     ) {
         $this->mimeChecker = $mimeChecker;
 
-        $this->maxSize   = $uploadConfig['max_size'] ?? 5 * 1024 * 1024; //maxsize 5MB
+        $this->maxSize   = $uploadConfig['max_size'] ?? 5 * 1024 * 1024; // maxsize 5MB
         $this->whitelist = array_map('strtolower', $uploadConfig['whitelist_extensions'] ?? []);
         $this->blacklist = array_map('strtolower', $uploadConfig['blacklist_extensions'] ?? []);
         $this->naming    = $uploadConfig['naming'] ?? 'uuid';
@@ -68,123 +68,122 @@ class FileUploader
 
         $uploadDir       = $uploadConfig['upload_dir'] ?? $this->raiseError('Missing upload_dir');
         $this->uploadDir = str_replace('%kernel.project_dir%', $this->getProjectDir(), $uploadDir);
-		
 
         if (! is_dir($this->uploadDir) && ! mkdir($this->uploadDir, 0755, true)) {
             $this->raiseError("Failed to create upload directory: {$this->uploadDir}");
             # throw new \RuntimeException("Failed to create upload directory: {$this->uploadDir}");
         }
-		
 
         if (! is_writable($this->uploadDir)) {
             $this->raiseError("Upload directory is not writable: {$this->uploadDir}");
             # throw new \RuntimeException("Upload directory is not writable: {$this->uploadDir}");
         }
-		
+
         $this->chunkDir = $this->uploadDir . '/chunks';
         $this->mergeDir = $this->uploadDir . '/complete';
 
-        if (!is_dir($this->chunkDir)) mkdir($this->chunkDir, 0755, true);
-        if (!is_dir($this->mergeDir)) mkdir($this->mergeDir, 0755, true);
+        if (! is_dir($this->chunkDir)) {
+            mkdir($this->chunkDir, 0755, true);
+        }
+        if (! is_dir($this->mergeDir)) {
+            mkdir($this->mergeDir, 0755, true);
+        }
 
         // Redis 连接
-		$this->redis = app('redis.client');
+        $this->redis = app('redis.client');
         /*
-		$this->redis = new Redis();
+        $this->redis = new Redis();
         $this->redis->connect($config['redis']['host'] ?? '127.0.0.1', $config['redis']['port'] ?? 6379);
         $this->redis->select($config['redis']['db'] ?? 0);
-		*/
+        */
     }
 
     /**
-     * 统一错误处理函数
-     */
-    private function raiseError(string $message, int $code = 400): never
-    {
-        header('Content-Type: application/json; charset=utf-8');
-        http_response_code($code);
-        echo json_encode([
-            'status' => 'error',
-            'code' => $code,
-            'message' => $message,
-        ], JSON_UNESCAPED_UNICODE);
-		exit;
-    }
-
-    /**
-     * 分片上传
+     * 分片上传.
      */
     public function uploadChunk(Request $request): array
     {
-        $file = $request->files->get('file');
-        $hash = $request->request->get('hash');
-        $index = (int)$request->request->get('index');
-        $total = (int)$request->request->get('total');
+        $file     = $request->files->get('file');
+        $hash     = $request->request->get('hash');
+        $index    = (int) $request->request->get('index');
+        $total    = (int) $request->request->get('total');
         $filename = $request->request->get('filename');
 
-        if (!$file || !$hash || !$filename) {
+        if (! $file || ! $hash || ! $filename) {
             $this->raiseError('缺少必要参数');
         }
 
         $chunkDir = "{$this->chunkDir}/{$hash}";
-        if (!is_dir($chunkDir)) mkdir($chunkDir, 0755, true);
+        if (! is_dir($chunkDir)) {
+            mkdir($chunkDir, 0755, true);
+        }
 
         $chunkPath = "{$chunkDir}/{$index}.part";
         try {
             $file->move($chunkDir, "{$index}.part");
         } catch (\Exception $e) {
-            $this->raiseError("保存分片失败: " . $e->getMessage());
+            $this->raiseError('保存分片失败: ' . $e->getMessage());
         }
 
         // Redis 记录分片
         $redisKey = "upload:{$hash}:chunks";
-        $this->redis->sAdd($redisKey, (string)$index);
+        $this->redis->sAdd($redisKey, (string) $index);
         $this->redis->expire($redisKey, 24 * 3600);
 
         return [
-            'status' => 'ok',
-            'index' => $index,
+            'status'  => 'ok',
+            'index'   => $index,
             'message' => '分片上传成功',
         ];
     }
 
     /**
-     * 查询已上传分片（断点恢复）
+     * 查询已上传分片（断点恢复）.
      */
     public function checkUploadedChunks(Request $request): array
     {
         $hash = $request->query->get('hash');
-        if (!$hash) $this->raiseError('缺少 hash 参数');
+        if (! $hash) {
+            $this->raiseError('缺少 hash 参数');
+        }
 
         $redisKey = "upload:{$hash}:chunks";
         $uploaded = $this->redis->sMembers($redisKey);
 
         return [
-            'status' => 'ok',
+            'status'   => 'ok',
             'uploaded' => array_map('intval', $uploaded),
         ];
     }
 
     /**
-     * 合并分片
+     * 合并分片.
      */
     public function mergeChunks(Request $request): array
     {
-        $data = json_decode($request->getContent(), true);
-        $hash = $data['hash'] ?? null;
+        $data     = json_decode($request->getContent(), true);
+        $hash     = $data['hash']     ?? null;
         $filename = $data['filename'] ?? null;
-        if (!$hash || !$filename) $this->raiseError('缺少 hash 或 filename');
+        if (! $hash || ! $filename) {
+            $this->raiseError('缺少 hash 或 filename');
+        }
 
         $chunkDir = "{$this->chunkDir}/{$hash}";
-        if (!is_dir($chunkDir)) $this->raiseError('分片目录不存在');
+        if (! is_dir($chunkDir)) {
+            $this->raiseError('分片目录不存在');
+        }
 
         $outputPath = "{$this->mergeDir}/" . basename($filename);
-        $chunks = glob("{$chunkDir}/*.part");
-        if (!$chunks) $this->raiseError('未找到分片文件');
+        $chunks     = glob("{$chunkDir}/*.part");
+        if (! $chunks) {
+            $this->raiseError('未找到分片文件');
+        }
 
         natsort($chunks);
         $output = fopen($outputPath, 'wb');
-        if (!$output) $this->raiseError('无法创建合并文件');
+        if (! $output) {
+            $this->raiseError('无法创建合并文件');
+        }
 
         foreach ($chunks as $chunk) {
             $in = fopen($chunk, 'rb');
@@ -197,18 +196,20 @@ class FileUploader
 
         // 清理 Redis + 临时文件
         $this->redis->del("upload:{$hash}:chunks");
-        foreach ($chunks as $chunk) unlink($chunk);
+        foreach ($chunks as $chunk) {
+            unlink($chunk);
+        }
         @rmdir($chunkDir);
 
         return [
-            'status' => 'ok',
+            'status'  => 'ok',
             'message' => "文件已合并: {$outputPath}",
-            'path' => str_replace($this->getProjectDir(), '', $outputPath),
+            'path'    => str_replace($this->getProjectDir(), '', $outputPath),
         ];
     }
 
     /**
-     * 普通上传
+     * 普通上传.
      */
     public function upload(Request $request, string $formName = 'file'): array
     {
@@ -233,7 +234,22 @@ class FileUploader
     }
 
     /**
-     * 文件基础校验 + 保存逻辑
+     * 统一错误处理函数.
+     */
+    private function raiseError(string $message, int $code = 400): never
+    {
+        header('Content-Type: application/json; charset=utf-8');
+        http_response_code($code);
+        echo json_encode([
+            'status'  => 'error',
+            'code'    => $code,
+            'message' => $message,
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    /**
+     * 文件基础校验 + 保存逻辑.
      */
     private function handleFile(UploadedFile $file): array
     {
@@ -246,7 +262,7 @@ class FileUploader
         // 2. 检查文件大小
         if ($file->getSize() > $this->maxSize) {
             $this->raiseError("File size exceeds limit ({$this->maxSize} bytes).");
-            #throw new \RuntimeException("File size exceeds limit ({$this->maxSize} bytes).");
+            # throw new \RuntimeException("File size exceeds limit ({$this->maxSize} bytes).");
         }
 
         // 3. 获取扩展名（优先原始扩展名，其次从 MIME 推断）
@@ -307,29 +323,29 @@ class FileUploader
         // 8. 生成安全文件名并构建目标路径
         $safeFilename = $this->generateSafeFilename($file->getClientOriginalName(), $extension);
         $targetPath   = $targetSubDir . '/' . $safeFilename;
-        $size =$file->getSize();
-		
+        $size         =$file->getSize();
+
         // 9. 移动文件（必须在 getRealPath() 之后、文件消失前完成所有读取）
         try {
-			if (defined('WORKERMAN_VERSION')) {
-				// Workerman 模式：手动移动文件
-				$realPath = $file->getRealPath();
-				if (!@rename($realPath, $targetPath)) {
-					if (!@copy($realPath, $targetPath)) {
-						$this->raiseError("Failed to move uploaded file manually (Workerman mode).");
-					}
-					@unlink($realPath);
-				}
-			} else {
-				// PHP-FPM 模式：使用 Symfony 内置方法
-				$file->move($targetSubDir, $safeFilename);
-			}
+            if (defined('WORKERMAN_VERSION')) {
+                // Workerman 模式：手动移动文件
+                $realPath = $file->getRealPath();
+                if (! @rename($realPath, $targetPath)) {
+                    if (! @copy($realPath, $targetPath)) {
+                        $this->raiseError('Failed to move uploaded file manually (Workerman mode).');
+                    }
+                    @unlink($realPath);
+                }
+            } else {
+                // PHP-FPM 模式：使用 Symfony 内置方法
+                $file->move($targetSubDir, $safeFilename);
+            }
         } catch (\Exception $e) {
             $this->raiseError('Error: Failed to move uploaded file: ' . $e->getMessage());
         }
 
         // 10. 计算 MD5 哈希（操作已保存的文件）
-        if (!is_file($targetPath)) {
+        if (! is_file($targetPath)) {
             $this->raiseError("Uploaded file not found after move: {$targetPath}");
         }
         $md5Hash = md5_file($targetPath);
@@ -366,7 +382,7 @@ class FileUploader
             default               => '未知上传错误',
         };
     }
-	
+
     private function generateSafeFilename(string $originalName, string $extension): string
     {
         $name = pathinfo($originalName, PATHINFO_FILENAME);

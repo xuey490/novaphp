@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 /**
- * This file is part of NovaFrame Framework.
+ * This file is part of NavaFrame Framework.
  *
  * @link     https://github.com/xuey490/project
  * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
  * @Filename: %filename%
- * @Date: 2025-10-16
+ * @Date: 2025-11-15
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
  */
@@ -17,12 +17,11 @@ declare(strict_types=1);
 namespace Framework\Cache;
 
 use Psr\SimpleCache\CacheInterface;
-use think\contract\CacheHandlerInterface; // ThinkCache 的统一接口
-use think\cache\Driver; // 或者直接用基类
+use think\cache\Driver; // ThinkCache 的统一接口
+use think\contract\CacheHandlerInterface; // 或者直接用基类
 
 class ThinkAdapter extends AbstractCache implements CacheInterface
 {
-    /** @var CacheHandlerInterface|Driver */
     protected CacheHandlerInterface|Driver $driver;
 
     public function __construct(CacheHandlerInterface|Driver $cache)
@@ -35,9 +34,9 @@ class ThinkAdapter extends AbstractCache implements CacheInterface
         return $this->driver->get($this->formatKey($key), $default);
     }
 
-    public function set(string $key, mixed $value, null|int|\DateInterval $ttl = null): bool
+    public function set(string $key, mixed $value, \DateInterval|int|null $ttl = null): bool
     {
-		$ttlSeconds = is_int($ttl) ? $ttl : ($ttl ? (int)$ttl->format('%s') : $this->defaultTtl);
+        $ttlSeconds = is_int($ttl) ? $ttl : ($ttl ? (int) $ttl->format('%s') : $this->defaultTtl);
         return $this->driver->set($this->formatKey($key), $value, $ttl ?: $this->defaultTtl);
     }
 
@@ -55,8 +54,7 @@ class ThinkAdapter extends AbstractCache implements CacheInterface
     {
         return $this->driver->clear();
     }
-	
-	
+
     public function getMultiple(iterable $keys, mixed $default = null): iterable
     {
         $results = [];
@@ -66,7 +64,7 @@ class ThinkAdapter extends AbstractCache implements CacheInterface
         return $results;
     }
 
-    public function setMultiple(iterable $values, null|int|\DateInterval $ttl = null): bool
+    public function setMultiple(iterable $values, \DateInterval|int|null $ttl = null): bool
     {
         foreach ($values as $key => $value) {
             $this->set($key, $value, $ttl);
@@ -81,7 +79,4 @@ class ThinkAdapter extends AbstractCache implements CacheInterface
         }
         return true;
     }
-
-
-	
 }

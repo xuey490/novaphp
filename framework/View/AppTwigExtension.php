@@ -3,12 +3,18 @@
 declare(strict_types=1);
 
 /**
- * This file is part of NovaFrame.
+ * This file is part of NavaFrame Framework.
  *
+ * @link     https://github.com/xuey490/project
+ * @license  https://github.com/xuey490/project/blob/main/LICENSE
+ *
+ * @Filename: %filename%
+ * @Date: 2025-11-15
+ * @Developer: xuey863toy
+ * @Email: xuey863toy@gmail.com
  */
 
 namespace Framework\View;
-
 
 use Framework\Security\CsrfTokenManager;
 use Twig\Extension\AbstractExtension;
@@ -29,11 +35,10 @@ class AppTwigExtension extends AbstractExtension
         $this->tokenManager = $tokenManager;
         $this->tokenName    = $tokenName;
         $this->session      = app('session');
-        $this->siteConfig   = require BASE_PATH .'/config/site.php';
+        $this->siteConfig   = require BASE_PATH . '/config/site.php';
 
         // ⚠️ 移除下面这行，除非你真的想每次覆盖用户！
         // $this->session->set('user', 'zhangSan');
-
     }
 
     public function getGlobals(): array

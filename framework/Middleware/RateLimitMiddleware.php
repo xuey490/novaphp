@@ -3,17 +3,17 @@
 declare(strict_types=1);
 
 /**
- * This file is part of NovaFrame Framework.
+ * This file is part of NavaFrame Framework.
  *
  * @link     https://github.com/xuey490/project
  * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
- * @Filename: RateLimitMiddleware.php
- * @Date: 2025-11-6
+ * @Filename: %filename%
+ * @Date: 2025-11-15
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
  */
- 
+
 namespace Framework\Middleware;
 
 use Symfony\Component\HttpFoundation\Request;
@@ -99,12 +99,11 @@ class RateLimitMiddleware
             $response = new Response($html, 429, ['Content-Type' => 'text/html; charset=utf-8']);
         }
 
-		// 将整数转换为字符串
-		$response->headers->set('Retry-After', (string)$retryAfter);
-		$response->headers->set('X-RateLimit-Limit', (string)$this->maxRequests);
-		$response->headers->set('X-RateLimit-Remaining', '0'); // 直接使用字符串
-		$response->headers->set('X-RateLimit-Reset', (string)(time() + $retryAfter));
-		
+        // 将整数转换为字符串
+        $response->headers->set('Retry-After', (string) $retryAfter);
+        $response->headers->set('X-RateLimit-Limit', (string) $this->maxRequests);
+        $response->headers->set('X-RateLimit-Remaining', '0'); // 直接使用字符串
+        $response->headers->set('X-RateLimit-Reset', (string) (time() + $retryAfter));
 
         return $response;
     }

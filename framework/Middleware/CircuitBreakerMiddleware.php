@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 /**
- * This file is part of NovaFrame Framework.
+ * This file is part of NavaFrame Framework.
  *
  * @link     https://github.com/xuey490/project
  * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
- * @Filename: CircuitBreakerMiddleware.php
- * @Date: 2025-10-16
+ * @Filename: %filename%
+ * @Date: 2025-11-15
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
  */
@@ -43,7 +43,6 @@ class CircuitBreakerMiddleware
      */
     public function handle(Request $request, callable $next): Response
     {
-
         $service = 'default'; // 可扩展为按路由/服务名区分
         $key     = $this->cacheDir . 'breaker_' . md5($service);
         $now     = time();
@@ -71,7 +70,6 @@ class CircuitBreakerMiddleware
 
         try {
             $response = $next($request);
-
 
             // 判断是否为服务端错误（可自定义）
             if (in_array($response->getStatusCode(), [500, 502, 503, 504], true)) {

@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 /**
- * This file is part of NovaFrame Framework.
+ * This file is part of NavaFrame Framework.
  *
  * @link     https://github.com/xuey490/project
  * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
- * @Filename: App.php
- * @Date: 2025-11-1
+ * @Filename: %filename%
+ * @Date: 2025-11-15
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
  */
@@ -17,7 +17,8 @@ declare(strict_types=1);
 namespace Framework\Core;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
-#use Psr\Container\ContainerInterface;
+
+# use Psr\Container\ContainerInterface;
 
 /*
 // 框架启动
@@ -38,13 +39,11 @@ class App
     protected static ?ContainerInterface $container = null;
 
     /**
-     * 设置全局应用容器
-     *
-     * @param ContainerInterface $container
+     * 设置全局应用容器.
      */
     public static function setContainer(ContainerInterface $container): void
     {
-        if (!method_exists($container, 'get') || !method_exists($container, 'has')) {
+        if (! method_exists($container, 'get') || ! method_exists($container, 'has')) {
             throw new \InvalidArgumentException(
                 sprintf('容器必须实现 get() 和 has() 方法，当前类型: %s', get_class($container))
             );
@@ -54,9 +53,8 @@ class App
     }
 
     /**
-     * 获取全局容器
+     * 获取全局容器.
      *
-     * @return ContainerInterface
      * @throws \RuntimeException
      */
     public static function getContainer(): ContainerInterface
@@ -71,25 +69,24 @@ class App
     /**
      * 从容器解析服务
      *
-     * @param string $id 服务名或类名
-     * @param array $params 可选构造参数（如果容器支持 make）
-     * @return object
+     * @param string $id     服务名或类名
+     * @param array  $params 可选构造参数（如果容器支持 make）
      */
     public static function make(string $id, array $params = []): object
     {
         $container = self::getContainer();
 
-        if (!empty($params) && method_exists($container, 'make')) {
+        if (! empty($params) && method_exists($container, 'make')) {
             return $container->make($id, $params);
         }
 
-        if (!$container->has($id)) {
+        if (! $container->has($id)) {
             throw new \RuntimeException(sprintf('服务 "%s" 未注册于容器。', $id));
         }
 
         $service = $container->get($id);
 
-        if (!is_object($service)) {
+        if (! is_object($service)) {
             throw new \RuntimeException(sprintf('服务 "%s" 返回不是对象类型。', $id));
         }
 

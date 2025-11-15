@@ -3,30 +3,59 @@
 declare(strict_types=1);
 
 /**
- * This file is part of NovaFrame Framework.
+ * This file is part of NavaFrame Framework.
  *
  * @link     https://github.com/xuey490/project
  * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
- * @Filename: helpers.php
- * @Date: 2025-10-26
+ * @Filename: %filename%
+ * @Date: 2025-11-15
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
  */
 
+use Framework\Cache\ThinkCache;
 use Framework\Container\Container;
 use Framework\Core\App;
 use Framework\Core\Framework;
+use Framework\Event\Dispatcher;
 use Framework\Security\CsrfTokenManager;
-use Framework\Cache\ThinkCache;
-use Framework\Cache\ThinkAdapter;
+use Framework\Validation\ThinkValidatorFactory;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-
+use think\Validate;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
+
+if (! function_exists('validate')) {
+    /**
+     * 生成验证对象
+     * @param array        $data          数据
+     * @param array|string $validate      验证器类名或者验证规则数组
+     * @param array        $message       错误提示信息
+     * @param bool         $batch         是否批量验证
+     * @param bool         $failException 是否抛出异常
+     */
+    function validate(array $data, $validate = '', array $message = [], bool $batch = false, bool $failException = true): bool
+    {
+        if (is_array($validate)) {
+            $v = new Validate();
+            $v->rule($validate);
+        } else {
+            if (strpos($validate, '.')) {
+                [$validate, $scene] = explode('.', $validate);
+            }
+            $v = new $validate();
+            if (! empty($scene)) {
+                $v->scene($scene);
+            }
+        }
+
+        return $v->message($message)->batch($batch)->failException($failException)->check($data);
+    }
+}
 
 /**
  * 开发辅助函数.
@@ -74,7 +103,7 @@ function APICsrfField(): string
     return app(CsrfTokenManager::class)->getToken('default');
 }
 
-if (!function_exists('redirectToRoute')) {
+if (! function_exists('redirectToRoute')) {
     /**
      * 根据路由名称生成 URL 并返回重定向响应.
      *
@@ -94,12 +123,12 @@ if (!function_exists('redirectToRoute')) {
     }
 }
 
-if (!function_exists('app')) {
+if (! function_exists('app')) {
     /**
      * 获取容器或解析服务
      *
-     * @param string|null $id 服务ID
-     * @param array $params 可选构造参数
+     * @param  null|string               $id     服务ID
+     * @param  array                     $params 可选构造参数
      * @return ContainerInterface|object
      */
     function app(?string $id = null, array $params = [])
@@ -112,20 +141,16 @@ if (!function_exists('app')) {
     }
 }
 
-if (!function_exists('getService')) {
+if (! function_exists('getService')) {
     /**
-     * 从容器中获取服务（别名或类名）
-     *
-     * @param string $id
-     * @param array $params
-     * @return object
+     * 从容器中获取服务（别名或类名）.
      */
     function getService(string $id, array $params = []): object
     {
-		/*
+        /*
         $framework = Framework::getInstance();
         return $framework->getContainer()->get($id);
-		*/
+        */
         return App::make($id, $params);
     }
 }
@@ -158,8 +183,7 @@ function app_path(string $path = ''): string
     return base_path('app') . ($path !== '' ? '/' . $path : '');
 }
 
-
-/**
+/*
  * 简单缓存助手函数
  *
  * 用法：
@@ -168,14 +192,14 @@ function app_path(string $path = ''): string
  *   caches('foo', null);        // 删除
  *   caches();                   // 返回默认实例
  */
-if (!function_exists('caches')) {
+if (! function_exists('caches')) {
     function caches(?string $key = null, mixed $value = '__GET__', ?int $ttl = null): mixed
     {
         static $instance = null;
 
         if ($instance === null) {
-            $config = require base_path() . '/config/cache.php';
-            $factory = new ThinkCache($config);
+            $config   = require base_path() . '/config/cache.php';
+            $factory  = new ThinkCache($config);
             $instance = $factory->create($config['default'] ?? 'file');
         }
 
@@ -199,16 +223,15 @@ if (!function_exists('caches')) {
     }
 }
 
-/**
+/*
  * 清空缓存助手
  */
-if (!function_exists('caches_clear')) {
+if (! function_exists('caches_clear')) {
     function caches_clear(): bool
     {
         return caches()->clear();
     }
 }
-
 
 /**
  * 环境变量读取.
@@ -221,16 +244,16 @@ function env(string $key, mixed $default = null): mixed
         return $default;
     }
 
-    return match (strtolower((string)$value)) {
+    return match (strtolower((string) $value)) {
         'true', '(true)'   => true,
         'false', '(false)' => false,
         'empty', '(empty)' => '',
         'null', '(null)'   => null,
-        default             => preg_match('/\A([\'"])(.*)\1\z/', (string)$value, $m) ? $m[2] : $value,
+        default             => preg_match('/\A([\'"])(.*)\1\z/', (string) $value, $m) ? $m[2] : $value,
     };
 }
 
-if (!function_exists('config')) {
+if (! function_exists('config')) {
     /**
      * 配置项读取（支持点语法）.
      */
@@ -249,10 +272,10 @@ if (!function_exists('config')) {
         }
 
         $segments = explode('.', $key);
-        $value = $config;
+        $value    = $config;
 
         foreach ($segments as $segment) {
-            if (!is_array($value) || !array_key_exists($segment, $value)) {
+            if (! is_array($value) || ! array_key_exists($segment, $value)) {
                 return $default;
             }
             $value = $value[$segment];
@@ -288,16 +311,16 @@ function current_locale(): string
     return app('translator')->getLocale();
 }
 
-/**
+/*
  * Twig 模板渲染助手.
  */
-if (!function_exists('view')) {
+if (! function_exists('view')) {
     function view(string $template, array $data = []): string
     {
         try {
             $twig = app('view');
 
-            if (!str_ends_with($template, '.html.twig')) {
+            if (! str_ends_with($template, '.html.twig')) {
                 $template .= '.html.twig';
             }
 
@@ -314,30 +337,30 @@ if (!function_exists('view')) {
     }
 }
 
-/**
+/*
  * 缓存相关函数.
  */
-if (!function_exists('cache_get')) {
+if (! function_exists('cache_get')) {
     function cache_get(string $key, mixed $default = null): mixed
     {
         $cache = get_cache_instance();
-        $item = $cache->getItem($key);
+        $item  = $cache->getItem($key);
         return $item->isHit() ? $item->get() : $default;
     }
 }
 
-if (!function_exists('cache_set')) {
+if (! function_exists('cache_set')) {
     function cache_set(string $key, mixed $value, ?int $ttl = null, array $tags = []): bool
     {
         $cache = get_cache_instance();
-        $item = $cache->getItem($key);
+        $item  = $cache->getItem($key);
         $item->set($value);
 
         if ($ttl !== null) {
             $item->expiresAfter($ttl);
         }
 
-        if (!empty($tags)) {
+        if (! empty($tags)) {
             $item->tag($tags);
         }
 
@@ -345,7 +368,7 @@ if (!function_exists('cache_set')) {
     }
 }
 
-if (!function_exists('cache_invalidate_tags')) {
+if (! function_exists('cache_invalidate_tags')) {
     function cache_invalidate_tags(array $tags): bool
     {
         $cache = get_cache_instance();
@@ -360,7 +383,7 @@ if (!function_exists('cache_invalidate_tags')) {
     }
 }
 
-if (!function_exists('cache_clear')) {
+if (! function_exists('cache_clear')) {
     function cache_clear(): bool
     {
         return get_cache_instance()->clear();
@@ -373,24 +396,24 @@ function get_cache_instance(): ?object
 
     if ($cache === null) {
         $cache = Container::getInstance()->get('sf_cache');
-        //$cache = Container::getInstance()->get(TagAwareAdapter::class);
+        // $cache = Container::getInstance()->get(TagAwareAdapter::class);
     }
 
     return $cache;
 }
 
-/**
+/*
  * 数据验证助手.
  *
  * @return true|array<string, string>
  */
-if (!function_exists('ThinkValidate')) {
-    function ThinkValidate(array $data, array $rule, array $message = []): true|array
+if (! function_exists('ThinkValidate')) {
+    function ThinkValidate(array $data, array $rule, array $message = []): array|true
     {
-        $factory = getService(\Framework\Validation\ThinkValidatorFactory::class);
+        $factory   = getService(ThinkValidatorFactory::class);
         $validator = $factory->create($rule, $message);
 
-        if (!$validator->check($data)) {
+        if (! $validator->check($data)) {
             return $validator->getError();
         }
 
@@ -408,18 +431,18 @@ function ThinkView(string $templateName, array $data = []): string
     return $template->fetch($templateName);
 }
 
-/**
+/*
  * 通用模板渲染（带作用域变量自动分配）.
  */
-if (!function_exists('renders')) {
+if (! function_exists('renders')) {
     function renders(string $template, array $data = [], ?array $exclude = null): string
     {
         $scopeVars = get_defined_vars();
 
         $defaultExclude = ['scopeVars', 'template', 'data', 'exclude'];
-        $exclude = array_unique(array_merge($defaultExclude, $exclude ?? []));
+        $exclude        = array_unique(array_merge($defaultExclude, $exclude ?? []));
 
-        $filtered = array_diff_key($scopeVars, array_flip($exclude));
+        $filtered   = array_diff_key($scopeVars, array_flip($exclude));
         $assignData = array_merge($filtered, $data);
 
         $tpl = app('thinkTemp');
@@ -434,5 +457,5 @@ if (!function_exists('renders')) {
  */
 function EventDispatch(object $event): object
 {
-    return app(\Framework\Event\Dispatcher::class)->dispatch($event);
+    return app(Dispatcher::class)->dispatch($event);
 }
