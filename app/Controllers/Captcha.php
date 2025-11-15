@@ -15,24 +15,16 @@ use Symfony\Component\HttpFoundation\Response;
 
 class Captcha
 {
+	
     public function captchaImage(Request $request): Response
     {
-        $config  = require __DIR__ . '/../../config/captcha.php';
-        $captcha = new CCaptcha($config);
-        $output = $captcha->outputImage();
+		$CaptchaImage =\Framework\Utils\Captcha::base64();
 		
-		return $output;
-    }
+		$imgsrc = $CaptchaImage['base64'];
+		
+		return new Response ( "<img src='{$imgsrc}'>" );
 
-    public function checkCaptcha(Request $request): Response
-    {
-        $config    = require __DIR__ . '/../../config/captcha.php';
-        $captcha   = new CCaptcha($config);
-        $userInput = $request->request->get('captcha');
-
-        if ($captcha->validate($userInput)) {
-            return new Response('验证成功');
-        }
-        return new Response('验证码错误', 400);
     }
+	
+
 }

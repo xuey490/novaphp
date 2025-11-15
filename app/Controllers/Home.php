@@ -45,17 +45,15 @@ class Home
 		//$theme = $request->cookies->get('theme'); // 'dark' 或 null		
 		    // 获取所有 cookies
 		$allCookies = $request->cookies->all();
-		//print_r($allCookies);
+		//dump($allCookies);
 		
-		$cookieMgr = new \Framework\Utils\CookieManager();
 
-		// 1️⃣ 设置 cookie
 
-		$response->headers->setCookie(app('cookie')->make('workerman_teasdasst', 'asdsadasd'));
-
+		// 1️⃣ 设置 cookie 必须搭配send
+		app('cookie')->queueCookie('workerman_teasdasst', 'asdsadasd');
+		app('cookie')->sendQueuedCookies($response);
 		
-		
-		
+		//dump($allCookies['workerman_test']);
 		return $response;		
 	}
 	
@@ -105,7 +103,9 @@ class Home
         
         // ✅ 此时 app() 已可用！
 
-        //dump(app()->getServiceIds()); // 查看所有服务 ID
+        // dump(app()->getServiceIds()); // 查看所有服务 ID
+		
+		// echo storage_path('logs/sql.log');
 
         // 日志测试
         // $logger = app('log');
@@ -239,14 +239,19 @@ class Home
 		$session = app('session');
 		$userid = $session->get('user_id');
 		
+		$CaptchaImage =\Framework\Utils\Captcha::base64();
+		
+		$base64 = $CaptchaImage['base64'];
+		$key = $CaptchaImage['key'];
+			
         $token = $this->csrf->getToken('default');
         // 传递给模板
         return new Response("<form method='POST' action='/home/checkCaptcha'>
             <input type='hidden' name='_token' value='{$token}'>
 			<input type='text' name='code'>
 			<input type='text' name='userid' value={$userid}>
-			<img src='/captcha/captchaImage'>
-            <input name='title'>
+			<img src='{$base64}'>
+            <input name='key' value='{$key}'>
             <button type='submit'>Submit</button>
         </form>");
     }
@@ -254,6 +259,7 @@ class Home
 
     public function checkCaptcha(Request $request): Response
     {
+		/*
         $config    = require __DIR__ . '/../../config/captcha.php';
         $captcha   = new CCaptcha($config);
         $userInput = $request->request->get('code');
@@ -262,6 +268,15 @@ class Home
             return new Response('验证码错误'.$userInput);
         }
         return new Response('验证码正确'.$userInput, 200);
+		*/
+
+		$code = $request->request->get('code');
+		$key = $request->request->get('key');
+		if (false === \Framework\Utils\Captcha::check($code, $key)) {
+			// 验证失败
+			return new Response('验证码错误'.$code);
+		};
+		return new Response('验证码正确'.$code, 200);
     }
 
 
