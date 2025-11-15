@@ -9,252 +9,274 @@ declare(strict_types=1);
  * @license  https://github.com/xuey490/project/blob/main/LICENSE
  *
  * @Filename: Captcha.php
- * @Date: 2025-10-16
+ * @Date: 2025-11-15
  * @Developer: xuey863toy
  * @Email: xuey863toy@gmail.com
  */
 
 namespace Framework\Utils;
 
-use Symfony\Component\HttpFoundation\Response;
-use RuntimeException;
+use Symfony\Component\HttpFoundation\Request;
+use Ramsey\Uuid\Uuid;
 
-/**
- * Captcha Utility for NovaFrame Framework.
- *
- * Provides alnum / chinese / math captcha types with encryption-based session storage.
- */
 class Captcha
 {
-    protected array $config;
-    protected string $code;
-    private string $mathExpr = '';
-    private string $secretKey;
-
-    public function __construct(array $config)
-    {
-        $this->config = array_merge([
-            'enabled'           => true,
-            'length'            => 4,
-            'type'              => 'alnum', // alnum | chinese | math
-            'width'             => 120,
-            'height'            => 40,
-            'font_size'         => 20,
-            'font_path'         => null,
-            'chinese_font_path' => null,
-            'noise'             => true,
-            'lines'             => true,
-            'distortion'        => true,
-            'session_key'       => 'captcha_code',
-            'secret_key'        => 'nova-captcha-key', // default; can be overridden
-        ], $config);
-
-        if (! $this->config['enabled']) {
-            throw new RuntimeException('Captcha is disabled.');
-        }
-
-        $this->secretKey = hash('sha256', $this->config['secret_key']); // ensure 256-bit key
-    }
-
     /**
-     * Generate captcha code and store (encrypted) in session.
+     * 验证验证码是否正确
      */
-    public function generate(): string
+    public static function check(string $code, string $key): bool
     {
-        switch ($this->config['type']) {
-            case 'chinese':
-                $this->code = $this->generateChinese();
-                break;
-            case 'math':
-                $this->code = $this->generateMath();
-                break;
-            case 'alnum':
-            default:
-                $this->code = $this->generateAlnum();
-                break;
-        }
+        $config = config('captcha.captcha');
 
-        $session = app('session');
-        $encrypted = $this->encrypt($this->code);
-        $session->set($this->config['session_key'], $encrypted);
-
-        return $this->code;
-    }
-
-    /**
-     * Output captcha as PNG image.
-     */
-	public function outputImage(): Response
-	{
-		$this->generate();
-
-		$width  = (int)($this->config['width'] * $this->config['dpi_scale']);
-		$height = (int)($this->config['height'] * $this->config['dpi_scale']);
-
-
-		$image   = imagecreatetruecolor($width, $height);
-		$bgColor = imagecolorallocate($image, 250, 250, 250);
-		imagefilledrectangle($image, 0, 0, $width, $height, $bgColor);
-
-		// 干扰线
-		if ($this->config['lines']) {
-			for ($i = 0; $i < 5; ++$i) {
-				$lineColor = imagecolorallocate($image, mt_rand(150, 220), mt_rand(150, 220), mt_rand(150, 220));
-				imageline($image, mt_rand(0, $width), mt_rand(0, $height), mt_rand(0, $width), mt_rand(0, $height), $lineColor);
-			}
-		}
-
-		// 干扰点
-		if ($this->config['noise']) {
-			for ($i = 0; $i < 100; ++$i) {
-				$dotColor = imagecolorallocate($image, mt_rand(150, 220), mt_rand(150, 220), mt_rand(150, 220));
-				imagesetpixel($image, mt_rand(0, $width), mt_rand(0, $height), $dotColor);
-			}
-		}
-
-		$textColor = imagecolorallocate($image, mt_rand(0, 100), mt_rand(0, 100), mt_rand(0, 100));
-		$fontPath  = $this->config['type'] === 'chinese'
-			? $this->config['chinese_font_path']
-			: $this->config['font_path'];
-
-		$text = $this->config['type'] === 'math'
-			? $this->mathExpr . ' = ?'
-			: $this->code;
-
-		// ---------------------
-		// 动态字体缩放逻辑
-		// ---------------------
-		$fontSize = $this->config['font_size'];
-
-		if ($fontPath && file_exists($fontPath)) {
-			// 测量文字宽度，若超过画布宽度则自动缩小字体
-			$maxWidth = $width * 0.9; // 预留一点边距
-			$bbox     = imagettfbbox($fontSize, 0, $fontPath, $text);
-			$textWidth = $bbox[2] - $bbox[0];
-
-			while ($textWidth > $maxWidth && $fontSize > 8) {
-				$fontSize -= 1;
-				$bbox = imagettfbbox($fontSize, 0, $fontPath, $text);
-				$textWidth = $bbox[2] - $bbox[0];
-			}
-
-			// 计算居中坐标
-			$x = (int)(($width - $textWidth) / 2);
-			$y = (int)(($height + $fontSize) / 2);
-
-			imagettftext($image, $fontSize, 0, $x, $y, $textColor, $fontPath, $text);
-		} else {
-			// fallback: 使用内置字体
-			$font = 5;
-			$textWidth = imagefontwidth($font) * strlen($text);
-			$x = (int)(($width - $textWidth) / 2);
-			$y = (int)(($height - imagefontheight($font)) / 2);
-			imagestring($image, $font, $x, $y, $text, $textColor);
-		}
-
-		// 可选：文字扭曲
-		if ($this->config['distortion']) {
-			$distorted = imagecreatetruecolor($width, $height);
-			imagefilledrectangle($distorted, 0, 0, $width, $height, $bgColor);
-			for ($i = 0; $i < $width; ++$i) {
-				$offset = sin($i / 10) * 3;
-				for ($j = 0; $j < $height; ++$j) {
-					$srcY = $j + (int)$offset;
-					if ($srcY >= 0 && $srcY < $height) {
-						$color = imagecolorat($image, $i, $srcY);
-						imagesetpixel($distorted, $i, $j, $color);
-					}
-				}
-			}
-			imagedestroy($image);
-			$image = $distorted;
-		}
-
-		// 输出 PNG
-		ob_start();
-		imagepng($image);
-		$data = ob_get_clean();
-		imagedestroy($image);
-
-		return new Response($data, 200, [
-			'Content-Type'  => 'image/png',
-			'Cache-Control' => 'no-cache, no-store, must-revalidate',
-			'Pragma'        => 'no-cache',
-			'Expires'       => '0',
-		]);
-	}
-
-    /**
-     * Validate captcha input.
-     */
-    public function validate(string $input): bool
-    {
-        $session = app('session');
-        $encrypted = $session->get($this->config['session_key']);
-        if (empty($encrypted)) {
+        $redisKey = $config['prefix'] . ':' . $key;
+		
+        $redis = app('redis');
+        $hash = $redis->get($redisKey);
+        if (!$hash) {
             return false;
         }
 
-        $expected = $this->decrypt($encrypted);
-        $session->remove($this->config['session_key']); // 仅验证一次
+        $code = mb_strtolower($code, 'UTF-8');
+        $ok = password_verify($code, $hash);
 
-        if ($this->config['type'] === 'math') {
-            return trim($input) === $expected;
+        if ($ok) {
+            $redis->del($redisKey);
         }
 
-        return strtolower(trim($input)) === strtolower($expected);
+        return $ok;
     }
 
-    // ================= Helper Generators ==================
 
-    protected function generateAlnum(): string
+    /**
+     * 输出验证码并把验证码的值保存的session中
+     * @access public
+     * @param array $_config
+     * @return array
+     * @throws \Exception
+     */
+    public static function base64(array $_config = [])
     {
-        $chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
-        return substr(str_shuffle($chars), 0, $this->config['length']);
-    }
+        $config = app('config')->get('captcha.captcha');
 
-    protected function generateChinese(): string
-    {
-        $chars = '的一是在不了有和人这中大为上个国我以要他时来用们生到作地于出就分对成会可主发年动同工也能下过子说产种面而方后多定行学法所民得经';
-        $len = mb_strlen($chars, 'UTF-8');
-        $result = '';
-        for ($i = 0; $i < $this->config['length']; $i++) {
-            $result .= mb_substr($chars, mt_rand(0, $len - 1), 1, 'UTF-8');
+        if (!empty($_config)) {
+            $config = array_merge($config, $_config);
         }
-        return $result;
-    }
 
-    protected function generateMath(): string
-    {
-        $a = mt_rand(1, 10);
-        $b = mt_rand(1, 10);
-        $op = ['+', '-', '*'][mt_rand(0, 2)];
-        $expr = "{$a} {$op} {$b}";
-        $this->mathExpr = $expr;
-        return (string) eval("return {$expr};");
-    }
+		#return $config;
+        $generator = self::generateValue($config);
+        // 图片宽(px)
+        $config['imageW'] || $config['imageW'] = $config['length'] * $config['fontSize'] * 1.5 + $config['length'] * $config['fontSize'] / 2;
+        // 图片高(px)
+        $config['imageH'] || $config['imageH'] = $config['fontSize'] * 2.5;
+        // 建立一幅 $config['imageW'] x $config['imageH'] 的图像
+        $im = imagecreate((int)$config['imageW'], (int) $config['imageH']);
+        // 设置背景
+        imagecolorallocate($im, $config['bg'][0], $config['bg'][1], $config['bg'][2]);
 
-    // ================= Encryption Helpers ==================
+        // 验证码字体随机颜色
+        $color = imagecolorallocate($im, mt_rand(1, 150), mt_rand(1, 150), mt_rand(1, 150));
 
-    private function encrypt(string $data): string
-    {
-        $iv = random_bytes(16);
-        $cipherText = openssl_encrypt($data, 'AES-256-CBC', $this->secretKey, 0, $iv);
-        return base64_encode($iv . $cipherText);
-    }
+        // 验证码使用随机字体
+        $ttfPath = BASE_PATH . '/config/assets/' . ($config['useZh'] ? 'zhttfs' : 'ttfs') . '/';
 
-    private function decrypt(string $data): string
-    {
-        $raw = base64_decode($data, true);
-        if ($raw === false || strlen($raw) < 17) {
-            return '';
+        if (empty($config['fontttf'])) {
+            $dir  = dir($ttfPath);
+            $ttfs = [];
+            while (false !== ($file = $dir->read())) {
+                if (substr($file, -4) == '.ttf' || substr($file, -4) == '.otf') {
+                    $ttfs[] = $file;
+                }
+            }
+            $dir->close();
+            $config['fontttf'] = $ttfs[array_rand($ttfs)];
         }
-        $iv = substr($raw, 0, 16);
-        $cipherText = substr($raw, 16);
-        return openssl_decrypt($cipherText, 'AES-256-CBC', $this->secretKey, 0, $iv) ?: '';
+
+        $fontttf = $ttfPath . $config['fontttf'];
+
+        if ($config['useImgBg']) {
+            self::background($config, $im);
+        }
+
+        if ($config['useNoise']) {
+            // 绘杂点
+            self::writeNoise($config, $im);
+        }
+        if ($config['useCurve']) {
+            // 绘干扰线
+            self::writeCurve($config, $im, $color);
+        }
+
+        // 绘验证码
+        $text = $config['useZh'] ? preg_split('/(?<!^)(?!$)/u', $generator['value']) : str_split($generator['value']); // 验证码
+
+        foreach ($text as $index => $char) {
+            $x     = $config['fontSize'] * ($index + 1) * mt_rand((int)1.2, (int)1.6) * ($config['math'] ? 1 : 1.5);
+            $y     = $config['fontSize'] + mt_rand(10, 20);
+            $angle = $config['math'] ? 0 : mt_rand(-40, 40);
+            imagettftext($im, $config['fontSize'], $angle, (int) $x, (int) $y, $color, $fontttf, $char);
+        }
+
+        ob_start();
+        imagepng($im);
+        $content = ob_get_clean();
+        imagedestroy($im);
+
+        return [
+            'key' => $generator['key'],
+            'base64' => 'data:image/png;base64,' . base64_encode($content),
+        ];
+    }
+
+    /**
+     * 生成验证码内容并保存到 Redis
+     */
+    protected static function generateValue(array $config): array
+    {
+
+        if ($config['math']) {
+            $x = random_int(10, 30);
+            $y = random_int(1, 9);
+            $value = "{$x}+{$y}";
+            $answer = (string)($x + $y);
+        } else {
+            $value = '';
+            $characters = $config['useZh']
+                ? preg_split('/(?<!^)(?!$)/u', $config['zhSet'])
+                : str_split($config['codeSet']);
+
+            for ($i = 0; $i < $config['length']; $i++) {
+                $value .= $characters[array_rand($characters)];
+            }
+
+            $answer = mb_strtolower($value, 'UTF-8');
+        }
+
+        // redis key
+        $key = Uuid::uuid4()->toString();
+        $redisKey = $config['prefix'] . ':' . $key;
+
+        app('redis')->setex(
+            $redisKey,
+            $config['expire'],
+            password_hash($answer, PASSWORD_BCRYPT)
+        );
+
+        return [
+            'value' => $value,
+            'key'   => $key,
+        ];
+    }
+
+    protected static function pickFont(string $path, array &$config): string
+    {
+        if (!empty($config['fontttf'])) {
+            return $path . $config['fontttf'];
+        }
+
+        $fonts = [];
+        foreach (scandir($path) as $f) {
+            if (str_ends_with($f, '.ttf') || str_ends_with($f, '.otf')) {
+                $fonts[] = $f;
+            }
+        }
+
+        $config['fontttf'] = $fonts[array_rand($fonts)];
+        return $path . $config['fontttf'];
+    }
+
+    // ====== 干扰项绘制函数 保留原样 =======
+    /**
+     * @desc: 画一条由两条连在一起构成的随机正弦函数曲线作干扰线(你可以改成更帅的曲线函数)
+     * @param array $config
+     */
+    protected static function writeCurve(array $config, $im, $color): void
+    {
+        $py = 0;
+        // 曲线前部分
+        $A = mt_rand(1, (int) ($config['imageH'] / 2)); // 振幅
+        $b = mt_rand(-(int) ($config['imageH'] / 4), (int) ($config['imageH'] / 4)); // Y轴方向偏移量
+        $f = mt_rand(-(int) ($config['imageH'] / 4), (int) ($config['imageH'] / 4)); // X轴方向偏移量
+        $T = mt_rand((int) $config['imageH'], (int) ($config['imageW'] * 2)); // 周期
+        $w = (2 * M_PI) / $T;
+
+        $px1 = 0; // 曲线横坐标起始位置
+        $px2 = mt_rand((int) ($config['imageW'] / 2), (int)$config['imageW']); // 曲线横坐标结束位置
+
+        for ($px = $px1; $px <= $px2; $px = $px + 1) {
+            if (0 != $w) {
+                $py = $A * sin($w * $px + $f) + $b + $config['imageH'] / 2; // y = Asin(ωx+φ) + b
+                $i  = (int) ($config['fontSize'] / 5);
+                while ($i > 0) {
+                    imagesetpixel($im, (int) $px + $i, (int) $py + $i, (int)$color); // 这里(while)循环画像素点比imagettftext和imagestring用字体大小一次画出（不用这while循环）性能要好很多
+                    $i--;
+                }
+            }
+        }
+
+        // 曲线后部分
+        $A   = mt_rand(1, (int) ($config['imageH'] / 2)); // 振幅
+        $f   = mt_rand(-(int) ($config['imageH'] / 4), (int) ($config['imageH'] / 4)); // X轴方向偏移量
+        $T   = mt_rand((int) $config['imageH'], (int) ($config['imageW'] * 2)); // 周期
+        $w   = (2 * M_PI) / $T;
+        $b   = $py - $A * sin($w * $px + $f) - $config['imageH'] / 2;
+        $px1 = $px2;
+        $px2 = $config['imageW'];
+
+        for ($px = $px1; $px <= $px2; $px = $px + 1) {
+            if (0 != $w) {
+                $py = $A * sin($w * $px + $f) + $b + $config['imageH'] / 2; // y = Asin(ωx+φ) + b
+                $i  = (int) ($config['fontSize'] / 5);
+                while ($i > 0) {
+                    imagesetpixel($im, (int) $px + $i, (int) $py + $i, (int)$color);
+                    $i--;
+                }
+            }
+        }
+    }
+
+    /**
+     * @desc: 画杂点  往图片上写不同颜色的字母或数字
+     * @param array $config
+     * @param $im
+     * @author Tinywan(ShaoBo Wan)
+     */
+    protected static function writeNoise(array $config, $im): void
+    {
+        $codeSet = 'NovaFrame20222345678abcdefhijkmnpqrstuvwxyz';
+        for ($i = 0; $i < 10; $i++) {
+            //杂点颜色
+            $noiseColor = imagecolorallocate($im, mt_rand(150, 225), mt_rand(150, 225), mt_rand(150, 225));
+            for ($j = 0; $j < 5; $j++) {
+                // 绘杂点
+                imagestring($im, 5, mt_rand(-10, (int) $config['imageW']), mt_rand(-10, (int) $config['imageH']), $codeSet[mt_rand(0, 29)], (int) $noiseColor);
+            }
+        }
+    }
+
+    /**
+     * @desc: 绘制背景图片 注：如果验证码输出图片比较大，将占用比较多的系统资源
+     * @param array $config
+     * @param $im
+     * @author Tinywan(ShaoBo Wan)
+     */
+    protected static function background(array $config, $im): void
+    {
+        $path = BASE_PATH . '/config/assets/bgs/';
+        $dir  = dir($path);
+
+        $bgs = [];
+        while (false !== ($file = $dir->read())) {
+            if ('.' != $file[0] && substr($file, -4) == '.jpg') {
+                $bgs[] = $path . $file;
+            }
+        }
+        $dir->close();
+
+        $gb = $bgs[array_rand($bgs)];
+
+        [$width, $height] = @getimagesize($gb);
+        $bgImage = @imagecreatefromjpeg($gb);
+        @imagecopyresampled($im, $bgImage, 0, 0, 0, 0, (int) $config['imageW'], (int) $config['imageH'], $width, $height);
+        @imagedestroy($bgImage);
     }
 }
-
-
-
-

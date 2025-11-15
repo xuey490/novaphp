@@ -8,6 +8,8 @@ use function Symfony\Component\DependencyInjection\Loader\Configurator\param;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 use Framework\Container\ContainerProviders;
+use think\db\ConnectionInterface;
+
 
 return function (ContainerConfigurator $configurator) {
     $services = $configurator->services();
@@ -26,6 +28,7 @@ return function (ContainerConfigurator $configurator) {
 	// 注册事件分发
     $services->set(\Framework\Event\Dispatcher::class)
         ->arg('$container', service('service_container'))->public(); // ✅ 显式注入容器自身 注意arg，跟args差异
+
 
     // ✅ 1. 自动加载应用 Provider
     $providerManager = new ContainerProviders();
